@@ -1,0 +1,9 @@
+opencv-python>=4.8.0
+numpy>=1.24.0
+pydirectinput>=1.0.0
+pywin32>=305
+mss>=9.0.0
+dxcam>=0.3.0
+pywinctl>=0.4.0
+pynput>=1.7.0
+plyer>=2.0.0

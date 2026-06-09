@@ -1,0 +1,36 @@
+import PyInstaller.__main__
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+
+PyInstaller.__main__.run([
+    str(HERE / "gui.py"),
+    "--onefile",
+    "--name=GameBot",
+    f"--add-data={HERE / 'templates'};templates",
+    f"--add-data={HERE / 'config'};config",
+    "--noconsole",
+    "--clean",
+    "--noupx",
+    "--hidden-import=pydirectinput",
+    "--hidden-import=win32api",
+    "--hidden-import=win32con",
+    "--hidden-import=win32gui",
+    "--hidden-import=win32event",
+    "--hidden-import=win32file",
+    "--hidden-import=pynput.keyboard",
+    "--hidden-import=pynput.mouse",
+    "--hidden-import=pywinctl",
+    "--hidden-import=cv2",
+    "--hidden-import=dxcam",
+    "--hidden-import=mss",
+    "--hidden-import=plyer",
+    "--hidden-import=queue",
+    "--hidden-import=tkinter",
+    "--hidden-import=tkinter.ttk",
+    "--hidden-import=tkinter.filedialog",
+    "--hidden-import=tkinter.messagebox",
+    "--hidden-import=collections",
+    "--hidden-import=ctypes",
+    "--hidden-import=ctypes.wintypes",
+])
