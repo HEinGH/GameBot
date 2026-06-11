@@ -151,18 +151,18 @@ class Controller:
         if pixels == 0:
             return
         pydirectinput.mouseDown(button="left")
-        time.sleep(0.05)
+        time.sleep(0.02)
         pydirectinput.moveRel(pixels, 0)
-        time.sleep(0.05)
+        time.sleep(0.02)
         pydirectinput.mouseUp(button="left")
-        time.sleep(0.1)
+        time.sleep(0.03)
 
     def rotate_camera_free(self, angle_deg, sensitivity=800):
         pixels = int(angle_deg / 90.0 * sensitivity)
         if abs(pixels) < 3:
             return
         pydirectinput.moveRel(pixels, 0)
-        time.sleep(0.06)
+        time.sleep(0.03)
 
     def alt_press(self):
         self.key_down("left_alt")

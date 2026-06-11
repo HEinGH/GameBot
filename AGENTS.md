@@ -104,8 +104,10 @@ CHARACTER_SELECT → TOWN_NAV → NPC_NAVIGATE → DOMAIN_LOADING → DOMAIN_COM
 | 多角色循环 | ✅ |
 | 切换角色测试 | ✅ |
 | 预设管理 GUI | ✅ |
+| 模板置信度可配置 | ✅ |
+| 确认进入多步骤链 | ✅ |
 | 连招录制+执行 | ⏳ 待测试 |
-| 隐身模式 | ⏳ 待测试 |
+| 隐身模式 | ⏳ 方案已定，待实施 |
 
 ---
 
@@ -322,3 +324,130 @@ ORB 匹配数 10→6，Lowe 比率 0.75→0.80；新增模板匹配回退（`fin
 | 文件 | 说明 |
 |------|------|
 | `README.md` | 完全重写，反映当前实际代码状态 |
+
+---
+
+## 11. 会话 7（Debug 收尾 & 交付化 & 隐身方案）
+
+### 11.1 基础架构修复
+
+| 文件 | 改动 |
+|------|------|
+| `gui/app.py` | 主循环中 `occasional_look_around()` 调用（stealth=True 且 fsm.current != "domain_combat"） |
+| `main.py` | CLI 主循环同步追加 `occasional_look_around()` |
+| `gui/app.py` | F5/F6 录制热键添加 `_hotkeys_enabled` 标志位，Bot 运行时禁用热键，停止后恢复 |
+| `capture/screen.py` | `stop()` 中 `del self._capture` 修复 dxcam 实例泄漏；`start()` 中 `ValueError` 专项 catch 静默 dxcam signal 报错；dxcam logger 级别设为 WARNING |
+| `gui/app.py` | `_start_bot` 空角色列表弹窗校验；正常模式也激活游戏窗口（解决 `pydirectinput` 输入不到游戏的根因） |
+| `utils/antidetection.py` | 删除未使用的 `random_keystroke_rhythm()` |
+
+### 11.2 模板置信度可配置化
+
+| 文件 | 改动 |
+|------|------|
+| `config/settings.py` | 新增 `parse_template_ref(value)` → `(name, threshold)`；`parse_template_chain(list)` → `[(name, threshold), ...]`；`DEFAULT_TEMPLATE_THRESHOLD = 0.65` |
+| `states/character_select.py` | portrait/enter 模板改用 `parse_template_ref` 解析 |
+| `states/town_nav.py` | avatar/npc/chain 步骤模板统一解析；`_build_chain` 返回 `(name, thr)` 元组列表 |
+| `states/npc_navigate.py` | npc/enter 模板解析；确认进入改为链式遍历（见 11.7） |
+| `states/dungeon_exit_nav.py` | rechallenge/exit/confirm/portal 模板解析；`_find_button` 使用解析阈值 |
+| `states/town_exit.py` | settings/switch/exit_game/confirm 模板解析 |
+| `states/map_loading.py` | avatar 模板解析 |
+| `states/domain_loading.py` | skill_bar 模板解析 |
+| `states/domain_combat.py` | result_screen 模板解析 |
+| `recognition/portal_detector.py` | 构造器新增 `template_threshold` 参数 |
+| JSON 格式 | 纯字符串存为 `"xxx.png"`；自定义阈值存为 `{"template":"xxx.png","threshold":0.55}` |
+
+### 11.3 GUI 阈值配置
+
+| 改动 | 说明 |
+|------|------|
+| 全局配置 | 所有模板字段右侧新增阈值 Spinbox（默认 0.65，步进 0.05，范围 0.30-0.99） |
+| 链式组件 | `ChainStepList` 每步新增阈值 Spinbox，支持字符串/对象混合存储 |
+| 角色对话框 | 4 个模板字段（选人头像/技能栏/结算/城镇头像）各新增阈值 Spinbox |
+| 序列化 | `_pack_tpl_value()` / `_unpack_tpl_value()` 提升为模块级函数 |
+
+### 11.4 日志面板优化
+
+| 改动 | 说明 |
+|------|------|
+| 滚动条 | `dash_status_text` 外包 `log_container` + 垂直 Scrollbar |
+| 最大行数 | `_log_max_lines = 500`，`_trim_log_lines()` 超出自动删旧行 |
+| DEBUG 修复 | `_on_log_level_change` 同步 `logging.getLogger().setLevel()`，子模块 DEBUG 可到达 GUI |
+
+### 11.5 退出流程修复
+
+| 文件 | 改动 |
+|------|------|
+| `states/dungeon_exit_nav.py` | `_do_buttons` stage 1 新增 `_confirm_attempts=20` 独立重试计数器（原 `_click_wait` 倒计时后仅搜 1 次确认）；stage 1 并行检测城镇头像 fallback（无确认弹窗时头像出现即判角色回城） |
+
+### 11.6 寻路转速统一
+
+| 参数 | 旧值 | 新值 |
+|------|------|------|
+| 帧间隔 `_interval`（npc + dungeon） | 0.12s | 0.08s |
+| `rotate_camera` 总耗时 | ~0.20s | ~0.07s |
+| `rotate_camera_free` 总耗时 | ~0.06s | ~0.03s |
+| 旋转后 `time.sleep` | 0.08-0.15s | 0.05-0.08s |
+
+### 11.7 确认进入多步骤链
+
+| 文件 | 改动 |
+|------|------|
+| `states/npc_navigate.py` | `_enter_tpl/_enter_thr` 改为 `_enter_chain` 列表 + `_enter_chain_idx` 游标；enter 阶段从单次搜索改为遍历链（找到→点击→idx++→下步；全部完成→domain_loading） |
+| `gui/app.py` | "确认进入" 单行 Entry 替换为独立 `ChainStepList` 组件（标签"确认进入链"）；`set_items/get_items` 兼容字符串和数组 |
+
+### 11.8 GUI 易用性
+
+| 改动 | 说明 |
+|------|------|
+| 弹窗定位 | `_center_on_parent()` 模块级函数，6 个 Toplevel 弹窗均居中于父窗口 |
+| 去残影 | `withdraw()` → 布局 → `update_idletasks()` → `deiconify()`，单次调用消除闪烁 |
+| 提示文字 | 城镇导航标题下扩展为 4 行说明（操作链/多确认/单确认/Alt/NPC 用途） |
+| 布局 | Alt 复选框 + NPC 图标同一行，两个链式列表依次排列 |
+
+### 11.9 隐身模式融入方案（待实施）
+
+#### 分层架构
+
+| 层 | 功能 | 影响范围 | 风险 |
+|----|------|---------|------|
+| 第一层 | 鼠标路径拟人 | `click_at` stealth=True 时改为 `move_to_bezier` 平滑移动 + `mouse_event` 点击，替代 `SetCursorPos` 瞬移 | 零风险 |
+| 第二层 | 计时抖动 | `jitter_delay`/`tap_key` 在 stealth=True 时已走 `HumanDelay` 路径，无需改动 | 零风险 |
+| 第三层 | 随机鼠标晃动 | `occasional_look_around` 改为白名单模式 | 零风险 |
+
+#### 安全状态白名单
+
+仅以下无鼠标操作的状态允许随机晃动：
+`domain_loading` / `map_loading` / `complete` / `stuck_recovery`
+
+#### 各状态鼠键审计
+
+| 状态 | 鼠标操作 | 随机晃动 | 原因 |
+|------|---------|:---:|------|
+| `character_select` | `click_at`（选人、点进入） | ❌ | 点击间隙光标跳变 |
+| `town_nav` | `click_at`（链式步骤），Alt 按住 | ❌ | Alt 使光标可见，随机移动干扰识别 |
+| `npc_navigate` | `rotate_camera`（左键拖拽）+ `click_at` | ❌ | moveRel 与 mouseDown 并发冲突 |
+| `domain_loading` | 无 | ✅ | 纯等待 |
+| `domain_combat` | `click_at`（点结算面板） | ❌ | 鼠标移动→视角转动；左键→平A/上挑；右键→闪避/冲刺 |
+| `dungeon_exit_nav` | `rotate_camera_free` + `click_at` | ❌ | 旋转中插入 moveRel 破坏方向 |
+| `map_loading` | 无 | ✅ | 纯等待 |
+| `town_exit` | `click_at`（菜单操作） | ❌ | 菜单光标跳变异常 |
+| `complete` | 无 | ✅ | 已停止 |
+| `stuck_recovery` | `click` + 按键 | ✅ | 恢复卡死，允许晃动尝试解困 |
+
+#### 修改清单
+
+| 文件 | 改动 |
+|------|------|
+| `input/controller.py:click_at()` | stealth=True → bezier 移动 + 点击 |
+| `gui/app.py` 主循环 | `fsm.current != "domain_combat"` → `fsm.current in SAFE_STATES` |
+| `main.py` 主循环 | 同上 |
+| `input/controller.py` | 新增 `_SAFE_STEALTH_STATES` 常量 |
+
+### 11.10 待完成项
+
+| 项目 | 状态 |
+|------|------|
+| 隐身模式三层方案实施 | ⏳ 方案已评审，待实施 |
+| 连招录制端到端测试 | ⏳ 待测试 |
+| 深渊3 模板置信度 0.52 偏低 | ⏳ 需重截图或单独设阈值 |
+| 后台模式测试 | ⏳ 待测试 |

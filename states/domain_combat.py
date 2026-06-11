@@ -3,6 +3,7 @@ import logging
 
 from core.fsm import BaseState
 from combos.executor import ComboExecutor
+from config.settings import parse_template_ref
 
 logger = logging.getLogger(__name__)
 
@@ -161,15 +162,16 @@ class DomainCombatState(BaseState):
         template = None
         if char_index < len(chars):
             template = chars[char_index].get("result_screen_template")
-        if not template:
-            template = preset.get("result_screen_template")
-        if not template:
+        template_name, template_thr = parse_template_ref(template)
+        if not template_name:
+            template_name, template_thr = parse_template_ref(preset.get("result_screen_template"))
+        if not template_name:
             return None
         frame = blackboard["current_frame"]
         if frame is None:
             return None
         from recognition.template import find_template
-        r = find_template(frame, template, threshold=0.30)
+        r = find_template(frame, template_name, threshold=template_thr)
         if r:
             r["template"] = template
         return r

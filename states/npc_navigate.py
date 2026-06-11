@@ -4,6 +4,7 @@ import traceback
 
 from core.fsm import BaseState
 from recognition.template import find_template
+from config.settings import parse_template_ref, parse_template_chain
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +19,14 @@ class NPCNavigateState(BaseState):
         self._w_held = False
         self._jumps = 0
         self._last_ts = 0
-        self._interval = 0.12
+        self._interval = 0.08
         self._lost = 0
         self._wait = 0
         self._npc_tpl = None
-        self._enter_tpl = None
+        self._enter_chain = []
+        self._enter_chain_idx = 0
+        self._enter_attempts = 0
+        self._npc_thr = 0.65
         self._move_ck = 0
         self._seek_dir = 0
 
@@ -43,12 +47,20 @@ class NPCNavigateState(BaseState):
         self._wait = 0
         self._move_ck = 0
         self._seek_dir = 0
+        self._enter_chain = []
+        self._enter_chain_idx = 0
+        self._enter_attempts = 0
         self._release_w()
         self.controller.release_all()
         preset = blackboard["preset"]
         nav = preset.get("town_nav", {})
-        self._npc_tpl = nav.get("npc_marker_template") or preset.get("npc_template") or ""
-        self._enter_tpl = nav.get("confirm_enter_template") or ""
+        self._npc_tpl, self._npc_thr = parse_template_ref(nav.get("npc_marker_template") or preset.get("npc_template") or "")
+        ce = nav.get("confirm_enter_template") or ""
+        if isinstance(ce, list):
+            self._enter_chain = parse_template_chain(ce)
+        else:
+            name, thr = parse_template_ref(ce)
+            self._enter_chain = [(name, thr)] if name else []
         rect = blackboard.get("_window_rect")
         if not rect or len(rect) != 4:
             title = preset.get("window_title", "")
@@ -64,8 +76,8 @@ class NPCNavigateState(BaseState):
         self._gw_h = self._gw_b - self._gw_t
         self._gw_cx = (self._gw_l + self._gw_r) // 2
         self._gw_cy = (self._gw_t + self._gw_b) // 2
-        logger.debug("State: NPCNavigate npc=%s enter=%s win=(%d,%d-%d,%d) ctr=(%d,%d) %dx%d",
-                    self._npc_tpl or "(none)", self._enter_tpl or "(none)",
+        logger.debug("State: NPCNavigate npc=%s enter=%d steps win=(%d,%d-%d,%d) ctr=(%d,%d) %dx%d",
+                    self._npc_tpl or "(none)", len(self._enter_chain),
                     self._gw_l, self._gw_t, self._gw_r, self._gw_b,
                     self._gw_cx, self._gw_cy, self._gw_w, self._gw_h)
 
@@ -99,10 +111,10 @@ class NPCNavigateState(BaseState):
         except Exception: pass
 
     def _find_npc(self, frame):
-        return self._find(self._npc_tpl, frame, threshold=0.35,
+        return self._find(self._npc_tpl, frame, threshold=self._npc_thr,
                           scale_range=(0.3, 1.5), scale_steps=15)
 
-    def _find(self, tpl, frame, threshold=0.50, scale_range=(0.5, 1.5), scale_steps=11):
+    def _find(self, tpl, frame, threshold=0.65, scale_range=(0.5, 1.5), scale_steps=11):
         if not tpl or frame is None: return None
         try:
             return find_template(frame, tpl, threshold=threshold,
@@ -124,7 +136,7 @@ class NPCNavigateState(BaseState):
         angle = -step if off < 0 else step
         logger.debug("  rotate off=%d(%.0f%%) deg=%.0f", off, off / gw_w * 100, angle)
         self._rotate(angle)
-        time.sleep(0.08)
+        time.sleep(0.05)
 
     def _find_window_rect(self, title_keyword=""):
         try:
@@ -189,17 +201,34 @@ class NPCNavigateState(BaseState):
             win_cx = gw_w // 2
             win_cy = gw_h // 2
 
-        enter = self._find(self._enter_tpl, frame, threshold=0.50)
-        if enter:
-            c = enter["confidence"]
-            if c >= 0.75 or (c >= 0.50 and self._phase == "enter"):
-                self._release_w()
-                try: self.controller.click_at(enter["center"][0], enter["center"][1])
-                except Exception: pass
-                logger.info("Confirm enter (conf=%.2f phase=%s)", c, self._phase)
-                time.sleep(1.0)
-                blackboard["_fsm"].transition("domain_loading", blackboard)
-                return
+        if self._enter_chain and self._enter_chain_idx < len(self._enter_chain):
+            tpl_name, tpl_thr = self._enter_chain[self._enter_chain_idx]
+            enter = self._find(tpl_name, frame, threshold=tpl_thr)
+            if enter:
+                c = enter["confidence"]
+                if c >= 0.75 or (c >= 0.65 and self._phase == "enter"):
+                    self._release_w()
+                    try: self.controller.click_at(enter["center"][0], enter["center"][1])
+                    except Exception: pass
+                    self._enter_chain_idx += 1
+                    if self._enter_chain_idx >= len(self._enter_chain):
+                        logger.info("Confirm enter chain complete (step %d/%d conf=%.2f)",
+                                    self._enter_chain_idx, len(self._enter_chain), c)
+                        time.sleep(1.0)
+                        blackboard["_fsm"].transition("domain_loading", blackboard)
+                    else:
+                        logger.info("Confirm enter step %d/%d: %s (conf=%.2f)",
+                                    self._enter_chain_idx, len(self._enter_chain), tpl_name, c)
+                        time.sleep(self.controller.jitter_delay(1.5))
+                    return
+                elif self._phase != "enter":
+                    self._enter_attempts += 1
+                    if self._enter_attempts % 5 == 1:
+                        logger.debug("Enter sub-threshold (conf=%.2f), attempt %d", c, self._enter_attempts)
+            else:
+                self._enter_attempts += 1
+        else:
+            self._enter_attempts = 0
 
         if self._phase == "scan":
             self._do_scan(frame, gw_h, gw_w, win_cx, win_cy)

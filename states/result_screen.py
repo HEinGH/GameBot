@@ -31,7 +31,7 @@ class ResultScreenState(BaseState):
         frame = blackboard["current_frame"]
 
         if result_template and frame is not None:
-            r = find_template(frame, result_template, threshold=0.45)
+            r = find_template(frame, result_template, threshold=0.65)
             if r:
                 cx, cy = r["center"]
                 logger.info("Result screen at (%d,%d) conf=%.2f, clicking", cx, cy, r["confidence"])

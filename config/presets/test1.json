@@ -17,7 +17,9 @@
       "深渊2.png",
       "深渊3.png"
     ],
-    "confirm_enter_template": "确认.png",
+    "confirm_enter_template": [
+      "确认.png"
+    ],
     "npc_marker_template": "npc寻路2.png"
   },
   "town_exit": {
@@ -33,7 +35,7 @@
       "skill_bar_template": "镰卫技能栏.png",
       "result_screen_template": "镰卫结算画面.png",
       "avatar_template": "镰卫城镇头像.png",
-      "runs": 2,
+      "runs": 1,
       "fallback_combos": null,
       "combos": [
         {
@@ -41,7 +43,7 @@
             "4"
           ],
           "duration": 0.35,
-          "delay_before": 5.0,
+          "delay_before": 3.0,
           "delay_after": 1.0,
           "hold": false,
           "repeat": 1
@@ -196,7 +198,7 @@
       "delay_after": 2.0
     }
   ],
-  "char_count": 2,
-  "stealth": true,
+  "char_count": 1,
+  "stealth": false,
   "background": false
 }

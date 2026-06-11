@@ -43,12 +43,18 @@ class ScreenCapture:
         if method == "auto":
             try:
                 import dxcam
+                logging.getLogger("dxcam").setLevel(logging.WARNING)
                 self._capture = dxcam.create(output_color="BGR")
                 self._capture.start(target_fps=fps_limit, video_mode=True)
                 self._method = "dxcam"
                 logger.info("ScreenCapture: using dxcam (monitor %d)", monitor)
+            except ValueError:
+                logger.info("ScreenCapture: dxcam signal init skipped (non-main thread), using mss")
+                self._capture = None
+                method = "mss"
             except Exception as e:
                 logger.warning("dxcam unavailable (%s), falling back to mss", e)
+                self._capture = None
                 method = "mss"
 
         if method == "mss" or self._capture is None:
@@ -73,6 +79,8 @@ class ScreenCapture:
         if self._method == "dxcam" and self._capture:
             try:
                 self._capture.stop()
+                del self._capture
+                self._capture = None
             except Exception:
                 pass
 

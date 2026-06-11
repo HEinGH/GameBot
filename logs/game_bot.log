@@ -10539,3 +10539,869 @@ AttributeError: 'PortalDetector' object has no attribute 'detect'
 2026-06-10 02:10:58 [WARNING] states.stuck_recovery:25 Entering stuck recovery
 2026-06-10 02:11:06 [INFO   ] dxcam.dxcam:736 Screen Capture FPS: 29.9952
 2026-06-10 02:11:07 [INFO   ] gui.app:1547 Bot stopped
+2026-06-11 21:02:40 [INFO   ] dxcam.dxcam:460 Frame buffer build(start): 2560x1440 c=3 n=8.
+2026-06-11 21:02:40 [INFO   ] capture.screen:49 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 21:02:42 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 21:02:42 [INFO   ] gui.app:1530 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 21:02:43 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(77,330) 置信度=0.742
+2026-06-11 21:02:43 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.74)
+2026-06-11 21:02:46 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1558,954) 置信度=0.674
+2026-06-11 21:02:46 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 21:02:46 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 21:03:18 [INFO   ] dxcam.dxcam:736 Screen Capture FPS: 29.9973
+2026-06-11 21:03:18 [INFO   ] gui.app:1557 Bot stopped
+2026-06-11 21:03:50 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:03:50 [INFO   ] dxcam.dxcam:460 Frame buffer build(start): 2560x1440 c=3 n=8.
+2026-06-11 21:03:50 [INFO   ] capture.screen:49 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 21:03:52 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 21:03:52 [INFO   ] gui.app:1530 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 21:03:53 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(77,330) 置信度=0.742
+2026-06-11 21:03:53 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.74)
+2026-06-11 21:03:56 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1558,954) 置信度=0.674
+2026-06-11 21:03:56 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 21:03:56 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 21:04:25 [INFO   ] dxcam.dxcam:736 Screen Capture FPS: 29.9971
+2026-06-11 21:04:25 [INFO   ] gui.app:1557 Bot stopped
+2026-06-11 21:06:12 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:06:12 [INFO   ] dxcam.dxcam:460 Frame buffer build(start): 2560x1440 c=3 n=8.
+2026-06-11 21:06:12 [INFO   ] capture.screen:49 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 21:06:15 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 21:06:15 [INFO   ] gui.app:1530 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 21:06:15 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(77,330) 置信度=0.742
+2026-06-11 21:06:16 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.74)
+2026-06-11 21:06:18 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1558,954) 置信度=0.674
+2026-06-11 21:06:19 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 21:06:19 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 21:06:24 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(77,221) 置信度=0.768
+2026-06-11 21:06:24 [INFO   ] states.town_nav:129 Avatar detected, confirmed in town
+2026-06-11 21:06:28 [INFO   ] recognition.template:77 识图成功: 日常按钮.png 位置(1836,534) 置信度=0.891
+2026-06-11 21:06:31 [INFO   ] recognition.template:77 识图成功: 深渊1.png 位置(295,540) 置信度=0.676
+2026-06-11 21:06:34 [INFO   ] recognition.template:77 识图成功: 深渊2.png 位置(133,983) 置信度=0.711
+2026-06-11 21:06:37 [INFO   ] recognition.template:77 识图成功: 深渊3.png 位置(1711,1134) 置信度=0.545
+2026-06-11 21:06:39 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1171,1059) 置信度=0.989
+2026-06-11 21:06:39 [INFO   ] states.town_nav:76 NPC icon detected, transitioning to npc_navigate (conf=0.99)
+2026-06-11 21:06:39 [INFO   ] core.fsm:50 状态切换: 城镇导航 → NPC寻路
+2026-06-11 21:06:39 [INFO   ] states.npc_navigate:151 NPCNavigate: window by title '晶核：魔导觉醒' -> '晶核：魔导觉醒  ' (1936x1119)
+2026-06-11 21:06:39 [INFO   ] states.npc_navigate:58 NPCNavigate: self-found window rect=(-4, 115, 1932, 1234)
+2026-06-11 21:06:40 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1452,861) 置信度=0.510
+2026-06-11 21:06:40 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1171,1059) 置信度=0.989
+2026-06-11 21:06:41 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1452,861) 置信度=0.529
+2026-06-11 21:06:42 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1171,1059) 置信度=0.989
+2026-06-11 21:06:43 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1452,861) 置信度=0.528
+2026-06-11 21:06:44 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1171,1059) 置信度=0.988
+2026-06-11 21:06:45 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1452,862) 置信度=0.530
+2026-06-11 21:06:45 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1171,1059) 置信度=0.989
+2026-06-11 21:06:46 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1518,818) 置信度=0.516
+2026-06-11 21:06:47 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1565,911) 置信度=0.967
+2026-06-11 21:06:48 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1519,818) 置信度=0.546
+2026-06-11 21:06:49 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1566,910) 置信度=0.950
+2026-06-11 21:06:50 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1519,818) 置信度=0.539
+2026-06-11 21:06:51 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1566,910) 置信度=0.950
+2026-06-11 21:06:52 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1519,818) 置信度=0.538
+2026-06-11 21:06:52 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1566,910) 置信度=0.951
+2026-06-11 21:06:54 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1566,910) 置信度=0.951
+2026-06-11 21:06:56 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1566,910) 置信度=0.951
+2026-06-11 21:06:58 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1566,910) 置信度=0.950
+2026-06-11 21:06:59 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1566,910) 置信度=0.950
+2026-06-11 21:07:01 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1566,910) 置信度=0.950
+2026-06-11 21:07:03 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1566,910) 置信度=0.950
+2026-06-11 21:07:05 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1566,910) 置信度=0.949
+2026-06-11 21:07:06 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(2432,1258) 置信度=0.527
+2026-06-11 21:07:06 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1566,910) 置信度=0.950
+2026-06-11 21:07:08 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1699,764) 置信度=0.954
+2026-06-11 21:07:10 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1699,764) 置信度=0.956
+2026-06-11 21:07:12 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1699,764) 置信度=0.954
+2026-06-11 21:07:13 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1699,764) 置信度=0.956
+2026-06-11 21:07:15 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(934,386) 置信度=0.949
+2026-06-11 21:07:17 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(934,386) 置信度=0.949
+2026-06-11 21:07:19 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(933,398) 置信度=0.945
+2026-06-11 21:07:21 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(902,466) 置信度=0.967
+2026-06-11 21:07:22 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1237,844) 置信度=0.794
+2026-06-11 21:07:23 [INFO   ] states.npc_navigate:199 Confirm enter (conf=0.79 phase=move)
+2026-06-11 21:07:24 [INFO   ] core.fsm:50 状态切换: NPC寻路 → 副本加载中
+2026-06-11 21:07:24 [INFO   ] states.npc_navigate:81 Exit: NPCNavigate
+2026-06-11 21:07:24 [INFO   ] recognition.template:77 识图成功: 镰卫技能栏.png 位置(743,439) 置信度=0.622
+2026-06-11 21:07:24 [INFO   ] states.domain_loading:49 Skill bar '镰卫技能栏.png' detected, domain loaded (0.5s)
+2026-06-11 21:07:24 [INFO   ] core.fsm:50 状态切换: 副本加载中 → 副本战斗
+2026-06-11 21:07:24 [INFO   ] states.domain_combat:58 Loaded 7 combo actions for character 0
+2026-06-11 21:07:24 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.35 before=5.00 after=1.00
+2026-06-11 21:07:30 [INFO   ] combos.executor:128   press 4 dur=0.36
+2026-06-11 21:07:31 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.36 before=1.00 after=1.00
+2026-06-11 21:07:32 [INFO   ] combos.executor:128   press 4 dur=0.46
+2026-06-11 21:07:34 [INFO   ] combos.executor:62 Combo: keys=['e'] hold=False dur=0.30 before=1.00 after=1.00
+2026-06-11 21:07:35 [INFO   ] combos.executor:128   press e dur=0.34
+2026-06-11 21:07:37 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.40 before=3.00 after=1.00
+2026-06-11 21:07:40 [INFO   ] combos.executor:128   press 2 dur=0.50
+2026-06-11 21:07:42 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.38 before=1.00 after=1.00
+2026-06-11 21:07:43 [INFO   ] combos.executor:128   press 2 dur=0.50
+2026-06-11 21:07:45 [INFO   ] combos.executor:62 Combo: keys=['3'] hold=False dur=0.42 before=1.00 after=1.00
+2026-06-11 21:07:46 [INFO   ] combos.executor:128   press 3 dur=0.49
+2026-06-11 21:07:48 [INFO   ] combos.executor:62 Combo: keys=['1'] hold=False dur=0.37 before=1.00 after=1.00
+2026-06-11 21:07:49 [INFO   ] combos.executor:128   press 1 dur=0.40
+2026-06-11 21:07:51 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(1070,633) 置信度=0.486
+2026-06-11 21:07:51 [INFO   ] states.domain_combat:127 Panel at (1070,633) conf=0.49 template=镰卫结算画面.png, clicking
+2026-06-11 21:07:52 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:07:53 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:07:54 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:07:54 [INFO   ] states.domain_combat:147 Panel retry click #1 (1.4s)
+2026-06-11 21:07:55 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(2031,1017) 置信度=0.420
+2026-06-11 21:07:55 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(659,327) 置信度=0.493
+2026-06-11 21:07:56 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(2031,1017) 置信度=0.427
+2026-06-11 21:07:56 [INFO   ] states.domain_combat:147 Panel retry click #2 (1.4s)
+2026-06-11 21:07:57 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(593,550) 置信度=0.452
+2026-06-11 21:07:57 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(1247,1219) 置信度=0.440
+2026-06-11 21:07:58 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(1394,1185) 置信度=0.438
+2026-06-11 21:07:58 [WARNING] states.domain_combat:151 Panel still visible after 3 retries, proceeding anyway
+2026-06-11 21:07:58 [INFO   ] core.fsm:50 状态切换: 副本战斗 → 副本出口寻路
+2026-06-11 21:07:58 [INFO   ] recognition.portal_detector:30 Portal template loaded: E:\vscode\game_bot\templates\副本出口图标.png
+2026-06-11 21:07:59 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.681
+2026-06-11 21:08:00 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(971,654) 置信度=0.815
+2026-06-11 21:08:00 [INFO   ] recognition.portal_detector:50 Portal detected: center=(971,654) size=1225 (method: template)
+2026-06-11 21:08:00 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.680
+2026-06-11 21:08:01 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(971,654) 置信度=0.831
+2026-06-11 21:08:01 [INFO   ] recognition.portal_detector:50 Portal detected: center=(971,654) size=1225 (method: template)
+2026-06-11 21:08:01 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.680
+2026-06-11 21:08:02 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(748,1414) 置信度=0.598
+2026-06-11 21:08:03 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1556,432) 置信度=0.747
+2026-06-11 21:08:03 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1556,432) size=144 (method: template)
+2026-06-11 21:08:03 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(991,642) 置信度=0.879
+2026-06-11 21:08:03 [INFO   ] states.dungeon_exit_nav:205 Exit button detected (conf=0.879 near_exit=False), switching to buttons
+2026-06-11 21:08:04 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(1273,552) 置信度=0.888
+2026-06-11 21:08:04 [INFO   ] states.dungeon_exit_nav:419 Clicked re-challenge (run 1/3)
+2026-06-11 21:08:08 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1237,844) 置信度=0.794
+2026-06-11 21:08:08 [INFO   ] states.dungeon_exit_nav:435 Clicked confirm
+2026-06-11 21:08:10 [INFO   ] states.dungeon_exit_nav:450 Re-enter domain (run 1/3)
+2026-06-11 21:08:10 [INFO   ] core.fsm:50 状态切换: 副本出口寻路 → 副本加载中
+2026-06-11 21:08:10 [INFO   ] states.dungeon_exit_nav:120 Exit: DungeonExitNav
+2026-06-11 21:08:11 [INFO   ] recognition.template:77 识图成功: 镰卫技能栏.png 位置(1165,1130) 置信度=0.862
+2026-06-11 21:08:11 [INFO   ] states.domain_loading:49 Skill bar '镰卫技能栏.png' detected, domain loaded (0.5s)
+2026-06-11 21:08:11 [INFO   ] core.fsm:50 状态切换: 副本加载中 → 副本战斗
+2026-06-11 21:08:11 [INFO   ] states.domain_combat:58 Loaded 7 combo actions for character 0
+2026-06-11 21:08:11 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.35 before=5.00 after=1.00
+2026-06-11 21:08:16 [INFO   ] combos.executor:128   press 4 dur=0.45
+2026-06-11 21:08:18 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.36 before=1.00 after=1.00
+2026-06-11 21:08:19 [INFO   ] combos.executor:128   press 4 dur=0.42
+2026-06-11 21:08:21 [INFO   ] combos.executor:62 Combo: keys=['e'] hold=False dur=0.30 before=1.00 after=1.00
+2026-06-11 21:08:22 [INFO   ] combos.executor:128   press e dur=0.40
+2026-06-11 21:08:23 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.40 before=3.00 after=1.00
+2026-06-11 21:08:26 [INFO   ] combos.executor:128   press 2 dur=0.47
+2026-06-11 21:08:28 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.38 before=1.00 after=1.00
+2026-06-11 21:08:29 [INFO   ] combos.executor:128   press 2 dur=0.45
+2026-06-11 21:08:31 [INFO   ] combos.executor:62 Combo: keys=['3'] hold=False dur=0.42 before=1.00 after=1.00
+2026-06-11 21:08:32 [INFO   ] combos.executor:128   press 3 dur=0.43
+2026-06-11 21:08:34 [INFO   ] combos.executor:62 Combo: keys=['1'] hold=False dur=0.37 before=1.00 after=1.00
+2026-06-11 21:08:35 [INFO   ] combos.executor:128   press 1 dur=0.47
+2026-06-11 21:08:37 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(1867,962) 置信度=0.455
+2026-06-11 21:08:37 [INFO   ] states.domain_combat:127 Panel at (1867,962) conf=0.45 template=镰卫结算画面.png, clicking
+2026-06-11 21:08:38 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:08:39 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:08:39 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:08:39 [INFO   ] states.domain_combat:147 Panel retry click #1 (1.4s)
+2026-06-11 21:08:40 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:08:41 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:08:42 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:08:42 [INFO   ] states.domain_combat:147 Panel retry click #2 (1.4s)
+2026-06-11 21:08:43 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:08:43 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:08:44 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:08:44 [WARNING] states.domain_combat:151 Panel still visible after 3 retries, proceeding anyway
+2026-06-11 21:08:44 [INFO   ] core.fsm:50 状态切换: 副本战斗 → 副本出口寻路
+2026-06-11 21:08:44 [INFO   ] recognition.portal_detector:30 Portal template loaded: E:\vscode\game_bot\templates\副本出口图标.png
+2026-06-11 21:08:45 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(1290,623) 置信度=0.709
+2026-06-11 21:08:46 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1196,1235) 置信度=0.710
+2026-06-11 21:08:46 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1196,1235) size=144 (method: template)
+2026-06-11 21:08:46 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(1290,623) 置信度=0.709
+2026-06-11 21:08:47 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(2318,1316) 置信度=0.725
+2026-06-11 21:08:47 [INFO   ] recognition.portal_detector:50 Portal detected: center=(2318,1316) size=144 (method: template)
+2026-06-11 21:08:47 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(1290,623) 置信度=0.709
+2026-06-11 21:08:48 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(2080,1222) 置信度=0.697
+2026-06-11 21:08:48 [INFO   ] recognition.portal_detector:50 Portal detected: center=(2080,1222) size=144 (method: template)
+2026-06-11 21:08:49 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(1290,623) 置信度=0.710
+2026-06-11 21:08:49 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(2187,1276) 置信度=0.700
+2026-06-11 21:08:49 [INFO   ] recognition.portal_detector:50 Portal detected: center=(2187,1276) size=306 (method: template)
+2026-06-11 21:08:50 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.690
+2026-06-11 21:08:51 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1228,875) 置信度=0.683
+2026-06-11 21:08:51 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1228,875) size=144 (method: template)
+2026-06-11 21:08:51 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.687
+2026-06-11 21:08:52 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1319,866) 置信度=0.757
+2026-06-11 21:08:52 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1319,866) size=1225 (method: template)
+2026-06-11 21:08:53 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.686
+2026-06-11 21:08:53 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1346,849) 置信度=0.889
+2026-06-11 21:08:53 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1346,849) size=1190 (method: template)
+2026-06-11 21:08:54 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(1603,378) 置信度=0.650
+2026-06-11 21:08:55 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(959,936) 置信度=0.688
+2026-06-11 21:08:55 [INFO   ] recognition.portal_detector:50 Portal detected: center=(959,936) size=306 (method: template)
+2026-06-11 21:08:55 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.647
+2026-06-11 21:08:56 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1185,674) 置信度=0.883
+2026-06-11 21:08:56 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1185,674) size=1190 (method: template)
+2026-06-11 21:08:57 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.685
+2026-06-11 21:08:57 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1185,674) 置信度=0.872
+2026-06-11 21:08:57 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1185,674) size=1190 (method: template)
+2026-06-11 21:08:58 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.699
+2026-06-11 21:08:59 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(889,665) 置信度=0.795
+2026-06-11 21:08:59 [INFO   ] recognition.portal_detector:50 Portal detected: center=(889,665) size=1156 (method: template)
+2026-06-11 21:08:59 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.666
+2026-06-11 21:09:00 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(875,665) 置信度=0.768
+2026-06-11 21:09:00 [INFO   ] recognition.portal_detector:50 Portal detected: center=(875,665) size=1190 (method: template)
+2026-06-11 21:09:01 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.684
+2026-06-11 21:09:01 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1314,687) 置信度=0.751
+2026-06-11 21:09:01 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1314,687) size=1225 (method: template)
+2026-06-11 21:09:02 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.659
+2026-06-11 21:09:03 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(501,706) 置信度=0.686
+2026-06-11 21:09:03 [INFO   ] recognition.portal_detector:50 Portal detected: center=(501,706) size=1190 (method: template)
+2026-06-11 21:09:03 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.689
+2026-06-11 21:09:04 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1275,682) 置信度=0.771
+2026-06-11 21:09:04 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1275,682) size=1225 (method: template)
+2026-06-11 21:09:05 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.666
+2026-06-11 21:09:05 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1325,689) 置信度=0.736
+2026-06-11 21:09:05 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1325,689) size=1156 (method: template)
+2026-06-11 21:09:06 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.679
+2026-06-11 21:09:06 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1325,689) 置信度=0.757
+2026-06-11 21:09:06 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1325,689) size=1156 (method: template)
+2026-06-11 21:09:07 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.679
+2026-06-11 21:09:08 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1325,689) 置信度=0.736
+2026-06-11 21:09:08 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1325,689) size=1156 (method: template)
+2026-06-11 21:09:08 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.679
+2026-06-11 21:09:09 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1325,689) 置信度=0.746
+2026-06-11 21:09:09 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1325,689) size=1156 (method: template)
+2026-06-11 21:09:10 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.679
+2026-06-11 21:09:10 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1325,689) 置信度=0.739
+2026-06-11 21:09:10 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1325,689) size=1156 (method: template)
+2026-06-11 21:09:11 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.679
+2026-06-11 21:09:12 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1325,689) 置信度=0.782
+2026-06-11 21:09:12 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1325,689) size=1156 (method: template)
+2026-06-11 21:09:12 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.624
+2026-06-11 21:09:13 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(885,639) 置信度=0.851
+2026-06-11 21:09:13 [INFO   ] recognition.portal_detector:50 Portal detected: center=(885,639) size=1190 (method: template)
+2026-06-11 21:09:14 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.677
+2026-06-11 21:09:14 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1281,665) 置信度=0.818
+2026-06-11 21:09:14 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1281,665) size=1156 (method: template)
+2026-06-11 21:09:15 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.688
+2026-06-11 21:09:16 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(907,638) 置信度=0.868
+2026-06-11 21:09:16 [INFO   ] recognition.portal_detector:50 Portal detected: center=(907,638) size=1225 (method: template)
+2026-06-11 21:09:16 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(748,1414) 置信度=0.598
+2026-06-11 21:09:17 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(334,373) 置信度=0.715
+2026-06-11 21:09:17 [INFO   ] recognition.portal_detector:50 Portal detected: center=(334,373) size=462 (method: template)
+2026-06-11 21:09:17 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(1464,780) 置信度=0.899
+2026-06-11 21:09:17 [INFO   ] states.dungeon_exit_nav:205 Exit button detected (conf=0.899 near_exit=False), switching to buttons
+2026-06-11 21:09:18 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(1273,552) 置信度=0.894
+2026-06-11 21:09:19 [INFO   ] states.dungeon_exit_nav:419 Clicked re-challenge (run 2/3)
+2026-06-11 21:09:22 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1237,844) 置信度=0.794
+2026-06-11 21:09:22 [INFO   ] states.dungeon_exit_nav:435 Clicked confirm
+2026-06-11 21:09:25 [INFO   ] states.dungeon_exit_nav:450 Re-enter domain (run 2/3)
+2026-06-11 21:09:25 [INFO   ] core.fsm:50 状态切换: 副本出口寻路 → 副本加载中
+2026-06-11 21:09:25 [INFO   ] states.dungeon_exit_nav:120 Exit: DungeonExitNav
+2026-06-11 21:09:25 [INFO   ] recognition.template:77 识图成功: 镰卫技能栏.png 位置(1165,1130) 置信度=0.862
+2026-06-11 21:09:25 [INFO   ] states.domain_loading:49 Skill bar '镰卫技能栏.png' detected, domain loaded (0.5s)
+2026-06-11 21:09:25 [INFO   ] core.fsm:50 状态切换: 副本加载中 → 副本战斗
+2026-06-11 21:09:25 [INFO   ] states.domain_combat:58 Loaded 7 combo actions for character 0
+2026-06-11 21:09:25 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.35 before=5.00 after=1.00
+2026-06-11 21:09:31 [INFO   ] combos.executor:128   press 4 dur=0.39
+2026-06-11 21:09:33 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.36 before=1.00 after=1.00
+2026-06-11 21:09:35 [INFO   ] combos.executor:128   press 4 dur=0.48
+2026-06-11 21:09:36 [INFO   ] combos.executor:62 Combo: keys=['e'] hold=False dur=0.30 before=1.00 after=1.00
+2026-06-11 21:09:38 [INFO   ] combos.executor:128   press e dur=0.29
+2026-06-11 21:09:39 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.40 before=3.00 after=1.00
+2026-06-11 21:09:44 [INFO   ] combos.executor:128   press 2 dur=0.47
+2026-06-11 21:09:47 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.38 before=1.00 after=1.00
+2026-06-11 21:09:48 [INFO   ] combos.executor:128   press 2 dur=0.42
+2026-06-11 21:09:49 [INFO   ] combos.executor:62 Combo: keys=['3'] hold=False dur=0.42 before=1.00 after=1.00
+2026-06-11 21:09:50 [INFO   ] combos.executor:128   press 3 dur=0.51
+2026-06-11 21:09:52 [INFO   ] combos.executor:62 Combo: keys=['1'] hold=False dur=0.37 before=1.00 after=1.00
+2026-06-11 21:09:54 [INFO   ] combos.executor:128   press 1 dur=0.47
+2026-06-11 21:09:56 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(754,1227) 置信度=0.450
+2026-06-11 21:09:56 [INFO   ] states.domain_combat:127 Panel at (754,1227) conf=0.45 template=镰卫结算画面.png, clicking
+2026-06-11 21:09:57 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(163,859) 置信度=0.427
+2026-06-11 21:09:58 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(2034,1020) 置信度=0.435
+2026-06-11 21:09:59 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(644,1054) 置信度=0.438
+2026-06-11 21:09:59 [INFO   ] states.domain_combat:147 Panel retry click #1 (1.4s)
+2026-06-11 21:10:00 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(2031,1019) 置信度=0.430
+2026-06-11 21:10:00 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(2038,1023) 置信度=0.439
+2026-06-11 21:10:01 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(804,892) 置信度=0.429
+2026-06-11 21:10:01 [INFO   ] states.domain_combat:147 Panel retry click #2 (1.4s)
+2026-06-11 21:10:02 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.746
+2026-06-11 21:10:03 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.746
+2026-06-11 21:10:04 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.746
+2026-06-11 21:10:04 [WARNING] states.domain_combat:151 Panel still visible after 3 retries, proceeding anyway
+2026-06-11 21:10:04 [INFO   ] core.fsm:50 状态切换: 副本战斗 → 副本出口寻路
+2026-06-11 21:10:04 [INFO   ] recognition.portal_detector:30 Portal template loaded: E:\vscode\game_bot\templates\副本出口图标.png
+2026-06-11 21:10:05 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(585,19) 置信度=0.543
+2026-06-11 21:10:05 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1293,644) 置信度=0.739
+2026-06-11 21:10:05 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1293,644) size=289 (method: template)
+2026-06-11 21:10:06 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(899,439) 置信度=0.559
+2026-06-11 21:10:06 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1293,644) 置信度=0.738
+2026-06-11 21:10:07 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1293,644) size=289 (method: template)
+2026-06-11 21:10:07 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(585,19) 置信度=0.543
+2026-06-11 21:10:08 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1293,644) 置信度=0.738
+2026-06-11 21:10:08 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1293,644) size=289 (method: template)
+2026-06-11 21:10:08 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(31,498) 置信度=0.570
+2026-06-11 21:10:09 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(971,595) 置信度=0.819
+2026-06-11 21:10:09 [INFO   ] recognition.portal_detector:50 Portal detected: center=(971,595) size=1225 (method: template)
+2026-06-11 21:10:10 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(1069,198) 置信度=0.609
+2026-06-11 21:10:10 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(1069,198) 置信度=0.604
+2026-06-11 21:10:11 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(973,611) 置信度=0.825
+2026-06-11 21:10:11 [INFO   ] recognition.portal_detector:50 Portal detected: center=(973,611) size=1190 (method: template)
+2026-06-11 21:10:11 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(1067,627) 置信度=0.543
+2026-06-11 21:10:12 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(1424,1073) 置信度=0.882
+2026-06-11 21:10:12 [INFO   ] states.dungeon_exit_nav:205 Exit button detected (conf=0.882 near_exit=False), switching to buttons
+2026-06-11 21:10:12 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(1280,792) 置信度=0.878
+2026-06-11 21:10:13 [INFO   ] states.dungeon_exit_nav:419 Clicked exit (run 3/3)
+2026-06-11 21:10:16 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:17 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(563,695) 置信度=0.561
+2026-06-11 21:10:17 [INFO   ] states.dungeon_exit_nav:419 Clicked exit (run 3/3)
+2026-06-11 21:10:21 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:21 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(713,614) 置信度=0.579
+2026-06-11 21:10:22 [INFO   ] states.dungeon_exit_nav:419 Clicked exit (run 3/3)
+2026-06-11 21:10:25 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:26 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(705,608) 置信度=0.588
+2026-06-11 21:10:27 [INFO   ] states.dungeon_exit_nav:419 Clicked exit (run 3/3)
+2026-06-11 21:10:30 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:31 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(701,624) 置信度=0.583
+2026-06-11 21:10:31 [INFO   ] states.dungeon_exit_nav:419 Clicked exit (run 3/3)
+2026-06-11 21:10:35 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:35 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(715,623) 置信度=0.579
+2026-06-11 21:10:36 [INFO   ] states.dungeon_exit_nav:419 Clicked exit (run 3/3)
+2026-06-11 21:10:39 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:40 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(708,610) 置信度=0.577
+2026-06-11 21:10:40 [INFO   ] states.dungeon_exit_nav:419 Clicked exit (run 3/3)
+2026-06-11 21:10:44 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:45 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(31,499) 置信度=0.570
+2026-06-11 21:10:45 [INFO   ] states.dungeon_exit_nav:419 Clicked exit (run 3/3)
+2026-06-11 21:10:46 [INFO   ] dxcam.dxcam:736 Screen Capture FPS: 29.9997
+2026-06-11 21:10:46 [INFO   ] gui.app:1557 Bot stopped
+2026-06-11 21:22:09 [INFO   ] dxcam.dxcam:460 Frame buffer build(start): 2560x1440 c=3 n=8.
+2026-06-11 21:22:09 [INFO   ] capture.screen:49 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 21:22:12 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 21:22:12 [INFO   ] gui.app:1530 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 21:22:12 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(77,330) 置信度=0.742
+2026-06-11 21:22:13 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.74)
+2026-06-11 21:22:16 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1558,954) 置信度=0.674
+2026-06-11 21:22:17 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 21:22:17 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 21:22:21 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(77,221) 置信度=0.767
+2026-06-11 21:22:21 [INFO   ] states.town_nav:129 Avatar detected, confirmed in town
+2026-06-11 21:22:25 [INFO   ] recognition.template:77 识图成功: 日常按钮.png 位置(1836,534) 置信度=0.893
+2026-06-11 21:22:29 [INFO   ] recognition.template:77 识图成功: 深渊1.png 位置(295,540) 置信度=0.676
+2026-06-11 21:22:31 [INFO   ] recognition.template:77 识图成功: 深渊2.png 位置(133,983) 置信度=0.712
+2026-06-11 21:22:58 [INFO   ] dxcam.dxcam:736 Screen Capture FPS: 29.9975
+2026-06-11 21:22:58 [INFO   ] gui.app:1557 Bot stopped
+2026-06-11 21:23:49 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:23:49 [INFO   ] dxcam.dxcam:460 Frame buffer build(start): 2560x1440 c=3 n=8.
+2026-06-11 21:23:49 [INFO   ] capture.screen:49 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 21:23:51 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 21:23:51 [INFO   ] gui.app:1530 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 21:23:52 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(77,330) 置信度=0.742
+2026-06-11 21:23:52 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.74)
+2026-06-11 21:23:54 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1558,954) 置信度=0.674
+2026-06-11 21:23:55 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 21:23:55 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 21:24:00 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(77,221) 置信度=0.767
+2026-06-11 21:24:00 [INFO   ] states.town_nav:129 Avatar detected, confirmed in town
+2026-06-11 21:24:03 [INFO   ] recognition.template:77 识图成功: 日常按钮.png 位置(1836,534) 置信度=0.893
+2026-06-11 21:24:07 [INFO   ] recognition.template:77 识图成功: 深渊1.png 位置(295,540) 置信度=0.676
+2026-06-11 21:24:09 [INFO   ] recognition.template:77 识图成功: 深渊2.png 位置(121,992) 置信度=0.707
+2026-06-11 21:24:42 [INFO   ] dxcam.dxcam:736 Screen Capture FPS: 29.9981
+2026-06-11 21:24:42 [INFO   ] gui.app:1557 Bot stopped
+2026-06-11 21:29:02 [INFO   ] dxcam.dxcam:460 Frame buffer build(start): 2560x1440 c=3 n=8.
+2026-06-11 21:29:02 [INFO   ] capture.screen:49 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 21:29:05 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 21:29:05 [INFO   ] gui.app:1548 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 21:29:05 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(77,330) 置信度=0.742
+2026-06-11 21:29:06 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.74)
+2026-06-11 21:29:07 [INFO   ] dxcam.dxcam:736 Screen Capture FPS: 29.9784
+2026-06-11 21:29:08 [INFO   ] gui.app:1575 Bot stopped
+2026-06-11 21:30:12 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:30:12 [INFO   ] dxcam.dxcam:460 Frame buffer build(start): 2560x1440 c=3 n=8.
+2026-06-11 21:30:12 [INFO   ] capture.screen:49 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 21:30:14 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 21:30:14 [INFO   ] gui.app:1548 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 21:30:15 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(77,330) 置信度=0.742
+2026-06-11 21:30:15 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.74)
+2026-06-11 21:30:18 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1558,954) 置信度=0.674
+2026-06-11 21:30:18 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 21:30:18 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 21:30:24 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(77,221) 置信度=0.768
+2026-06-11 21:30:24 [INFO   ] states.town_nav:129 Avatar detected, confirmed in town
+2026-06-11 21:30:28 [INFO   ] recognition.template:77 识图成功: 日常按钮.png 位置(1836,534) 置信度=0.890
+2026-06-11 21:30:31 [INFO   ] recognition.template:77 识图成功: 深渊1.png 位置(295,540) 置信度=0.676
+2026-06-11 21:30:34 [INFO   ] recognition.template:77 识图成功: 深渊2.png 位置(133,987) 置信度=0.714
+2026-06-11 21:30:51 [INFO   ] gui.app:1575 Bot stopped
+2026-06-11 21:30:51 [INFO   ] dxcam.dxcam:736 Screen Capture FPS: 29.9974
+2026-06-11 21:31:28 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:31:28 [INFO   ] dxcam.dxcam:460 Frame buffer build(start): 2560x1440 c=3 n=8.
+2026-06-11 21:31:28 [INFO   ] capture.screen:49 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 21:31:31 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 21:31:31 [INFO   ] gui.app:1548 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 21:31:31 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(77,330) 置信度=0.742
+2026-06-11 21:31:32 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.74)
+2026-06-11 21:31:35 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1558,954) 置信度=0.674
+2026-06-11 21:31:35 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 21:31:35 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 21:31:40 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(77,221) 置信度=0.770
+2026-06-11 21:31:40 [INFO   ] states.town_nav:129 Avatar detected, confirmed in town
+2026-06-11 21:31:43 [INFO   ] recognition.template:77 识图成功: 日常按钮.png 位置(1836,534) 置信度=0.893
+2026-06-11 21:31:47 [INFO   ] recognition.template:77 识图成功: 深渊1.png 位置(295,540) 置信度=0.676
+2026-06-11 21:31:49 [INFO   ] recognition.template:77 识图成功: 深渊2.png 位置(133,983) 置信度=0.711
+2026-06-11 21:32:07 [INFO   ] dxcam.dxcam:736 Screen Capture FPS: 29.9970
+2026-06-11 21:32:08 [INFO   ] gui.app:1575 Bot stopped
+2026-06-11 21:32:35 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:32:35 [INFO   ] dxcam.dxcam:460 Frame buffer build(start): 2560x1440 c=3 n=8.
+2026-06-11 21:32:35 [INFO   ] capture.screen:49 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 21:32:38 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 21:32:38 [INFO   ] gui.app:1548 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 21:32:38 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(77,330) 置信度=0.742
+2026-06-11 21:32:39 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.74)
+2026-06-11 21:32:41 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1558,954) 置信度=0.674
+2026-06-11 21:32:42 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 21:32:42 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 21:32:47 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(77,221) 置信度=0.768
+2026-06-11 21:32:47 [INFO   ] states.town_nav:129 Avatar detected, confirmed in town
+2026-06-11 21:32:51 [INFO   ] recognition.template:77 识图成功: 日常按钮.png 位置(1836,534) 置信度=0.893
+2026-06-11 21:32:55 [INFO   ] recognition.template:77 识图成功: 深渊1.png 位置(295,540) 置信度=0.676
+2026-06-11 21:32:57 [INFO   ] recognition.template:77 识图成功: 深渊2.png 位置(126,983) 置信度=0.715
+2026-06-11 21:33:37 [WARNING] states.town_nav:187 '深渊3.png' not found after 45 attempts, saving debug frame
+2026-06-11 21:33:37 [INFO   ] states.town_nav:197 Debug frame saved: E:\vscode\game_bot\logs\debug\debug_town_step_3_213337.png
+2026-06-11 21:33:37 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1454,383) 置信度=0.721
+2026-06-11 21:33:37 [INFO   ] states.town_nav:76 NPC icon detected, transitioning to npc_navigate (conf=0.72)
+2026-06-11 21:33:37 [INFO   ] core.fsm:50 状态切换: 城镇导航 → NPC寻路
+2026-06-11 21:33:37 [INFO   ] states.npc_navigate:151 NPCNavigate: window by title '晶核：魔导觉醒' -> '晶核：魔导觉醒  ' (1936x1119)
+2026-06-11 21:33:37 [INFO   ] states.npc_navigate:58 NPCNavigate: self-found window rect=(-4, 115, 1932, 1234)
+2026-06-11 21:33:39 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1220,1417) 置信度=0.739
+2026-06-11 21:33:40 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1220,1417) 置信度=0.739
+2026-06-11 21:33:42 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1220,1417) 置信度=0.739
+2026-06-11 21:33:42 [INFO   ] dxcam.dxcam:736 Screen Capture FPS: 29.9985
+2026-06-11 21:33:43 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1220,1417) 置信度=0.739
+2026-06-11 21:33:43 [INFO   ] gui.app:1575 Bot stopped
+2026-06-11 21:34:14 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:34:14 [INFO   ] dxcam.dxcam:460 Frame buffer build(start): 2560x1440 c=3 n=8.
+2026-06-11 21:34:14 [INFO   ] capture.screen:49 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 21:34:16 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 21:34:16 [INFO   ] gui.app:1548 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 21:34:17 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(77,330) 置信度=0.742
+2026-06-11 21:34:17 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.74)
+2026-06-11 21:34:20 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1558,954) 置信度=0.674
+2026-06-11 21:34:20 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 21:34:20 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 21:34:25 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(77,221) 置信度=0.767
+2026-06-11 21:34:25 [INFO   ] states.town_nav:129 Avatar detected, confirmed in town
+2026-06-11 21:34:29 [INFO   ] recognition.template:77 识图成功: 日常按钮.png 位置(1836,534) 置信度=0.846
+2026-06-11 21:34:32 [INFO   ] recognition.template:77 识图成功: 深渊1.png 位置(295,540) 置信度=0.676
+2026-06-11 21:34:35 [INFO   ] recognition.template:77 识图成功: 深渊2.png 位置(133,983) 置信度=0.711
+2026-06-11 21:34:37 [INFO   ] recognition.template:77 识图成功: 深渊3.png 位置(1673,1135) 置信度=0.807
+2026-06-11 21:34:40 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1673,480) 置信度=0.974
+2026-06-11 21:34:40 [INFO   ] states.town_nav:76 NPC icon detected, transitioning to npc_navigate (conf=0.97)
+2026-06-11 21:34:40 [INFO   ] core.fsm:50 状态切换: 城镇导航 → NPC寻路
+2026-06-11 21:34:40 [INFO   ] states.npc_navigate:151 NPCNavigate: window by title '晶核：魔导觉醒' -> '晶核：魔导觉醒  ' (1936x1119)
+2026-06-11 21:34:40 [INFO   ] states.npc_navigate:58 NPCNavigate: self-found window rect=(-4, 115, 1932, 1234)
+2026-06-11 21:34:41 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1673,480) 置信度=0.974
+2026-06-11 21:34:43 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1673,480) 置信度=0.974
+2026-06-11 21:34:44 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1457,466) 置信度=0.942
+2026-06-11 21:34:46 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1067,462) 置信度=0.917
+2026-06-11 21:34:47 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1009,462) 置信度=0.946
+2026-06-11 21:34:49 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1011,475) 置信度=0.949
+2026-06-11 21:34:51 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1237,844) 置信度=0.794
+2026-06-11 21:34:51 [INFO   ] states.npc_navigate:199 Confirm enter (conf=0.79 phase=move)
+2026-06-11 21:34:52 [INFO   ] core.fsm:50 状态切换: NPC寻路 → 副本加载中
+2026-06-11 21:34:52 [INFO   ] states.npc_navigate:81 Exit: NPCNavigate
+2026-06-11 21:34:58 [INFO   ] recognition.template:77 识图成功: 镰卫技能栏.png 位置(1165,1130) 置信度=0.867
+2026-06-11 21:34:58 [INFO   ] states.domain_loading:49 Skill bar '镰卫技能栏.png' detected, domain loaded (5.5s)
+2026-06-11 21:34:58 [INFO   ] core.fsm:50 状态切换: 副本加载中 → 副本战斗
+2026-06-11 21:34:58 [INFO   ] states.domain_combat:58 Loaded 7 combo actions for character 0
+2026-06-11 21:34:58 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.35 before=5.00 after=1.00
+2026-06-11 21:35:03 [INFO   ] combos.executor:128   press 4 dur=0.41
+2026-06-11 21:35:05 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.36 before=1.00 after=1.00
+2026-06-11 21:35:06 [INFO   ] combos.executor:128   press 4 dur=0.39
+2026-06-11 21:35:08 [INFO   ] combos.executor:62 Combo: keys=['e'] hold=False dur=0.30 before=1.00 after=1.00
+2026-06-11 21:35:09 [INFO   ] combos.executor:128   press e dur=0.30
+2026-06-11 21:35:10 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.40 before=3.00 after=1.00
+2026-06-11 21:35:14 [INFO   ] combos.executor:128   press 2 dur=0.44
+2026-06-11 21:35:16 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.38 before=1.00 after=1.00
+2026-06-11 21:35:17 [INFO   ] combos.executor:128   press 2 dur=0.43
+2026-06-11 21:35:19 [INFO   ] combos.executor:62 Combo: keys=['3'] hold=False dur=0.42 before=1.00 after=1.00
+2026-06-11 21:35:20 [INFO   ] combos.executor:128   press 3 dur=0.47
+2026-06-11 21:35:21 [INFO   ] combos.executor:62 Combo: keys=['1'] hold=False dur=0.37 before=1.00 after=1.00
+2026-06-11 21:35:23 [INFO   ] combos.executor:128   press 1 dur=0.45
+2026-06-11 21:35:26 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:35:26 [INFO   ] states.domain_combat:127 Panel at (508,511) conf=0.75 template=镰卫结算画面.png, clicking
+2026-06-11 21:35:27 [INFO   ] states.domain_combat:139 Panel dismissed after 0.1s
+2026-06-11 21:35:27 [INFO   ] core.fsm:50 状态切换: 副本战斗 → 副本出口寻路
+2026-06-11 21:35:27 [INFO   ] recognition.portal_detector:30 Portal template loaded: E:\vscode\game_bot\templates\副本出口图标.png
+2026-06-11 21:35:28 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.684
+2026-06-11 21:35:29 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(950,665) 置信度=0.777
+2026-06-11 21:35:29 [INFO   ] recognition.portal_detector:50 Portal detected: center=(950,665) size=1190 (method: template)
+2026-06-11 21:35:29 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.684
+2026-06-11 21:35:30 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(950,665) 置信度=0.757
+2026-06-11 21:35:30 [INFO   ] recognition.portal_detector:50 Portal detected: center=(950,665) size=1190 (method: template)
+2026-06-11 21:35:30 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.684
+2026-06-11 21:35:31 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1575,395) 置信度=0.746
+2026-06-11 21:35:31 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1575,395) size=144 (method: template)
+2026-06-11 21:35:32 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(1493,707) 置信度=0.873
+2026-06-11 21:35:32 [INFO   ] states.dungeon_exit_nav:206 Exit button detected (conf=0.873 near_exit=False), switching to buttons
+2026-06-11 21:35:33 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(1273,552) 置信度=0.892
+2026-06-11 21:35:33 [INFO   ] states.dungeon_exit_nav:420 Clicked re-challenge (run 1/3)
+2026-06-11 21:35:36 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1237,844) 置信度=0.794
+2026-06-11 21:35:37 [INFO   ] states.dungeon_exit_nav:437 Clicked confirm
+2026-06-11 21:35:38 [INFO   ] states.dungeon_exit_nav:453 Re-enter domain (run 1/3)
+2026-06-11 21:35:38 [INFO   ] core.fsm:50 状态切换: 副本出口寻路 → 副本加载中
+2026-06-11 21:35:38 [INFO   ] states.dungeon_exit_nav:121 Exit: DungeonExitNav
+2026-06-11 21:35:39 [INFO   ] recognition.template:77 识图成功: 镰卫技能栏.png 位置(1165,1130) 置信度=0.850
+2026-06-11 21:35:39 [INFO   ] states.domain_loading:49 Skill bar '镰卫技能栏.png' detected, domain loaded (0.6s)
+2026-06-11 21:35:39 [INFO   ] core.fsm:50 状态切换: 副本加载中 → 副本战斗
+2026-06-11 21:35:39 [INFO   ] states.domain_combat:58 Loaded 7 combo actions for character 0
+2026-06-11 21:35:39 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.35 before=5.00 after=1.00
+2026-06-11 21:35:44 [INFO   ] combos.executor:128   press 4 dur=0.48
+2026-06-11 21:35:46 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.36 before=1.00 after=1.00
+2026-06-11 21:35:47 [INFO   ] combos.executor:128   press 4 dur=0.44
+2026-06-11 21:35:49 [INFO   ] combos.executor:62 Combo: keys=['e'] hold=False dur=0.30 before=1.00 after=1.00
+2026-06-11 21:35:50 [INFO   ] combos.executor:128   press e dur=0.27
+2026-06-11 21:35:51 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.40 before=3.00 after=1.00
+2026-06-11 21:35:55 [INFO   ] combos.executor:128   press 2 dur=0.40
+2026-06-11 21:35:57 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.38 before=1.00 after=1.00
+2026-06-11 21:35:58 [INFO   ] combos.executor:128   press 2 dur=0.35
+2026-06-11 21:35:59 [INFO   ] combos.executor:62 Combo: keys=['3'] hold=False dur=0.42 before=1.00 after=1.00
+2026-06-11 21:36:00 [INFO   ] combos.executor:128   press 3 dur=0.45
+2026-06-11 21:36:02 [INFO   ] combos.executor:62 Combo: keys=['1'] hold=False dur=0.37 before=1.00 after=1.00
+2026-06-11 21:36:03 [INFO   ] combos.executor:128   press 1 dur=0.35
+2026-06-11 21:36:06 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.746
+2026-06-11 21:36:06 [INFO   ] states.domain_combat:127 Panel at (508,511) conf=0.75 template=镰卫结算画面.png, clicking
+2026-06-11 21:36:07 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:36:07 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:36:08 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.746
+2026-06-11 21:36:08 [INFO   ] states.domain_combat:147 Panel retry click #1 (1.4s)
+2026-06-11 21:36:09 [INFO   ] states.domain_combat:139 Panel dismissed after 0.1s
+2026-06-11 21:36:09 [INFO   ] core.fsm:50 状态切换: 副本战斗 → 副本出口寻路
+2026-06-11 21:36:09 [INFO   ] recognition.portal_detector:30 Portal template loaded: E:\vscode\game_bot\templates\副本出口图标.png
+2026-06-11 21:36:10 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.688
+2026-06-11 21:36:11 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(975,654) 置信度=0.820
+2026-06-11 21:36:11 [INFO   ] recognition.portal_detector:50 Portal detected: center=(975,654) size=1225 (method: template)
+2026-06-11 21:36:11 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.687
+2026-06-11 21:36:12 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(975,654) 置信度=0.802
+2026-06-11 21:36:12 [INFO   ] recognition.portal_detector:50 Portal detected: center=(975,654) size=1225 (method: template)
+2026-06-11 21:36:12 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(856,194) 置信度=0.688
+2026-06-11 21:36:13 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(643,447) 置信度=0.692
+2026-06-11 21:36:13 [INFO   ] recognition.portal_detector:50 Portal detected: center=(643,447) size=144 (method: template)
+2026-06-11 21:36:14 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(999,636) 置信度=0.895
+2026-06-11 21:36:14 [INFO   ] states.dungeon_exit_nav:206 Exit button detected (conf=0.895 near_exit=False), switching to buttons
+2026-06-11 21:36:14 [INFO   ] recognition.template:77 识图成功: 再次挑战.png 位置(1273,552) 置信度=0.887
+2026-06-11 21:36:15 [INFO   ] states.dungeon_exit_nav:420 Clicked re-challenge (run 2/3)
+2026-06-11 21:36:18 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1237,844) 置信度=0.794
+2026-06-11 21:36:18 [INFO   ] states.dungeon_exit_nav:437 Clicked confirm
+2026-06-11 21:36:20 [INFO   ] states.dungeon_exit_nav:453 Re-enter domain (run 2/3)
+2026-06-11 21:36:20 [INFO   ] core.fsm:50 状态切换: 副本出口寻路 → 副本加载中
+2026-06-11 21:36:20 [INFO   ] states.dungeon_exit_nav:121 Exit: DungeonExitNav
+2026-06-11 21:36:21 [INFO   ] recognition.template:77 识图成功: 镰卫技能栏.png 位置(1165,1130) 置信度=0.853
+2026-06-11 21:36:21 [INFO   ] states.domain_loading:49 Skill bar '镰卫技能栏.png' detected, domain loaded (0.6s)
+2026-06-11 21:36:21 [INFO   ] core.fsm:50 状态切换: 副本加载中 → 副本战斗
+2026-06-11 21:36:21 [INFO   ] states.domain_combat:58 Loaded 7 combo actions for character 0
+2026-06-11 21:36:21 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.35 before=5.00 after=1.00
+2026-06-11 21:36:27 [INFO   ] combos.executor:128   press 4 dur=0.44
+2026-06-11 21:36:28 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.36 before=1.00 after=1.00
+2026-06-11 21:36:30 [INFO   ] combos.executor:128   press 4 dur=0.34
+2026-06-11 21:36:31 [INFO   ] combos.executor:62 Combo: keys=['e'] hold=False dur=0.30 before=1.00 after=1.00
+2026-06-11 21:36:32 [INFO   ] combos.executor:128   press e dur=0.41
+2026-06-11 21:36:34 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.40 before=3.00 after=1.00
+2026-06-11 21:36:37 [INFO   ] combos.executor:128   press 2 dur=0.46
+2026-06-11 21:36:39 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.38 before=1.00 after=1.00
+2026-06-11 21:36:40 [INFO   ] combos.executor:128   press 2 dur=0.44
+2026-06-11 21:36:42 [INFO   ] combos.executor:62 Combo: keys=['3'] hold=False dur=0.42 before=1.00 after=1.00
+2026-06-11 21:36:43 [INFO   ] combos.executor:128   press 3 dur=0.42
+2026-06-11 21:36:44 [INFO   ] combos.executor:62 Combo: keys=['1'] hold=False dur=0.37 before=1.00 after=1.00
+2026-06-11 21:36:45 [INFO   ] combos.executor:128   press 1 dur=0.46
+2026-06-11 21:36:48 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:36:48 [INFO   ] states.domain_combat:127 Panel at (508,511) conf=0.75 template=镰卫结算画面.png, clicking
+2026-06-11 21:36:50 [INFO   ] states.domain_combat:139 Panel dismissed after 0.1s
+2026-06-11 21:36:50 [INFO   ] core.fsm:50 状态切换: 副本战斗 → 副本出口寻路
+2026-06-11 21:36:50 [INFO   ] recognition.portal_detector:30 Portal template loaded: E:\vscode\game_bot\templates\副本出口图标.png
+2026-06-11 21:36:51 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(909,653) 置信度=0.730
+2026-06-11 21:36:51 [INFO   ] recognition.portal_detector:50 Portal detected: center=(909,653) size=1156 (method: template)
+2026-06-11 21:36:52 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(909,653) 置信度=0.763
+2026-06-11 21:36:52 [INFO   ] recognition.portal_detector:50 Portal detected: center=(909,653) size=1156 (method: template)
+2026-06-11 21:36:54 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1123,190) 置信度=0.720
+2026-06-11 21:36:54 [INFO   ] recognition.portal_detector:50 Portal detected: center=(1123,190) size=144 (method: template)
+2026-06-11 21:36:55 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(1497,992) 置信度=0.866
+2026-06-11 21:36:55 [INFO   ] states.dungeon_exit_nav:206 Exit button detected (conf=0.866 near_exit=False), switching to buttons
+2026-06-11 21:36:55 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(1280,792) 置信度=0.873
+2026-06-11 21:36:56 [INFO   ] states.dungeon_exit_nav:420 Clicked exit (run 3/3)
+2026-06-11 21:37:11 [WARNING] states.dungeon_exit_nav:443 Confirm button not found after retries, restarting button flow
+2026-06-11 21:37:26 [INFO   ] dxcam.dxcam:736 Screen Capture FPS: 29.9995
+2026-06-11 21:37:26 [INFO   ] gui.app:1575 Bot stopped
+2026-06-11 21:53:03 [INFO   ] dxcam.dxcam:460 Frame buffer build(start): 2560x1440 c=3 n=8.
+2026-06-11 21:53:03 [INFO   ] capture.screen:49 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 21:53:06 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 21:53:06 [INFO   ] gui.app:1548 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 21:53:07 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(77,330) 置信度=0.742
+2026-06-11 21:53:07 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.74)
+2026-06-11 21:53:10 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1558,954) 置信度=0.674
+2026-06-11 21:53:10 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 21:53:10 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 21:53:15 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(77,221) 置信度=0.769
+2026-06-11 21:53:15 [INFO   ] states.town_nav:129 Avatar detected, confirmed in town
+2026-06-11 21:53:19 [INFO   ] recognition.template:77 识图成功: 日常按钮.png 位置(1836,534) 置信度=0.858
+2026-06-11 21:53:23 [INFO   ] recognition.template:77 识图成功: 深渊1.png 位置(295,540) 置信度=0.676
+2026-06-11 21:53:25 [INFO   ] recognition.template:77 识图成功: 深渊2.png 位置(133,983) 置信度=0.712
+2026-06-11 21:53:28 [INFO   ] recognition.template:77 识图成功: 深渊3.png 位置(1673,1135) 置信度=0.807
+2026-06-11 21:53:30 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1669,474) 置信度=0.943
+2026-06-11 21:53:30 [INFO   ] states.town_nav:76 NPC icon detected, transitioning to npc_navigate (conf=0.94)
+2026-06-11 21:53:30 [INFO   ] core.fsm:50 状态切换: 城镇导航 → NPC寻路
+2026-06-11 21:53:30 [INFO   ] states.npc_navigate:151 NPCNavigate: window by title '晶核：魔导觉醒' -> '晶核：魔导觉醒  ' (1936x1119)
+2026-06-11 21:53:30 [INFO   ] states.npc_navigate:58 NPCNavigate: self-found window rect=(-4, 115, 1932, 1234)
+2026-06-11 21:53:32 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1669,474) 置信度=0.943
+2026-06-11 21:53:33 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1669,474) 置信度=0.942
+2026-06-11 21:53:35 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1413,458) 置信度=0.946
+2026-06-11 21:53:36 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1307,456) 置信度=0.987
+2026-06-11 21:53:38 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(1203,455) 置信度=0.941
+2026-06-11 21:53:39 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(986,455) 置信度=0.980
+2026-06-11 21:53:41 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(910,465) 置信度=0.930
+2026-06-11 21:53:44 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(601,212) 置信度=0.795
+2026-06-11 21:53:44 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1237,844) 置信度=0.794
+2026-06-11 21:53:45 [INFO   ] states.npc_navigate:199 Confirm enter (conf=0.79 phase=center)
+2026-06-11 21:53:46 [INFO   ] core.fsm:50 状态切换: NPC寻路 → 副本加载中
+2026-06-11 21:53:46 [INFO   ] states.npc_navigate:81 Exit: NPCNavigate
+2026-06-11 21:53:51 [INFO   ] recognition.template:77 识图成功: 镰卫技能栏.png 位置(1165,1130) 置信度=0.867
+2026-06-11 21:53:51 [INFO   ] states.domain_loading:49 Skill bar '镰卫技能栏.png' detected, domain loaded (5.7s)
+2026-06-11 21:53:51 [INFO   ] core.fsm:50 状态切换: 副本加载中 → 副本战斗
+2026-06-11 21:53:51 [INFO   ] states.domain_combat:58 Loaded 7 combo actions for character 0
+2026-06-11 21:53:51 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.35 before=5.00 after=1.00
+2026-06-11 21:53:57 [INFO   ] combos.executor:128   press 4 dur=0.35
+2026-06-11 21:53:58 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.36 before=1.00 after=1.00
+2026-06-11 21:53:59 [INFO   ] combos.executor:128   press 4 dur=0.38
+2026-06-11 21:54:00 [INFO   ] combos.executor:62 Combo: keys=['e'] hold=False dur=0.30 before=1.00 after=1.00
+2026-06-11 21:54:01 [INFO   ] combos.executor:128   press e dur=0.33
+2026-06-11 21:54:03 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.40 before=3.00 after=1.00
+2026-06-11 21:54:06 [INFO   ] combos.executor:128   press 2 dur=0.41
+2026-06-11 21:54:08 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.38 before=1.00 after=1.00
+2026-06-11 21:54:09 [INFO   ] combos.executor:128   press 2 dur=0.37
+2026-06-11 21:54:10 [INFO   ] combos.executor:62 Combo: keys=['3'] hold=False dur=0.42 before=1.00 after=1.00
+2026-06-11 21:54:11 [INFO   ] combos.executor:128   press 3 dur=0.45
+2026-06-11 21:54:13 [INFO   ] combos.executor:62 Combo: keys=['1'] hold=False dur=0.37 before=1.00 after=1.00
+2026-06-11 21:54:14 [INFO   ] combos.executor:128   press 1 dur=0.35
+2026-06-11 21:54:17 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.748
+2026-06-11 21:54:17 [INFO   ] states.domain_combat:127 Panel at (508,511) conf=0.75 template=镰卫结算画面.png, clicking
+2026-06-11 21:54:18 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:54:18 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:54:19 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(508,511) 置信度=0.745
+2026-06-11 21:54:19 [INFO   ] states.domain_combat:147 Panel retry click #1 (1.4s)
+2026-06-11 21:54:20 [INFO   ] states.domain_combat:139 Panel dismissed after 0.1s
+2026-06-11 21:54:20 [INFO   ] core.fsm:50 状态切换: 副本战斗 → 副本出口寻路
+2026-06-11 21:54:20 [INFO   ] recognition.portal_detector:30 Portal template loaded: E:\vscode\game_bot\templates\副本出口图标.png
+2026-06-11 21:54:22 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(958,665) 置信度=0.860
+2026-06-11 21:54:22 [INFO   ] recognition.portal_detector:50 Portal detected: center=(958,665) size=1190 (method: template)
+2026-06-11 21:54:23 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(958,665) 置信度=0.853
+2026-06-11 21:54:23 [INFO   ] recognition.portal_detector:50 Portal detected: center=(958,665) size=1190 (method: template)
+2026-06-11 21:54:24 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(626,435) 置信度=0.741
+2026-06-11 21:54:24 [INFO   ] recognition.portal_detector:50 Portal detected: center=(626,435) size=441 (method: template)
+2026-06-11 21:54:25 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(1513,977) 置信度=0.872
+2026-06-11 21:54:25 [INFO   ] states.dungeon_exit_nav:206 Exit button detected (conf=0.872 near_exit=False), switching to buttons
+2026-06-11 21:54:25 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(1280,792) 置信度=0.877
+2026-06-11 21:54:26 [INFO   ] states.dungeon_exit_nav:420 Clicked exit (run 1/1)
+2026-06-11 21:54:31 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(77,221) 置信度=0.767
+2026-06-11 21:54:31 [INFO   ] states.dungeon_exit_nav:445 Avatar detected in town after exit (conf=0.77), proceeding
+2026-06-11 21:54:33 [INFO   ] states.dungeon_exit_nav:458 Exiting domain
+2026-06-11 21:54:33 [INFO   ] core.fsm:50 状态切换: 副本出口寻路 → 地图加载中
+2026-06-11 21:54:33 [INFO   ] states.dungeon_exit_nav:121 Exit: DungeonExitNav
+2026-06-11 21:54:34 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(77,221) 置信度=0.768
+2026-06-11 21:54:34 [INFO   ] states.map_loading:43 Avatar detected, town loaded (0.6s)
+2026-06-11 21:54:34 [INFO   ] core.fsm:50 状态切换: 地图加载中 → 城镇退出
+2026-06-11 21:54:34 [INFO   ] states.town_exit:40 TownExit: clicked game center (964,674) to ensure focus
+2026-06-11 21:54:36 [INFO   ] recognition.template:77 识图成功: 设置按钮.png 位置(1870,1069) 置信度=0.911
+2026-06-11 21:54:36 [INFO   ] states.town_exit:110 Clicked settings
+2026-06-11 21:54:38 [INFO   ] recognition.template:77 识图成功: 退出游戏.png 位置(1111,1099) 置信度=0.845
+2026-06-11 21:54:38 [INFO   ] states.town_exit:128 All done, clicking exit game
+2026-06-11 21:54:40 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1237,844) 置信度=0.794
+2026-06-11 21:54:41 [INFO   ] states.town_exit:161 Confirmed exit game
+2026-06-11 21:54:41 [INFO   ] core.fsm:50 状态切换: 城镇退出 → 全部完成
+2026-06-11 21:54:41 [INFO   ] states.complete:16 All characters completed. Stopping.
+2026-06-11 21:54:41 [INFO   ] gui.app:1575 Bot stopped
+2026-06-11 21:54:41 [INFO   ] dxcam.dxcam:736 Screen Capture FPS: 29.9989
+2026-06-11 23:24:35 [INFO   ] capture.screen:50 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 23:24:37 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 23:24:37 [INFO   ] gui.app:1641 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 23:24:38 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(79,229) 置信度=0.746
+2026-06-11 23:24:38 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.75)
+2026-06-11 23:24:41 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1561,852) 置信度=0.674
+2026-06-11 23:24:41 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 23:24:41 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 23:24:46 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(79,118) 置信度=0.781
+2026-06-11 23:24:46 [INFO   ] states.town_nav:133 Avatar detected, confirmed in town
+2026-06-11 23:24:50 [INFO   ] recognition.template:77 识图成功: 日常按钮.png 位置(1840,432) 置信度=0.884
+2026-06-11 23:24:53 [INFO   ] recognition.template:77 识图成功: 深渊1.png 位置(298,437) 置信度=0.674
+2026-06-11 23:24:56 [INFO   ] recognition.template:77 识图成功: 深渊2.png 位置(129,881) 置信度=0.718
+2026-06-11 23:24:59 [INFO   ] recognition.template:77 识图成功: 深渊3.png 位置(1677,1034) 置信度=0.816
+2026-06-11 23:25:01 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(2419,1259) 置信度=0.681
+2026-06-11 23:25:01 [INFO   ] states.town_nav:79 NPC icon detected, transitioning to npc_navigate (conf=0.68)
+2026-06-11 23:25:01 [INFO   ] core.fsm:50 状态切换: 城镇导航 → NPC寻路
+2026-06-11 23:25:01 [ERROR  ] gui.app:1670 Bot thread crashed: name 'parse_template_chain' is not defined
+Traceback (most recent call last):
+  File "E:\vscode\game_bot\gui\app.py", line 1663, in _run_bot
+    fsm.update(blackboard)
+    ~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\core\fsm.py", line 61, in update
+    self._states[self._current].update(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\town_nav.py", line 157, in update
+    self._try_transition(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\town_nav.py", line 82, in _try_transition
+    blackboard["_fsm"].transition("npc_navigate", blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\vscode\game_bot\core\fsm.py", line 56, in transition
+    self._states[self._current].enter(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\npc_navigate.py", line 60, in enter
+    self._enter_chain = parse_template_chain(ce)
+                        ^^^^^^^^^^^^^^^^^^^^
+NameError: name 'parse_template_chain' is not defined. Did you mean: 'parse_template_ref'?
+2026-06-11 23:26:57 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 23:26:57 [INFO   ] capture.screen:50 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 23:27:00 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 23:27:00 [INFO   ] gui.app:1641 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 23:27:00 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(79,229) 置信度=0.746
+2026-06-11 23:27:01 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.75)
+2026-06-11 23:27:03 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1561,852) 置信度=0.674
+2026-06-11 23:27:04 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 23:27:04 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 23:27:09 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(79,118) 置信度=0.782
+2026-06-11 23:27:09 [INFO   ] states.town_nav:133 Avatar detected, confirmed in town
+2026-06-11 23:27:12 [INFO   ] recognition.template:77 识图成功: 日常按钮.png 位置(1840,432) 置信度=0.887
+2026-06-11 23:27:16 [INFO   ] recognition.template:77 识图成功: 深渊1.png 位置(298,437) 置信度=0.674
+2026-06-11 23:27:18 [INFO   ] recognition.template:77 识图成功: 深渊2.png 位置(129,882) 置信度=0.713
+2026-06-11 23:27:21 [INFO   ] recognition.template:77 识图成功: 深渊3.png 位置(1677,1034) 置信度=0.816
+2026-06-11 23:27:24 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(954,330) 置信度=0.981
+2026-06-11 23:27:24 [INFO   ] states.town_nav:79 NPC icon detected, transitioning to npc_navigate (conf=0.98)
+2026-06-11 23:27:24 [INFO   ] core.fsm:50 状态切换: 城镇导航 → NPC寻路
+2026-06-11 23:27:24 [ERROR  ] gui.app:1670 Bot thread crashed: name 'parse_template_chain' is not defined
+Traceback (most recent call last):
+  File "E:\vscode\game_bot\gui\app.py", line 1663, in _run_bot
+    fsm.update(blackboard)
+    ~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\core\fsm.py", line 61, in update
+    self._states[self._current].update(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\town_nav.py", line 157, in update
+    self._try_transition(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\town_nav.py", line 82, in _try_transition
+    blackboard["_fsm"].transition("npc_navigate", blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\vscode\game_bot\core\fsm.py", line 56, in transition
+    self._states[self._current].enter(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\npc_navigate.py", line 60, in enter
+    self._enter_chain = parse_template_chain(ce)
+                        ^^^^^^^^^^^^^^^^^^^^
+NameError: name 'parse_template_chain' is not defined. Did you mean: 'parse_template_ref'?
+2026-06-11 23:30:33 [INFO   ] capture.screen:50 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 23:30:35 [INFO   ] gui.app:1629 Game window (fallback): rect=(15,139,1951,1258)
+2026-06-11 23:30:35 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 23:30:35 [INFO   ] gui.app:1641 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 23:30:36 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(95,354) 置信度=0.747
+2026-06-11 23:30:36 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.75)
+2026-06-11 23:30:39 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1577,978) 置信度=0.673
+2026-06-11 23:30:39 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 23:30:39 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 23:30:44 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(95,245) 置信度=0.774
+2026-06-11 23:30:44 [INFO   ] states.town_nav:133 Avatar detected, confirmed in town
+2026-06-11 23:30:48 [INFO   ] recognition.template:77 识图成功: 日常按钮.png 位置(1856,558) 置信度=0.878
+2026-06-11 23:30:52 [INFO   ] recognition.template:77 识图成功: 深渊1.png 位置(314,564) 置信度=0.677
+2026-06-11 23:30:54 [INFO   ] recognition.template:77 识图成功: 深渊2.png 位置(145,1007) 置信度=0.717
+2026-06-11 23:30:57 [INFO   ] recognition.template:77 识图成功: 深渊3.png 位置(1693,1159) 置信度=0.814
+2026-06-11 23:30:59 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(970,455) 置信度=0.937
+2026-06-11 23:30:59 [INFO   ] states.town_nav:79 NPC icon detected, transitioning to npc_navigate (conf=0.94)
+2026-06-11 23:30:59 [INFO   ] core.fsm:50 状态切换: 城镇导航 → NPC寻路
+2026-06-11 23:30:59 [ERROR  ] gui.app:1670 Bot thread crashed: 'NPCNavigateState' object has no attribute '_enter_tpl'
+Traceback (most recent call last):
+  File "E:\vscode\game_bot\gui\app.py", line 1663, in _run_bot
+    fsm.update(blackboard)
+    ~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\core\fsm.py", line 61, in update
+    self._states[self._current].update(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\town_nav.py", line 157, in update
+    self._try_transition(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\town_nav.py", line 82, in _try_transition
+    blackboard["_fsm"].transition("npc_navigate", blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\vscode\game_bot\core\fsm.py", line 56, in transition
+    self._states[self._current].enter(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\npc_navigate.py", line 80, in enter
+    self._npc_tpl or "(none)", self._enter_tpl or "(none)",
+                               ^^^^^^^^^^^^^^^
+AttributeError: 'NPCNavigateState' object has no attribute '_enter_tpl'
+2026-06-11 23:32:04 [INFO   ] capture.screen:50 ScreenCapture: using dxcam (monitor 0)
+2026-06-11 23:32:07 [INFO   ] gui.app:1629 Game window (fallback): rect=(15,139,1951,1258)
+2026-06-11 23:32:07 [INFO   ] core.fsm:53 初始状态: 角色选择
+2026-06-11 23:32:07 [INFO   ] gui.app:1641 Bot started via GUI. Preset=test1 Characters=1
+2026-06-11 23:32:07 [INFO   ] recognition.template:77 识图成功: 镰卫选人界面头像.png 位置(95,354) 置信度=0.747
+2026-06-11 23:32:08 [INFO   ] states.character_select:93 Selected character 0 via 镰卫选人界面头像.png (conf=0.75)
+2026-06-11 23:32:11 [INFO   ] recognition.template:77 识图成功: 进入游戏.png 位置(1577,978) 置信度=0.673
+2026-06-11 23:32:11 [INFO   ] states.character_select:124 Clicked enter game (conf=0.67)
+2026-06-11 23:32:11 [INFO   ] core.fsm:50 状态切换: 角色选择 → 城镇导航
+2026-06-11 23:32:16 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(95,245) 置信度=0.774
+2026-06-11 23:32:16 [INFO   ] states.town_nav:133 Avatar detected, confirmed in town
+2026-06-11 23:32:20 [INFO   ] recognition.template:77 识图成功: 日常按钮.png 位置(1856,558) 置信度=0.878
+2026-06-11 23:32:23 [INFO   ] recognition.template:77 识图成功: 深渊1.png 位置(314,564) 置信度=0.677
+2026-06-11 23:32:26 [INFO   ] recognition.template:77 识图成功: 深渊2.png 位置(145,1006) 置信度=0.713
+2026-06-11 23:32:29 [INFO   ] recognition.template:77 识图成功: 深渊3.png 位置(1693,1159) 置信度=0.814
+2026-06-11 23:32:31 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(970,455) 置信度=0.935
+2026-06-11 23:32:31 [INFO   ] states.town_nav:79 NPC icon detected, transitioning to npc_navigate (conf=0.93)
+2026-06-11 23:32:31 [INFO   ] core.fsm:50 状态切换: 城镇导航 → NPC寻路
+2026-06-11 23:32:32 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(970,455) 置信度=0.932
+2026-06-11 23:32:34 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(970,455) 置信度=0.944
+2026-06-11 23:32:36 [INFO   ] recognition.template:77 识图成功: npc寻路2.png 位置(969,478) 置信度=0.960
+2026-06-11 23:32:37 [INFO   ] recognition.template:77 识图成功: 确认.png 位置(1255,868) 置信度=0.796
+2026-06-11 23:32:37 [INFO   ] states.npc_navigate:215 Confirm enter chain complete (step 1/1 conf=0.80)
+2026-06-11 23:32:38 [INFO   ] core.fsm:50 状态切换: NPC寻路 → 副本加载中
+2026-06-11 23:32:38 [INFO   ] states.npc_navigate:93 Exit: NPCNavigate
+2026-06-11 23:32:44 [INFO   ] recognition.template:77 识图成功: 镰卫技能栏.png 位置(1185,1154) 置信度=0.870
+2026-06-11 23:32:44 [INFO   ] states.domain_loading:51 Skill bar '镰卫技能栏.png' detected, domain loaded (5.6s)
+2026-06-11 23:32:44 [INFO   ] core.fsm:50 状态切换: 副本加载中 → 副本战斗
+2026-06-11 23:32:44 [INFO   ] states.domain_combat:59 Loaded 7 combo actions for character 0
+2026-06-11 23:32:44 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.35 before=3.00 after=1.00
+2026-06-11 23:32:47 [INFO   ] combos.executor:128   press 4 dur=0.34
+2026-06-11 23:32:49 [INFO   ] combos.executor:62 Combo: keys=['4'] hold=False dur=0.36 before=1.00 after=1.00
+2026-06-11 23:32:50 [INFO   ] combos.executor:128   press 4 dur=0.45
+2026-06-11 23:32:51 [INFO   ] combos.executor:62 Combo: keys=['e'] hold=False dur=0.30 before=1.00 after=1.00
+2026-06-11 23:32:52 [INFO   ] combos.executor:128   press e dur=0.32
+2026-06-11 23:32:53 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.40 before=3.00 after=1.00
+2026-06-11 23:32:57 [INFO   ] combos.executor:128   press 2 dur=0.43
+2026-06-11 23:32:58 [INFO   ] combos.executor:62 Combo: keys=['2'] hold=False dur=0.38 before=1.00 after=1.00
+2026-06-11 23:32:59 [INFO   ] combos.executor:128   press 2 dur=0.38
+2026-06-11 23:33:00 [INFO   ] combos.executor:62 Combo: keys=['3'] hold=False dur=0.42 before=1.00 after=1.00
+2026-06-11 23:33:01 [INFO   ] combos.executor:128   press 3 dur=0.50
+2026-06-11 23:33:03 [INFO   ] combos.executor:62 Combo: keys=['1'] hold=False dur=0.37 before=1.00 after=1.00
+2026-06-11 23:33:04 [INFO   ] combos.executor:128   press 1 dur=0.38
+2026-06-11 23:33:07 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(528,535) 置信度=0.747
+2026-06-11 23:33:07 [INFO   ] states.domain_combat:128 Panel at (528,535) conf=0.75 template=镰卫结算画面.png, clicking
+2026-06-11 23:33:09 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(528,535) 置信度=0.747
+2026-06-11 23:33:09 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(528,535) 置信度=0.747
+2026-06-11 23:33:10 [INFO   ] recognition.template:77 识图成功: 镰卫结算画面.png 位置(528,535) 置信度=0.747
+2026-06-11 23:33:10 [INFO   ] states.domain_combat:148 Panel retry click #1 (1.4s)
+2026-06-11 23:33:11 [INFO   ] states.domain_combat:140 Panel dismissed after 0.1s
+2026-06-11 23:33:11 [INFO   ] core.fsm:50 状态切换: 副本战斗 → 副本出口寻路
+2026-06-11 23:33:11 [INFO   ] recognition.portal_detector:31 Portal template loaded: E:\vscode\game_bot\templates\副本出口图标.png
+2026-06-11 23:33:13 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1030,678) 置信度=0.843
+2026-06-11 23:33:13 [INFO   ] recognition.portal_detector:51 Portal detected: center=(1030,678) size=1225 (method: template)
+2026-06-11 23:33:14 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1030,678) 置信度=0.835
+2026-06-11 23:33:14 [INFO   ] recognition.portal_detector:51 Portal detected: center=(1030,678) size=1225 (method: template)
+2026-06-11 23:33:16 [INFO   ] recognition.template:77 识图成功: 副本出口图标.png 位置(1001,462) 置信度=0.726
+2026-06-11 23:33:16 [INFO   ] recognition.portal_detector:51 Portal detected: center=(1001,462) size=462 (method: template)
+2026-06-11 23:33:16 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(1046,887) 置信度=0.864
+2026-06-11 23:33:16 [INFO   ] states.dungeon_exit_nav:216 Exit button detected (conf=0.864 near_exit=False), switching to buttons
+2026-06-11 23:33:17 [INFO   ] recognition.template:77 识图成功: 退出副本.png 位置(1298,816) 置信度=0.838
+2026-06-11 23:33:17 [INFO   ] states.dungeon_exit_nav:434 Clicked exit (run 1/1)
+2026-06-11 23:33:23 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(95,245) 置信度=0.772
+2026-06-11 23:33:23 [INFO   ] states.dungeon_exit_nav:460 Avatar detected in town after exit (conf=0.77), proceeding
+2026-06-11 23:33:24 [INFO   ] states.dungeon_exit_nav:473 Exiting domain
+2026-06-11 23:33:24 [INFO   ] core.fsm:50 状态切换: 副本出口寻路 → 地图加载中
+2026-06-11 23:33:24 [INFO   ] states.dungeon_exit_nav:124 Exit: DungeonExitNav
+2026-06-11 23:33:25 [INFO   ] recognition.template:77 识图成功: 镰卫城镇头像.png 位置(95,245) 置信度=0.773
+2026-06-11 23:33:25 [INFO   ] states.map_loading:45 Avatar detected, town loaded (0.6s)
+2026-06-11 23:33:25 [INFO   ] core.fsm:50 状态切换: 地图加载中 → 城镇退出
+2026-06-11 23:33:25 [INFO   ] states.town_exit:41 TownExit: clicked game center (983,698) to ensure focus
+2026-06-11 23:33:27 [INFO   ] recognition.template:77 识图成功: 设置按钮.png 位置(1888,1093) 置信度=0.900
+2026-06-11 23:33:27 [INFO   ] states.town_exit:116 Clicked settings
+2026-06-11 23:33:29 [INFO   ] recognition.template:77 识图成功: 退出游戏.png 位置(1130,1123) 置信度=0.849
+2026-06-11 23:33:30 [INFO   ] states.town_exit:134 All done, clicking exit game
+2026-06-11 23:33:31 [INFO   ] gui.app:1668 Bot stopped

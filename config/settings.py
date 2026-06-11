@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import threading
 from pathlib import Path
@@ -7,6 +8,12 @@ from pathlib import Path
 def get_resource_dir():
     if getattr(sys, 'frozen', False):
         return Path(sys._MEIPASS)
+    return Path(__file__).resolve().parent.parent
+
+
+def get_writable_dir():
+    if getattr(sys, 'frozen', False):
+        return Path(os.path.dirname(os.path.abspath(sys.executable)))
     return Path(__file__).resolve().parent.parent
 
 
@@ -77,7 +84,7 @@ class Settings:
 
     def save(self, path=None):
         if path is None:
-            path = CONFIG_DIR / "settings.json"
+            path = get_writable_dir() / "config" / "settings.json"
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
@@ -85,3 +92,39 @@ class Settings:
 
 
 PRESETS_DIR.mkdir(parents=True, exist_ok=True)
+
+DEFAULT_TEMPLATE_THRESHOLD = 0.65
+
+
+def parse_template_ref(value, default=None):
+    """Parse a template reference which can be a string or {"template": ..., "threshold": ...} dict.
+    Returns (template_name: str, threshold: float). Returns (None, default) if value is empty/None.
+    """
+    if default is None:
+        default = DEFAULT_TEMPLATE_THRESHOLD
+    if not value:
+        return None, default
+    if isinstance(value, dict):
+        return value.get("template") or None, value.get("threshold", default)
+    return str(value), default
+
+
+def parse_template_chain(chain_list, default=None):
+    """Parse a list of template references (strings or dicts).
+    Returns list of (template_name, threshold) tuples.
+    """
+    if default is None:
+        default = DEFAULT_TEMPLATE_THRESHOLD
+    if not chain_list:
+        return []
+    result = []
+    for item in chain_list:
+        if isinstance(item, dict):
+            name = item.get("template")
+            thr = item.get("threshold", default)
+        else:
+            name = str(item) if item else None
+            thr = default
+        if name:
+            result.append((name, thr))
+    return result

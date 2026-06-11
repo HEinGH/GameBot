@@ -204,6 +204,8 @@ def main():
                 watchdog.reset()
                 fsm.transition("stuck_recovery", blackboard)
             fsm.update(blackboard)
+            if args.stealth and fsm.current != "domain_combat":
+                controller.occasional_look_around()
             time.sleep(1.0 / max(cfg.fps_limit, 1))
     except KeyboardInterrupt:
         logger.info("Stopping by user request")

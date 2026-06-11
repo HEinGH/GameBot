@@ -3,6 +3,7 @@ import logging
 
 from core.fsm import BaseState
 from recognition.template import find_template
+from config.settings import parse_template_ref, parse_template_chain
 
 logger = logging.getLogger(__name__)
 
@@ -53,25 +54,27 @@ class TownNavState(BaseState):
 
         chain = []
         if daily:
-            chain.append(daily)
-        for s in domain_steps:
-            if s:
-                chain.append(s)
-        for c in challenges:
-            if c:
-                chain.append(c)
+            name, thr = parse_template_ref(daily)
+            if name:
+                chain.append((name, thr))
+        for s, t in parse_template_chain(domain_steps):
+            chain.append((s, t))
+        for c in (challenges if isinstance(challenges, list) else [challenges]):
+            name, thr = parse_template_ref(c)
+            if name:
+                chain.append((name, thr))
         return chain
 
     def _try_transition(self, blackboard):
         preset = blackboard["preset"]
         nav = preset.get("town_nav", {})
-        npc_tpl = nav.get("npc_marker_template") or preset.get("npc_template")
+        npc_name, npc_thr = parse_template_ref(nav.get("npc_marker_template") or preset.get("npc_template"))
         frame = blackboard["current_frame"]
         if frame is None:
             return
 
-        if npc_tpl:
-            result = find_template(frame, npc_tpl, threshold=0.40)
+        if npc_name:
+            result = find_template(frame, npc_name, threshold=npc_thr)
             if result:
                 logger.info("NPC icon detected, transitioning to npc_navigate (conf=%.2f)",
                             result["confidence"])
@@ -87,7 +90,7 @@ class TownNavState(BaseState):
         self._post_chain_attempts += 1
         if self._post_chain_attempts % 5 == 1:
             logger.info("Post-chain looking for NPC icon... (attempt %d/20) tpl=%s",
-                        self._post_chain_attempts, npc_tpl)
+                        self._post_chain_attempts, npc_name)
             wd = blackboard.get("_watchdog")
             if wd:
                 wd.reset()
@@ -123,8 +126,9 @@ class TownNavState(BaseState):
             avatar_template = chars[char_index].get("avatar_template") if char_index < len(chars) else None
             if not avatar_template:
                 avatar_template = nav.get("avatar_template")
-            if avatar_template:
-                result = find_template(frame, avatar_template, threshold=0.7)
+            avatar_name, avatar_thr = parse_template_ref(avatar_template)
+            if avatar_name:
+                result = find_template(frame, avatar_name, threshold=avatar_thr)
                 if result:
                     logger.info("Avatar detected, confirmed in town")
                     self._avatar_done = True
@@ -162,8 +166,8 @@ class TownNavState(BaseState):
             time.sleep(self.controller.jitter_delay(0.5))
             return
 
-        tpl = chain[self._chain_index]
-        result = find_template(frame, tpl, threshold=0.45)
+        tpl, thr = chain[self._chain_index]
+        result = find_template(frame, tpl, threshold=thr)
         if result:
             cx, cy = result["center"]
             reaction = self.controller.jitter_delay(0.15)

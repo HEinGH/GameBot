@@ -3,6 +3,7 @@ import logging
 
 from core.fsm import BaseState
 from recognition.template import find_template
+from config.settings import parse_template_ref
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,9 @@ class MapLoadingState(BaseState):
         avatar_template = chars[char_index].get("avatar_template") if preset and char_index < len(chars) else None
         if not avatar_template:
             avatar_template = preset.get("town_nav", {}).get("avatar_template") if preset else None
-        if avatar_template:
-            r = find_template(frame, avatar_template, threshold=0.6)
+        avatar_name, avatar_thr = parse_template_ref(avatar_template)
+        if avatar_name:
+            r = find_template(frame, avatar_name, threshold=avatar_thr)
             if r:
                 logger.info("Avatar detected, town loaded (%.1fs)",
                             time.time() - self._start)

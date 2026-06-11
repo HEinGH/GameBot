@@ -3,6 +3,7 @@ import logging
 
 from core.fsm import BaseState
 from recognition.template import find_template
+from config.settings import parse_template_ref
 
 logger = logging.getLogger(__name__)
 
@@ -41,11 +42,12 @@ class DomainLoadingState(BaseState):
         skill_bar_template = None
         if char_index < len(chars):
             skill_bar_template = chars[char_index].get("skill_bar_template")
-        if not skill_bar_template:
-            skill_bar_template = preset.get("skill_bar_template") or "skill_bar.png"
+        skill_name, skill_thr = parse_template_ref(skill_bar_template)
+        if not skill_name:
+            skill_name = preset.get("skill_bar_template") or "skill_bar.png"
 
-        result = find_template(frame, skill_bar_template, threshold=0.6)
+        result = find_template(frame, skill_name, threshold=skill_thr)
         if result:
             logger.info("Skill bar '%s' detected, domain loaded (%.1fs)",
-                        skill_bar_template, time.time() - self._start)
+                        skill_name, time.time() - self._start)
             blackboard["_fsm"].transition("domain_combat", blackboard)
