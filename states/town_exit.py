@@ -3,6 +3,7 @@ import logging
 
 from core.fsm import BaseState
 from recognition.template import find_template
+from config.settings import parse_template_ref
 
 logger = logging.getLogger(__name__)
 
@@ -101,9 +102,14 @@ class TownExitState(BaseState):
         exit_game_template = preset.get("town_exit", {}).get("exit_game_template")
         confirm_exit_template = preset.get("town_exit", {}).get("confirm_exit_template")
 
+        settings_name, settings_thr = parse_template_ref(settings_template)
+        switch_name, switch_thr = parse_template_ref(switch_char_template)
+        exit_name, exit_thr = parse_template_ref(exit_game_template)
+        confirm_name, confirm_thr = parse_template_ref(confirm_exit_template)
+
         if self._step == 1:
-            if settings_template:
-                r = find_template(frame, settings_template, threshold=0.7)
+            if settings_name:
+                r = find_template(frame, settings_name, threshold=settings_thr)
                 if r:
                     cx, cy = r["center"]
                     self.controller.click_at(cx, cy)
@@ -120,8 +126,8 @@ class TownExitState(BaseState):
 
         if self._step == 2:
             if all_done:
-                if exit_game_template:
-                    r = find_template(frame, exit_game_template, threshold=0.7)
+                if exit_name:
+                    r = find_template(frame, exit_name, threshold=exit_thr)
                     if r:
                         cx, cy = r["center"]
                         self.controller.click_at(cx, cy)
@@ -134,8 +140,8 @@ class TownExitState(BaseState):
                 time.sleep(0.5)
                 return
             else:
-                if switch_char_template:
-                    r = find_template(frame, switch_char_template, threshold=0.7)
+                if switch_name:
+                    r = find_template(frame, switch_name, threshold=switch_thr)
                     if r:
                         cx, cy = r["center"]
                         self.controller.click_at(cx, cy)
@@ -153,8 +159,8 @@ class TownExitState(BaseState):
             return
 
         if self._step == 3:
-            if confirm_exit_template:
-                r = find_template(frame, confirm_exit_template, threshold=0.7)
+            if confirm_name:
+                r = find_template(frame, confirm_name, threshold=confirm_thr)
                 if r:
                     cx, cy = r["center"]
                     self.controller.click_at(cx, cy)

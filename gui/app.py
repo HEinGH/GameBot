@@ -16,17 +16,55 @@ logger = logging.getLogger(__name__)
 _last_browse_dir = None  # shared across all file pickers
 
 
+def _pack_tpl_value(name, thr_val, original=None):
+    n = (name or "").strip()
+    if not n:
+        return ""
+    try:
+        t = float(thr_val)
+    except (ValueError, TypeError):
+        t = 0.65
+    extra = {}
+    if isinstance(original, dict):
+        extra = {k: v for k, v in original.items() if k not in ("template", "threshold")}
+    if abs(t - 0.65) < 0.001 and not extra:
+        return n
+    result = {"template": n, "threshold": round(t, 2)}
+    result.update(extra)
+    return result
+
+
+def _unpack_tpl_value(value):
+    if isinstance(value, dict):
+        return value.get("template", ""), value.get("threshold", 0.65)
+    if value:
+        return str(value), 0.65
+    return "", 0.65
+
+
+def _center_on_parent(dialog, parent, width, height):
+    dialog.withdraw()
+    parent.update_idletasks()
+    px = parent.winfo_rootx()
+    py = parent.winfo_rooty()
+    x = px + max(0, (parent.winfo_width() - width) // 2)
+    y = py + max(0, (parent.winfo_height() - height) // 2)
+    dialog.geometry(f"{width}x{height}+{x}+{y}")
+    dialog.update_idletasks()
+    dialog.deiconify()
+
+
 def _import_template_file(src_path, templates_dir):
     src = Path(src_path)
-    dst = templates_dir / src.name
-    if src.resolve().parent == templates_dir.resolve():
-        return src.name
-    dst.parent.mkdir(parents=True, exist_ok=True)
+    tpl_dir = templates_dir.resolve()
+    if src.resolve().is_relative_to(tpl_dir):
+        return str(src.resolve().relative_to(tpl_dir))
+    dst = tpl_dir / src.name
     if dst.exists():
         stem, ext = src.stem, src.suffix
         counter = 1
         while dst.exists():
-            dst = templates_dir / f"{stem}_{counter}{ext}"
+            dst = tpl_dir / f"{stem}_{counter}{ext}"
             counter += 1
     import shutil
     shutil.copy2(str(src), str(dst))
@@ -123,7 +161,13 @@ class ChainStepList(tk.Frame):
         self.canvas.xview_scroll(int(-event.delta / 120), "units")
         return "break"
 
-    def _make_row(self, idx, template_name):
+    def _make_row(self, idx, tmpl_val):
+        if isinstance(tmpl_val, dict):
+            name = tmpl_val.get("template", "")
+            thr = tmpl_val.get("threshold", 0.65)
+        else:
+            name = tmpl_val or ""
+            thr = 0.65
         row = ttk.Frame(self.inner)
         row.pack(fill="x", pady=(1, 1))
 
@@ -133,41 +177,44 @@ class ChainStepList(tk.Frame):
 
         entry = ttk.Entry(row, width=18)
         entry.pack(side="left", padx=2)
-        if template_name:
-            entry.insert(0, template_name)
+        if name:
+            entry.insert(0, name)
         entry.bind("<FocusIn>", lambda e, r=row: self._set_selected(r, entry))
         entry.bind("<Button-1>", lambda e, r=row, en=entry: self._set_selected(r, en))
 
-        def pick_template(en):
+        thr_var = tk.StringVar(value=str(thr))
+        thr_spin = ttk.Spinbox(row, from_=0.30, to=0.99, increment=0.05, width=4, textvariable=thr_var)
+        thr_spin.pack(side="left", padx=1)
+
+        def pick_template(en, tv):
             def inner_pick():
                 from tkinter import filedialog as fd
                 path = fd.askopenfilename(
                     title="选择模板图片 - 步骤 {}".format(idx + 1),
                     filetypes=[("图片", "*.png *.jpg *.jpeg *.bmp"), ("所有", "*.*")])
                 if path and self.import_func:
-                    name = self.import_func(path, self.templates_dir)
+                    imported = self.import_func(path, self.templates_dir)
                     en.delete(0, "end")
-                    en.insert(0, name)
+                    en.insert(0, imported)
             return inner_pick
 
         ttk.Button(row, text="浏览", width=4,
-                   command=pick_template(entry)).pack(side="left", padx=1)
+                   command=pick_template(entry, thr_var)).pack(side="left", padx=1)
 
         def del_row(del_row_ref):
-            values = [e.get().strip() for _, e in self._row_refs]
+            self._sync_entries()
             del_idx = None
             for i, (r, _) in enumerate(self._row_refs):
                 if r is del_row_ref:
                     del_idx = i
                     break
-            if del_idx is not None:
-                values.pop(del_idx)
-            self._items = [v for v in values if v]
+            if del_idx is not None and del_idx < len(self._items):
+                self._items.pop(del_idx)
             self._refresh()
 
         ttk.Button(row, text="✕", width=2,
                    command=lambda r=row: del_row(r)).pack(side="left", padx=1)
-        return entry, row
+        return (entry, thr_var), row
 
     def _set_selected(self, row, entry):
         for r, _ in self._row_refs:
@@ -184,19 +231,33 @@ class ChainStepList(tk.Frame):
             pass
 
     def _sync_entries(self):
+        old_items = list(self._items)
         self._items = []
-        for _, entry in self._row_refs:
+        for i, (_, (entry, thr_var)) in enumerate(self._row_refs):
             val = entry.get().strip()
             if val:
-                self._items.append(val)
+                try:
+                    t = float(thr_var.get())
+                except (ValueError, TypeError):
+                    t = 0.65
+                orig = old_items[i] if i < len(old_items) else None
+                extra = {}
+                if isinstance(orig, dict):
+                    extra = {k: v for k, v in orig.items() if k not in ("template", "threshold")}
+                if abs(t - 0.65) < 0.001 and not extra:
+                    self._items.append(val)
+                else:
+                    result = {"template": val, "threshold": round(t, 2)}
+                    result.update(extra)
+                    self._items.append(result)
 
     def _refresh(self):
         for w in self.inner.winfo_children():
             w.destroy()
         self._row_refs = []
-        for i, name in enumerate(self._items):
-            e, r = self._make_row(i, name)
-            self._row_refs.append((r, e))
+        for i, item in enumerate(self._items):
+            widgets, r = self._make_row(i, item)
+            self._row_refs.append((r, widgets))
         self.inner.update_idletasks()
         self._on_inner_configure()
 
@@ -219,30 +280,30 @@ class ChainStepList(tk.Frame):
             self._refresh()
 
     def _delete_focused(self):
-        new_items = []
-        for r, entry in self._row_refs:
-            if r is not self._selected_row:
-                val = entry.get().strip()
-                if val:
-                    new_items.append(val)
-        self._items = new_items
+        self._sync_entries()
+        del_idx = None
+        for i, (r, _) in enumerate(self._row_refs):
+            if r is self._selected_row:
+                del_idx = i
+                break
+        if del_idx is not None and del_idx < len(self._items):
+            self._items.pop(del_idx)
         self._selected_entry = None
         self._selected_row = None
         self._refresh()
 
     def _move(self, direction):
-        values = [e.get().strip() for _, e in self._row_refs]
+        self._sync_entries()
         sel_idx = None
-        for i, (r, e) in enumerate(self._row_refs):
+        for i, (r, _) in enumerate(self._row_refs):
             if r is self._selected_row:
                 sel_idx = i
                 break
         if sel_idx is None:
             return
         new_idx = sel_idx + direction
-        if 0 <= new_idx < len(values):
-            values[sel_idx], values[new_idx] = values[new_idx], values[sel_idx]
-        self._items = [v for v in values if v]
+        if 0 <= new_idx < len(self._items):
+            self._items[sel_idx], self._items[new_idx] = self._items[new_idx], self._items[sel_idx]
         self._refresh()
 
     def _clear(self):
@@ -252,7 +313,7 @@ class ChainStepList(tk.Frame):
 
     def get_items(self):
         self._sync_entries()
-        return [x for x in self._items if x and x.strip()]
+        return [x for x in self._items if x and (isinstance(x, str) and x.strip() or isinstance(x, dict) and x.get("template", "").strip())]
 
     def set_items(self, items):
         if isinstance(items, str):
@@ -274,6 +335,7 @@ class GameBotGUI:
         self.templates_path = self.script_dir / "templates"
         self.current_preset_path = None
         self.preset_data = self._load_default_preset()
+        Settings().load()
         self._load_last_preset()
         self.bot_thread = None
         self.bot_running = False
@@ -283,7 +345,13 @@ class GameBotGUI:
         self._build_ui()
         self._refresh_preset_list()
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
+        cfg = Settings()
+        if cfg.last_log_debug:
+            self.log_debug_var.set(True)
+            self._log_handler.setLevel(logging.DEBUG)
+            logging.getLogger().setLevel(logging.DEBUG)
         self.root.after(200, self._poll_log)
+        self.root.after(20, self._poll_hotkeys)
 
     def _make_file_picker(self, entry):
         global _last_browse_dir
@@ -371,10 +439,15 @@ class GameBotGUI:
         logging.getLogger().addHandler(self._log_handler)
 
     def _on_log_level_change(self):
-        if self.log_debug_var.get():
+        debug = self.log_debug_var.get()
+        if debug:
             self._log_handler.setLevel(logging.DEBUG)
+            logging.getLogger().setLevel(logging.DEBUG)
         else:
             self._log_handler.setLevel(logging.INFO)
+            logging.getLogger().setLevel(logging.INFO)
+        Settings().last_log_debug = debug
+        Settings().save()
 
     def _build_ui(self):
         self.root.columnconfigure(0, weight=0)
@@ -409,6 +482,7 @@ class GameBotGUI:
         self.status_label.pack(pady=2)
         self.start_btn = ttk.Button(sidebar, text="▶ 启动", command=self._toggle_bot)
         self.start_btn.pack(pady=4)
+        ttk.Label(sidebar, text="Ctrl+Alt+B", font=("", 8), foreground="#888").pack()
 
     def _build_main_area(self):
         container = ttk.Frame(self.root, padding=8)
@@ -448,19 +522,47 @@ class GameBotGUI:
         self.dash_status_text.delete("1.0", "end")
         self.dash_status_text.configure(state="disabled")
 
+    def _trim_log_lines(self):
+        lines = int(self.dash_status_text.index("end-1c").split(".")[0])
+        if lines > self._log_max_lines:
+            self.dash_status_text.delete("1.0", f"{lines - self._log_max_lines + 1}.0")
+
     def _poll_log(self):
         try:
             while True:
                 msg = self.log_queue.get_nowait()
                 self.dash_status_text.configure(state="normal")
                 self.dash_status_text.insert("end", msg + "\n")
+                self._trim_log_lines()
                 self.dash_status_text.see("end")
                 self.dash_status_text.configure(state="disabled")
         except queue.Empty:
             pass
         self.root.after(200, self._poll_log)
 
-    # ========== DASHBOARD ==========
+    def _poll_hotkeys(self):
+        try:
+            import ctypes
+            u32 = ctypes.windll.user32
+            c = u32.GetAsyncKeyState(0x11) & 0x8000
+            a = u32.GetAsyncKeyState(0x12) & 0x8000
+            b = u32.GetAsyncKeyState(0x42) & 0x8000
+            ca_held = bool(c and a)
+            if ca_held and not getattr(self, '_hk_armed', False):
+                self._hk_armed = True
+            elif not ca_held:
+                self._hk_armed = False
+            if getattr(self, '_hk_armed', False) and b:
+                if not getattr(self, '_hk_bot_pressed', False):
+                    self._hk_bot_pressed = True
+                    logger.debug("[热键] 触发!")
+                    self._toggle_bot()
+            else:
+                self._hk_bot_pressed = False
+        except Exception:
+            pass
+        self.root.after(20, self._poll_hotkeys)
+
     def _build_dashboard(self):
         f = self._pages["dashboard"]
         ttk.Label(f, text="运行控制", font=("", 14, "bold")).pack(anchor="w")
@@ -478,6 +580,10 @@ class GameBotGUI:
         ttk.Button(row, text="删除", command=self._delete_preset).pack(side="left")
         row2 = ttk.Frame(card)
         row2.pack(fill="x", pady=(4, 0))
+        ttk.Label(row2, text="从第几个角色开始:").pack(side="left")
+        self.dash_char_start = tk.IntVar(value=1)
+        self.dash_char_start_spin = ttk.Spinbox(row2, from_=1, to_=20, textvariable=self.dash_char_start, width=4)
+        self.dash_char_start_spin.pack(side="left", padx=6)
         ttk.Label(row2, text="执行角色数:").pack(side="left")
         self.dash_char_count = tk.IntVar(value=1)
         self.dash_char_spin = ttk.Spinbox(row2, from_=1, to_=20, textvariable=self.dash_char_count, width=4)
@@ -500,9 +606,18 @@ class GameBotGUI:
         ttk.Checkbutton(status_top, text="DEBUG", variable=self.log_debug_var,
                          command=self._on_log_level_change).pack(side="left", padx=4)
         ttk.Button(status_top, text="清空", command=self._clear_log).pack(side="right")
-        self.dash_status_text = tk.Text(self.status_frame, height=10, wrap="word",
+        log_container = ttk.Frame(self.status_frame)
+        log_container.pack(fill="both", expand=True)
+        log_container.rowconfigure(0, weight=1)
+        log_container.columnconfigure(0, weight=1)
+        self.dash_status_text = tk.Text(log_container, height=10, wrap="word",
                                          state="disabled", font=("Microsoft YaHei", 9))
-        self.dash_status_text.pack(fill="both", expand=True)
+        self._status_scrollbar = ttk.Scrollbar(log_container, orient="vertical",
+                                                command=self.dash_status_text.yview)
+        self.dash_status_text.configure(yscrollcommand=self._status_scrollbar.set)
+        self.dash_status_text.grid(row=0, column=0, sticky="nsew")
+        self._status_scrollbar.grid(row=0, column=1, sticky="ns")
+        self._log_max_lines = 500
 
     def _refresh_preset_list(self):
         presets = []
@@ -534,10 +649,16 @@ class GameBotGUI:
                 cc = data.get("char_count", max(1, count))
                 if cc > count:
                     cc = max(1, count)
+                cs = data.get("char_start", 1)
+                if cs > count:
+                    cs = max(1, count)
                 self.dash_char_count.set(cc)
                 self.dash_char_spin.configure(to_=max(1, count))
+                self.dash_char_start.set(cs)
+                self.dash_char_start_spin.configure(to_=max(1, count))
                 self.dash_stealth.set(data.get("stealth", False))
                 self.dash_background.set(data.get("background", False))
+                self._refresh_char_table()
             except Exception:
                 pass
         cfg = Settings()
@@ -583,6 +704,7 @@ class GameBotGUI:
     def _update_dash_status(self, text):
         self.dash_status_text.configure(state="normal")
         self.dash_status_text.insert("end", text + "\n")
+        self._trim_log_lines()
         self.dash_status_text.see("end")
         self.dash_status_text.configure(state="disabled")
 
@@ -629,6 +751,8 @@ class GameBotGUI:
 
         cfg_frame = ttk.LabelFrame(page_content, text="预设全局配置", padding=6)
         cfg_frame.pack(fill="x", pady=2)
+        ttk.Label(cfg_frame, text="提示：置信度默认 0.65，每个模板可单独调整",
+                  font=("", 8), foreground="#888").pack(anchor="w", pady=(0, 4))
 
         def cfg_file(parent, label, attr):
             f = ttk.Frame(parent)
@@ -636,10 +760,14 @@ class GameBotGUI:
             ttk.Label(f, text=label).pack(side="left")
             e = ttk.Entry(f, width=10)
             e.pack(side="left", padx=1)
+            thr = ttk.Spinbox(f, from_=0.30, to=0.99, increment=0.05, width=4)
+            thr.set("0.65")
+            thr.pack(side="left", padx=1)
             btn = ttk.Button(f, text="浏览", width=4)
             btn.configure(command=self._make_file_picker(e))
             btn.pack(side="left")
             setattr(self, attr, e)
+            setattr(self, attr + "_thr", thr)
 
         def cfg_text(parent, label, attr, width=10):
             f = ttk.Frame(parent)
@@ -669,6 +797,15 @@ class GameBotGUI:
         cfg_text(r, "窗口标题:", "cfg_window_title", width=20)
 
         cfg_header(cfg_frame, "▎城镇导航")
+        ttk.Label(cfg_frame, text=(
+            "提示：操作链从日常按钮开始，顺序识别并点击各个副本按钮。\n"
+            "      若副本有多个确认步骤（如：确认进入→确认难度→确认消耗），可在下方「确认进入链」中配置多个模板。\n"
+            "      单步骤副本只需配一张确认图即可。Alt显示鼠标用于全屏游戏下呼出光标。NPC图标用于自动寻路。"
+        ), font=("", 8), foreground="#888", justify="left").pack(anchor="w", pady=(0, 4))
+        r = ttk.Frame(cfg_frame); r.pack(fill="x", pady=(0, 2))
+        cfg_check(r, "Alt显示鼠标:")
+        cfg_file(r, "NPC图标:", "cfg_npc_marker")
+
         domain_chain_frame = ttk.LabelFrame(cfg_frame, text="城镇导航操作链（顺序识别）", padding=4)
         domain_chain_frame.pack(fill="x", pady=(2, 0))
 
@@ -677,13 +814,14 @@ class GameBotGUI:
                                           import_func=_import_template_file,
                                           canvas_height=140)
         self.domain_chain.pack(fill="both", expand=True)
-        r = ttk.Frame(cfg_frame); r.pack(fill="x", pady=(2, 0))
-        ttk.Label(r, text="提示：链中包含日常→副本→挑战，按顺序识别。",
-                  font=("", 8), foreground="#888").pack(side="left")
-        cfg_check(r, "Alt显示鼠标:")
-        r = ttk.Frame(cfg_frame); r.pack(fill="x")
-        cfg_file(r, "确认进入:", "cfg_confirm_enter")
-        cfg_file(r, "NPC图标:", "cfg_npc_marker")
+
+        enter_chain_frame = ttk.LabelFrame(cfg_frame, text="确认进入链（按顺序识别，单步骤只需一张图）", padding=4)
+        enter_chain_frame.pack(fill="x", pady=(2, 0))
+        self.confirm_enter_chain = ChainStepList(enter_chain_frame,
+                                                  templates_dir=self.templates_path,
+                                                  import_func=_import_template_file,
+                                                  canvas_height=80)
+        self.confirm_enter_chain.pack(fill="both", expand=True)
 
         cfg_header(cfg_frame, "▎副本战斗")
         r = ttk.Frame(cfg_frame); r.pack(fill="x")
@@ -772,33 +910,43 @@ class GameBotGUI:
             messagebox.showinfo("保存成功", f"已保存到:\n{path}")
             self._refresh_preset_list()
 
-    def _sync_global_config(self):
-        self.preset_data["description"] = self.char_desc.get()
-        self.preset_data["window_title"] = self.cfg_window_title.get()
-        self.preset_data["enter_game_template"] = self.cfg_enter_game.get()
-        self.preset_data["rechallenge_template"] = self.cfg_rechallenge.get()
-        self.preset_data["exit_domain_template"] = self.cfg_exit_domain.get()
-        self.preset_data["portal_template"] = self.cfg_portal.get()
-        if self._fallback_combos_data:
-            self.preset_data["fallback_combos"] = list(self._fallback_combos_data)
-        else:
-            self.preset_data.pop("fallback_combos", None)
+    @staticmethod
+    def _pack_tpl(name, thr_val, original=None):
+        return _pack_tpl_value(name, thr_val, original)
 
-        self.preset_data.setdefault("town_nav", {})
-        self.preset_data["town_nav"]["domain_select_steps"] = self.domain_chain.get_items()
-        self.preset_data["town_nav"]["confirm_enter_template"] = self.cfg_confirm_enter.get()
-        self.preset_data["town_nav"]["npc_marker_template"] = self.cfg_npc_marker.get()
-        self.preset_data["town_nav"].pop("daily_button_template", None)
-        self.preset_data["town_nav"].pop("challenge_templates", None)
-        self.preset_data["town_nav"]["alt_for_mouse"] = self.cfg_town_alt.get()
-        self.preset_data.setdefault("town_exit", {})
-        self.preset_data["town_exit"]["settings_template"] = self.cfg_exit_settings.get()
-        self.preset_data["town_exit"]["switch_character_template"] = self.cfg_exit_switch.get()
-        self.preset_data["town_exit"]["exit_game_template"] = self.cfg_exit_game.get()
-        self.preset_data["town_exit"]["confirm_exit_template"] = self.cfg_exit_confirm.get()
-        self.preset_data["char_count"] = self.dash_char_count.get()
-        self.preset_data["stealth"] = self.dash_stealth.get()
-        self.preset_data["background"] = self.dash_background.get()
+    @staticmethod
+    def _unpack_tpl(value):
+        return _unpack_tpl_value(value)
+
+    def _sync_global_config(self):
+        p = self.preset_data
+        p["description"] = self.char_desc.get()
+        p["window_title"] = self.cfg_window_title.get()
+        p["enter_game_template"] = self._pack_tpl(self.cfg_enter_game.get(), self.cfg_enter_game_thr.get(), p.get("enter_game_template"))
+        p["rechallenge_template"] = self._pack_tpl(self.cfg_rechallenge.get(), self.cfg_rechallenge_thr.get(), p.get("rechallenge_template"))
+        p["exit_domain_template"] = self._pack_tpl(self.cfg_exit_domain.get(), self.cfg_exit_domain_thr.get(), p.get("exit_domain_template"))
+        p["portal_template"] = self._pack_tpl(self.cfg_portal.get(), self.cfg_portal_thr.get(), p.get("portal_template"))
+        if self._fallback_combos_data:
+            p["fallback_combos"] = list(self._fallback_combos_data)
+        else:
+            p.pop("fallback_combos", None)
+
+        p.setdefault("town_nav", {})
+        p["town_nav"]["domain_select_steps"] = self.domain_chain.get_items()
+        p["town_nav"]["confirm_enter_template"] = self.confirm_enter_chain.get_items()
+        p["town_nav"]["npc_marker_template"] = self._pack_tpl(self.cfg_npc_marker.get(), self.cfg_npc_marker_thr.get(), p["town_nav"].get("npc_marker_template"))
+        p["town_nav"].pop("daily_button_template", None)
+        p["town_nav"].pop("challenge_templates", None)
+        p["town_nav"]["alt_for_mouse"] = self.cfg_town_alt.get()
+        p.setdefault("town_exit", {})
+        p["town_exit"]["settings_template"] = self._pack_tpl(self.cfg_exit_settings.get(), self.cfg_exit_settings_thr.get(), p["town_exit"].get("settings_template"))
+        p["town_exit"]["switch_character_template"] = self._pack_tpl(self.cfg_exit_switch.get(), self.cfg_exit_switch_thr.get(), p["town_exit"].get("switch_character_template"))
+        p["town_exit"]["exit_game_template"] = self._pack_tpl(self.cfg_exit_game.get(), self.cfg_exit_game_thr.get(), p["town_exit"].get("exit_game_template"))
+        p["town_exit"]["confirm_exit_template"] = self._pack_tpl(self.cfg_exit_confirm.get(), self.cfg_exit_confirm_thr.get(), p["town_exit"].get("confirm_exit_template"))
+        p["char_count"] = self.dash_char_count.get()
+        p["char_start"] = self.dash_char_start.get()
+        p["stealth"] = self.dash_stealth.get()
+        p["background"] = self.dash_background.get()
 
     def _sync_char_table_to_data(self):
         chars = []
@@ -825,19 +973,29 @@ class GameBotGUI:
         data = self.preset_data
         self.char_desc.delete(0, "end")
         self.char_desc.insert(0, data.get("description", ""))
-        self.cfg_enter_game.delete(0, "end")
-        self.cfg_enter_game.insert(0, data.get("enter_game_template", ""))
-        self.cfg_rechallenge.delete(0, "end")
-        self.cfg_rechallenge.insert(0, data.get("rechallenge_template", ""))
+
+        n, t = self._unpack_tpl(data.get("enter_game_template", ""))
+        self.cfg_enter_game.delete(0, "end"); self.cfg_enter_game.insert(0, n)
+        self.cfg_enter_game_thr.set(str(t))
+
+        n, t = self._unpack_tpl(data.get("rechallenge_template", ""))
+        self.cfg_rechallenge.delete(0, "end"); self.cfg_rechallenge.insert(0, n)
+        self.cfg_rechallenge_thr.set(str(t))
+
         fb = data.get("fallback_combos")
         if fb:
             self._fallback_combos_data = list(fb)
         else:
             self._fallback_combos_data = list(self._default_fallback())
-        self.cfg_exit_domain.delete(0, "end")
-        self.cfg_exit_domain.insert(0, data.get("exit_domain_template", ""))
-        self.cfg_portal.delete(0, "end")
-        self.cfg_portal.insert(0, data.get("portal_template", ""))
+
+        n, t = self._unpack_tpl(data.get("exit_domain_template", ""))
+        self.cfg_exit_domain.delete(0, "end"); self.cfg_exit_domain.insert(0, n)
+        self.cfg_exit_domain_thr.set(str(t))
+
+        n, t = self._unpack_tpl(data.get("portal_template", ""))
+        self.cfg_portal.delete(0, "end"); self.cfg_portal.insert(0, n)
+        self.cfg_portal_thr.set(str(t))
+
         self.cfg_window_title.delete(0, "end")
         self.cfg_window_title.insert(0, data.get("window_title", ""))
         tn = data.get("town_nav", {})
@@ -854,27 +1012,36 @@ class GameBotGUI:
                 chain.append(c)
         self.domain_chain.set_items(chain)
         self.cfg_town_alt.set(tn.get("alt_for_mouse", tn.get("ctrl_for_mouse", True)))
-        self.cfg_confirm_enter.delete(0, "end")
-        self.cfg_confirm_enter.insert(0, tn.get("confirm_enter_template", ""))
-        self.cfg_npc_marker.delete(0, "end")
-        self.cfg_npc_marker.insert(0, tn.get("npc_marker_template", ""))
+
+        self.confirm_enter_chain.set_items(tn.get("confirm_enter_template") or [])
+
+        n, t = self._unpack_tpl(tn.get("npc_marker_template", ""))
+        self.cfg_npc_marker.delete(0, "end"); self.cfg_npc_marker.insert(0, n)
+        self.cfg_npc_marker_thr.set(str(t))
         te = data.get("town_exit", {})
-        self.cfg_exit_settings.delete(0, "end")
-        self.cfg_exit_settings.insert(0, te.get("settings_template", ""))
-        self.cfg_exit_switch.delete(0, "end")
-        self.cfg_exit_switch.insert(0, te.get("switch_character_template", ""))
-        self.cfg_exit_game.delete(0, "end")
-        self.cfg_exit_game.insert(0, te.get("exit_game_template", ""))
-        self.cfg_exit_confirm.delete(0, "end")
-        self.cfg_exit_confirm.insert(0, te.get("confirm_exit_template", ""))
+        n, t = self._unpack_tpl(te.get("settings_template", ""))
+        self.cfg_exit_settings.delete(0, "end"); self.cfg_exit_settings.insert(0, n)
+        self.cfg_exit_settings_thr.set(str(t))
+
+        n, t = self._unpack_tpl(te.get("switch_character_template", ""))
+        self.cfg_exit_switch.delete(0, "end"); self.cfg_exit_switch.insert(0, n)
+        self.cfg_exit_switch_thr.set(str(t))
+
+        n, t = self._unpack_tpl(te.get("exit_game_template", ""))
+        self.cfg_exit_game.delete(0, "end"); self.cfg_exit_game.insert(0, n)
+        self.cfg_exit_game_thr.set(str(t))
+
+        n, t = self._unpack_tpl(te.get("confirm_exit_template", ""))
+        self.cfg_exit_confirm.delete(0, "end"); self.cfg_exit_confirm.insert(0, n)
+        self.cfg_exit_confirm_thr.set(str(t))
         for i, ch in enumerate(data.get("characters", [])):
             self.char_tree.insert("", "end", values=(
                 i + 1,
                 ch.get("name", ""),
-                ch.get("portrait_template", ""),
-                ch.get("skill_bar_template", "") or "",
-                ch.get("result_screen_template", "") or "",
-                ch.get("avatar_template", "") or "",
+                _unpack_tpl_value(ch.get("portrait_template", ""))[0],
+                _unpack_tpl_value(ch.get("skill_bar_template", "") or "")[0],
+                _unpack_tpl_value(ch.get("result_screen_template", "") or "")[0],
+                _unpack_tpl_value(ch.get("avatar_template", "") or "")[0],
                 ch.get("runs", 1),
                 len(ch.get("combos", [])),
             ))
@@ -1037,7 +1204,7 @@ class GameBotGUI:
         text = json.dumps(data, indent=2, ensure_ascii=False)
         top = tk.Toplevel(self.root)
         top.title(f"连招预览 - {data.get('name', path.stem)}")
-        top.geometry("700x500")
+        _center_on_parent(top, self.root, 700, 500)
         txt = tk.Text(top, wrap="word", font=("Consolas", 9))
         txt.pack(fill="both", expand=True, padx=6, pady=6)
         txt.insert("1.0", text)
@@ -1084,22 +1251,26 @@ class GameBotGUI:
         import ctypes
         import ctypes.wintypes
         self._hotkey_thread_running = True
+        self._hotkeys_enabled = True
         user32 = ctypes.windll.user32
         user32.RegisterHotKey(None, 1, 0x4000, 0x74)  # F5, MOD_NOREPEAT
         user32.RegisterHotKey(None, 2, 0x4000, 0x75)  # F6, MOD_NOREPEAT
         def _hotkey_loop():
+            import time
             msg = ctypes.wintypes.MSG()
             while self._hotkey_thread_running:
-                ret = user32.GetMessageW(ctypes.byref(msg), None, 0, 0)
-                if ret == 0:
-                    break
-                if msg.message == 0x0312:  # WM_HOTKEY
-                    if msg.wParam == 1:
-                        self.root.after(0, self._toggle_recording)
-                    elif msg.wParam == 2:
-                        self.root.after(0, self._stop_recording)
-                user32.TranslateMessage(ctypes.byref(msg))
-                user32.DispatchMessageW(ctypes.byref(msg))
+                ret = user32.PeekMessageW(ctypes.byref(msg), None, 0, 0, 1)
+                if ret:
+                    if msg.message == 0x0312:
+                        if not self._hotkeys_enabled:
+                            continue
+                        if msg.wParam == 1:
+                            self.root.after(0, self._toggle_recording)
+                        elif msg.wParam == 2:
+                            self.root.after(0, self._stop_recording)
+                    user32.TranslateMessage(ctypes.byref(msg))
+                    user32.DispatchMessageW(ctypes.byref(msg))
+                time.sleep(0.05)
         t = threading.Thread(target=_hotkey_loop, daemon=True)
         t.start()
         self.root.protocol("WM_DELETE_WINDOW", self._on_close_with_hotkey)
@@ -1369,13 +1540,19 @@ class GameBotGUI:
             return
         self._sync_char_table_to_data()
         self._sync_global_config()
+        chars = self.preset_data.get("characters", [])
+        if not chars:
+            messagebox.showwarning("提示", "预设中没有配置角色，请先添加角色")
+            return
         counts = self.dash_char_count.get()
+        char_start = self.dash_char_start.get()
         stealth = self.dash_stealth.get()
         bg = self.dash_background.get()
         skip_combat = self.dash_skip_combat.get()
         cfg = Settings()
         cfg.last_preset = name
         cfg.save()
+        self._hotkeys_enabled = False
         self.bot_stop_event.clear()
         self.bot_running = True
         self.status_label.configure(text="● 运行中", foreground="green")
@@ -1401,12 +1578,12 @@ class GameBotGUI:
 
         self.bot_thread = threading.Thread(
             target=self._run_bot,
-            args=(name, counts, stealth, bg, skip_combat),
+            args=(name, counts, char_start, stealth, bg, skip_combat),
             daemon=True,
         )
         self.bot_thread.start()
 
-    def _run_bot(self, preset_name, total_chars, stealth, bg, skip_combat=False):
+    def _run_bot(self, preset_name, total_chars, char_start, stealth, bg, skip_combat=False):
         controller = None
         capture = None
         window_mgr = None
@@ -1435,8 +1612,8 @@ class GameBotGUI:
             self._blackboard = blackboard
             blackboard["preset_name"] = preset_name
             blackboard["preset"] = preset
-            blackboard["total_characters"] = total_chars
-            blackboard["current_character_index"] = 0
+            blackboard["total_characters"] = max(1, char_start) - 1 + max(1, total_chars)
+            blackboard["current_character_index"] = max(0, char_start - 1)
             blackboard["domain_run_count"] = 0
 
             capture = ScreenCapture()
@@ -1447,6 +1624,7 @@ class GameBotGUI:
                                     combo_randomness=cfg.combo_randomness,
                                     bezier_steps=cfg.mouse_bezier_steps,
                                     click_jitter=cfg.click_jitter_px)
+            self._controller = controller
 
             fsm = FSM()
             blackboard["_fsm"] = fsm
@@ -1542,6 +1720,8 @@ class GameBotGUI:
                     watchdog.reset()
                     fsm.transition("stuck_recovery", blackboard)
                 fsm.update(blackboard)
+                if stealth and fsm.current != "domain_combat":
+                    controller.occasional_look_around()
                 time.sleep(1.0 / max(cfg.fps_limit, 1))
 
             logger.info("Bot stopped")
@@ -1561,6 +1741,9 @@ class GameBotGUI:
     def _stop_bot(self):
         self.bot_stop_event.set()
         try:
+            ctrl = getattr(self, '_controller', None)
+            if ctrl:
+                ctrl.release_all()
             if hasattr(self, '_blackboard') and self._blackboard:
                 self._blackboard["running"] = False
                 self._blackboard["stuck"] = False
@@ -1572,6 +1755,8 @@ class GameBotGUI:
         self.status_label.configure(text="● 停止中", foreground="orange")
 
     def _bot_stopped(self):
+        self._hotkeys_enabled = True
+        self._controller = None
         self.status_label.configure(text="● 已停止", foreground="red")
         self.start_btn.configure(text="▶ 启动")
         self.bot_running = False
@@ -1596,7 +1781,7 @@ class CharacterDialog:
         self.char = chars[idx]
         self.dialog = tk.Toplevel(parent)
         self.dialog.title(f"编辑角色 - {self.char.get('name', '')}")
-        self.dialog.geometry("800x600")
+        _center_on_parent(self.dialog, parent, 800, 600)
         self.dialog.transient(parent)
         self.dialog.grab_set()
         self._build()
@@ -1634,29 +1819,46 @@ class CharacterDialog:
         self.spin_runs.delete(0, "end")
         self.spin_runs.insert(0, str(self.char.get("runs", 4)))
 
-        r = ttk.Frame(top); r.pack(fill="x", pady=1)
-        ttk.Label(r, text="选人界面头像:").pack(side="left")
-        self.entry_portrait = ttk.Entry(r, width=10)
-        self.entry_portrait.pack(side="left", padx=1)
-        self.entry_portrait.insert(0, self.char.get("portrait_template", ""))
-        ttk.Button(r, text="浏览", width=4, command=lambda e=self.entry_portrait: self._pick_template(e, "选人界面头像")).pack(side="left")
-        ttk.Label(r, text="技能栏:").pack(side="left")
-        self.entry_skillbar = ttk.Entry(r, width=10)
-        self.entry_skillbar.pack(side="left", padx=1)
-        self.entry_skillbar.insert(0, self.char.get("skill_bar_template") or "")
-        ttk.Button(r, text="浏览", width=4, command=lambda e=self.entry_skillbar: self._pick_template(e, "技能栏模板")).pack(side="left")
+        def _tpl_row(parent, label, field, width=10):
+            f = ttk.Frame(parent); f.pack(fill="x", pady=1)
+            ttk.Label(f, text=label).pack(side="left")
+            e = ttk.Entry(f, width=width)
+            e.pack(side="left", padx=1)
+            thr = ttk.Spinbox(f, from_=0.30, to=0.99, increment=0.05, width=4)
+            thr.set("0.65")
+            thr.pack(side="left", padx=1)
+            btn = ttk.Button(f, text="浏览", width=4,
+                             command=lambda en=e: self._pick_template(en, label))
+            btn.pack(side="left")
+            n, t = _unpack_tpl_value(self.char.get(field, ""))
+            e.insert(0, n)
+            thr.set(str(t))
+            return e, thr
 
-        r = ttk.Frame(top); r.pack(fill="x", pady=1)
-        ttk.Label(r, text="结算模板:").pack(side="left")
-        self.entry_result = ttk.Entry(r, width=10)
-        self.entry_result.pack(side="left", padx=1)
-        self.entry_result.insert(0, self.char.get("result_screen_template") or "")
-        ttk.Button(r, text="浏览", width=4, command=lambda e=self.entry_result: self._pick_template(e, "结算模板")).pack(side="left")
-        ttk.Label(r, text="城镇头像:").pack(side="left")
-        self.entry_avatar = ttk.Entry(r, width=10)
-        self.entry_avatar.pack(side="left", padx=1)
-        self.entry_avatar.insert(0, self.char.get("avatar_template") or "")
-        ttk.Button(r, text="浏览", width=4, command=lambda e=self.entry_avatar: self._pick_template(e, "城镇头像")).pack(side="left")
+        def _tpl_row_pair(parent, label1, field1, label2, field2):
+            f = ttk.Frame(parent); f.pack(fill="x", pady=1)
+            ttk.Label(f, text=label1).pack(side="left")
+            e1 = ttk.Entry(f, width=10); e1.pack(side="left", padx=1)
+            thr1 = ttk.Spinbox(f, from_=0.30, to=0.99, increment=0.05, width=4)
+            thr1.set("0.65"); thr1.pack(side="left", padx=1)
+            ttk.Button(f, text="浏览", width=4,
+                       command=lambda en=e1: self._pick_template(en, label1)).pack(side="left")
+            n1, t1 = _unpack_tpl_value(self.char.get(field1, ""))
+            e1.insert(0, n1); thr1.set(str(t1))
+            ttk.Label(f, text=label2).pack(side="left", padx=(8, 0))
+            e2 = ttk.Entry(f, width=10); e2.pack(side="left", padx=1)
+            thr2 = ttk.Spinbox(f, from_=0.30, to=0.99, increment=0.05, width=4)
+            thr2.set("0.65"); thr2.pack(side="left", padx=1)
+            ttk.Button(f, text="浏览", width=4,
+                       command=lambda en=e2: self._pick_template(en, label2)).pack(side="left")
+            n2, t2 = _unpack_tpl_value(self.char.get(field2, ""))
+            e2.insert(0, n2); thr2.set(str(t2))
+            return (e1, thr1), (e2, thr2)
+
+        (self.entry_portrait, self.thr_portrait), (self.entry_skillbar, self.thr_skillbar) = \
+            _tpl_row_pair(top, "选人界面头像:", "portrait_template", "技能栏:", "skill_bar_template")
+        (self.entry_result, self.thr_result), (self.entry_avatar, self.thr_avatar) = \
+            _tpl_row_pair(top, "结算画面:", "result_screen_template", "城镇头像:", "avatar_template")
 
         bottom = ttk.Frame(main)
         bottom.pack(fill="x", pady=4)
@@ -1733,11 +1935,12 @@ class CharacterDialog:
             self._refresh()
 
     def _save(self):
+        c = self.char
         self.char["name"] = self.entry_name.get()
-        self.char["portrait_template"] = self.entry_portrait.get()
-        self.char["skill_bar_template"] = self.entry_skillbar.get() or None
-        self.char["result_screen_template"] = self.entry_result.get() or None
-        self.char["avatar_template"] = self.entry_avatar.get() or None
+        self.char["portrait_template"] = _pack_tpl_value(self.entry_portrait.get(), self.thr_portrait.get(), c.get("portrait_template"))
+        self.char["skill_bar_template"] = _pack_tpl_value(self.entry_skillbar.get(), self.thr_skillbar.get(), c.get("skill_bar_template")) or None
+        self.char["result_screen_template"] = _pack_tpl_value(self.entry_result.get(), self.thr_result.get(), c.get("result_screen_template")) or None
+        self.char["avatar_template"] = _pack_tpl_value(self.entry_avatar.get(), self.thr_avatar.get(), c.get("avatar_template")) or None
         try:
             self.char["runs"] = int(self.spin_runs.get())
         except ValueError:
@@ -1748,7 +1951,7 @@ class CharacterDialog:
 
 
 AVAILABLE_KEYS = ["w", "a", "s", "d", "1", "2", "3", "4", "5",
-                   "e", "q", "space", "left_shift", "left_ctrl", "left_alt",
+                   "e", "q", "p", "space", "left_shift", "left_ctrl", "left_alt",
                    "left_click", "right_click", "esc", "tab", "f"]
 
 
@@ -1762,7 +1965,7 @@ class ActionDialog:
             "delay_after": 0.0, "hold": False, "repeat": 1}
         self.dialog = tk.Toplevel(parent)
         self.dialog.title("编辑连招动作" if idx >= 0 else "添加连招动作")
-        self.dialog.geometry("640x460")
+        _center_on_parent(self.dialog, parent, 640, 460)
         self.dialog.transient(parent)
         self.dialog.grab_set()
         self._build()
@@ -1809,11 +2012,13 @@ class ActionDialog:
         self.preview_label.pack()
         self._update_preview()
 
-    def _add_param(self, parent, label, key, min_v, max_v):
+    def _add_param(self, parent, label, key, min_v, max_v, default=None):
         f = ttk.Frame(parent)
         f.pack(side="left", padx=4)
         ttk.Label(f, text=label).pack()
-        var = tk.StringVar(value=str(self.action.get(key, 0.1)))
+        if default is None:
+            default = 1 if max_v > 20 else 0.1
+        var = tk.StringVar(value=str(self.action.get(key, default)))
         spin = ttk.Spinbox(f, from_=min_v, to=max_v, increment=0.05 if max_v < 20 else 1,
                            textvariable=var, width=6)
         spin.pack()
@@ -1829,24 +2034,29 @@ class ActionDialog:
         self.preview_label.configure(text=preview)
 
     def _save(self):
-        keys = sorted(k for k, v in self.key_vars.items() if v.get())
-        if not keys:
-            messagebox.showwarning("提示", "请至少选择一个按键")
-            return
-        action = {
-            "keys": keys,
-            "duration": float(self.param_duration.get()),
-            "delay_before": float(self.param_delay_before.get()),
-            "delay_after": float(self.param_delay_after.get()),
-            "hold": self.hold_var.get(),
-            "repeat": int(self.param_repeat.get()),
-        }
-        if self.idx >= 0 and self.idx < len(self.combos):
-            self.combos[self.idx] = action
-        else:
-            self.combos.append(action)
-        self.on_save()
-        self.dialog.destroy()
+        try:
+            keys = sorted(k for k, v in self.key_vars.items() if v.get())
+            if not keys:
+                messagebox.showwarning("提示", "请至少选择一个按键")
+                return
+            action = {
+                "keys": keys,
+                "duration": round(float(self.param_duration.get()), 3),
+                "delay_before": round(float(self.param_delay_before.get()), 3),
+                "delay_after": round(float(self.param_delay_after.get()), 3),
+                "hold": self.hold_var.get(),
+                "repeat": int(self.param_repeat.get()),
+            }
+            if self.idx >= 0 and self.idx < len(self.combos):
+                self.combos[self.idx] = action
+            else:
+                self.combos.append(action)
+            self.on_save()
+        except Exception as e:
+            logger.exception("ActionDialog save failed: %s", e)
+            messagebox.showerror("保存失败", str(e))
+        finally:
+            self.dialog.destroy()
 
 
 class FallbackComboDialog:
@@ -1855,7 +2065,7 @@ class FallbackComboDialog:
         self.on_save = on_save
         self.dialog = tk.Toplevel(parent)
         self.dialog.title("编辑兜底连招")
-        self.dialog.geometry("700x400")
+        _center_on_parent(self.dialog, parent, 700, 400)
         self.dialog.transient(parent)
         self.dialog.grab_set()
         self._build()
@@ -1947,7 +2157,7 @@ class BindComboDialog:
 
         self.dialog = tk.Toplevel(parent)
         self.dialog.title("绑定连招到角色")
-        self.dialog.geometry("500x400")
+        _center_on_parent(self.dialog, parent, 500, 400)
         self.dialog.minsize(400, 300)
         self.dialog.transient(parent)
         self.dialog.grab_set()
@@ -2056,7 +2266,7 @@ class ScreenshotCropDialog:
 
         self.dialog = tk.Toplevel(parent)
         self.dialog.title("裁剪截图 - 鼠标拖拽选择区域")
-        self.dialog.geometry("960x720")
+        _center_on_parent(self.dialog, parent, 960, 720)
         self.dialog.minsize(640, 480)
         self.dialog.transient(parent)
         self.dialog.grab_set()

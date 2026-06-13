@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import threading
 from pathlib import Path
@@ -7,6 +8,12 @@ from pathlib import Path
 def get_resource_dir():
     if getattr(sys, 'frozen', False):
         return Path(sys._MEIPASS)
+    return Path(__file__).resolve().parent.parent
+
+
+def get_writable_dir():
+    if getattr(sys, 'frozen', False):
+        return Path(os.path.dirname(os.path.abspath(sys.executable)))
     return Path(__file__).resolve().parent.parent
 
 
@@ -32,6 +39,8 @@ DEFAULT_SETTINGS = {
     "debug_screenshot": False,
     "last_preset": "",
     "last_char_count": 1,
+    "last_char_start": 1,
+    "last_log_debug": False,
     "last_stealth": False,
     "last_background": False,
 }
@@ -77,7 +86,7 @@ class Settings:
 
     def save(self, path=None):
         if path is None:
-            path = CONFIG_DIR / "settings.json"
+            path = get_writable_dir() / "config" / "settings.json"
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
@@ -85,3 +94,48 @@ class Settings:
 
 
 PRESETS_DIR.mkdir(parents=True, exist_ok=True)
+
+DEFAULT_TEMPLATE_THRESHOLD = 0.65
+
+
+def parse_template_ref(value, default=None):
+    """Parse a template reference: string or {"template":..., "threshold":..., "color_threshold":..., "reject_flip":...}.
+    Returns (template_name: str, threshold: float).
+    """
+    if default is None:
+        default = DEFAULT_TEMPLATE_THRESHOLD
+    if not value:
+        return None, default
+    if isinstance(value, dict):
+        name = value.get("template") or None
+        thr = value.get("threshold", default)
+        ct = value.get("color_threshold", 0.0)
+        if ct > 0 and name:
+            from recognition.template import _color_registry
+            _color_registry[name] = ct
+        if value.get("reject_flip") and name:
+            from recognition.template import _flip_registry
+            _flip_registry.add(name)
+        return name, thr
+    return str(value), default
+
+
+def parse_template_chain(chain_list, default=None):
+    """Parse a list of template references (strings or dicts).
+    Returns list of (template_name, threshold) tuples.
+    """
+    if default is None:
+        default = DEFAULT_TEMPLATE_THRESHOLD
+    if not chain_list:
+        return []
+    result = []
+    for item in chain_list:
+        if isinstance(item, dict):
+            name = item.get("template")
+            thr = item.get("threshold", default)
+        else:
+            name = str(item) if item else None
+            thr = default
+        if name:
+            result.append((name, thr))
+    return result

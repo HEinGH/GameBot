@@ -630,3 +630,120 @@ AttributeError: 'PortalDetector' object has no attribute 'detect'
 2026-06-10 00:06:19 [WARNING] states.domain_combat:151 Panel still visible after 3 retries, proceeding anyway
 2026-06-10 02:10:58 [WARNING] core.watchdog:31 Stuck #1 | SSIM=0.985
 2026-06-10 02:10:58 [WARNING] states.stuck_recovery:25 Entering stuck recovery
+2026-06-11 21:03:50 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:06:12 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:07:58 [WARNING] states.domain_combat:151 Panel still visible after 3 retries, proceeding anyway
+2026-06-11 21:08:44 [WARNING] states.domain_combat:151 Panel still visible after 3 retries, proceeding anyway
+2026-06-11 21:10:04 [WARNING] states.domain_combat:151 Panel still visible after 3 retries, proceeding anyway
+2026-06-11 21:10:16 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:21 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:25 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:30 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:35 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:39 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:10:44 [WARNING] states.dungeon_exit_nav:440 Confirm button not found, retrying
+2026-06-11 21:23:49 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:30:12 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:31:28 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:32:35 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:33:37 [WARNING] states.town_nav:187 '深渊3.png' not found after 45 attempts, saving debug frame
+2026-06-11 21:34:14 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 21:37:11 [WARNING] states.dungeon_exit_nav:443 Confirm button not found after retries, restarting button flow
+2026-06-11 23:25:01 [ERROR  ] gui.app:1670 Bot thread crashed: name 'parse_template_chain' is not defined
+Traceback (most recent call last):
+  File "E:\vscode\game_bot\gui\app.py", line 1663, in _run_bot
+    fsm.update(blackboard)
+    ~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\core\fsm.py", line 61, in update
+    self._states[self._current].update(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\town_nav.py", line 157, in update
+    self._try_transition(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\town_nav.py", line 82, in _try_transition
+    blackboard["_fsm"].transition("npc_navigate", blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\vscode\game_bot\core\fsm.py", line 56, in transition
+    self._states[self._current].enter(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\npc_navigate.py", line 60, in enter
+    self._enter_chain = parse_template_chain(ce)
+                        ^^^^^^^^^^^^^^^^^^^^
+NameError: name 'parse_template_chain' is not defined. Did you mean: 'parse_template_ref'?
+2026-06-11 23:26:57 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-11 23:27:24 [ERROR  ] gui.app:1670 Bot thread crashed: name 'parse_template_chain' is not defined
+Traceback (most recent call last):
+  File "E:\vscode\game_bot\gui\app.py", line 1663, in _run_bot
+    fsm.update(blackboard)
+    ~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\core\fsm.py", line 61, in update
+    self._states[self._current].update(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\town_nav.py", line 157, in update
+    self._try_transition(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\town_nav.py", line 82, in _try_transition
+    blackboard["_fsm"].transition("npc_navigate", blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\vscode\game_bot\core\fsm.py", line 56, in transition
+    self._states[self._current].enter(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\npc_navigate.py", line 60, in enter
+    self._enter_chain = parse_template_chain(ce)
+                        ^^^^^^^^^^^^^^^^^^^^
+NameError: name 'parse_template_chain' is not defined. Did you mean: 'parse_template_ref'?
+2026-06-11 23:30:59 [ERROR  ] gui.app:1670 Bot thread crashed: 'NPCNavigateState' object has no attribute '_enter_tpl'
+Traceback (most recent call last):
+  File "E:\vscode\game_bot\gui\app.py", line 1663, in _run_bot
+    fsm.update(blackboard)
+    ~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\core\fsm.py", line 61, in update
+    self._states[self._current].update(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\town_nav.py", line 157, in update
+    self._try_transition(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\town_nav.py", line 82, in _try_transition
+    blackboard["_fsm"].transition("npc_navigate", blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\vscode\game_bot\core\fsm.py", line 56, in transition
+    self._states[self._current].enter(blackboard)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "E:\vscode\game_bot\states\npc_navigate.py", line 80, in enter
+    self._npc_tpl or "(none)", self._enter_tpl or "(none)",
+                               ^^^^^^^^^^^^^^^
+AttributeError: 'NPCNavigateState' object has no attribute '_enter_tpl'
+2026-06-12 22:39:32 [ERROR  ] gui.app:1990 ActionDialog save failed: invalid literal for int() with base 10: '0.1'
+Traceback (most recent call last):
+  File "E:\vscode\game_bot\gui\app.py", line 1982, in _save
+    "repeat": int(self.param_repeat.get()),
+              ~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: '0.1'
+2026-06-12 23:27:21 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-12 23:30:37 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-12 23:31:47 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-12 23:34:26 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-12 23:36:29 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-12 23:45:11 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-12 23:45:38 [WARNING] dxcam.core.dxgi_duplicator:155 Desktop duplication access loss/system transition detected (HRESULT=0x887A0026). Triggering output-change recovery.
+2026-06-12 23:45:38 [WARNING] dxcam.dxcam:185 Output change/access loss detected (backend=dxgi, output=2560x1440).
+2026-06-12 23:45:39 [WARNING] dxcam.core.dxgi_duplicator:155 Desktop duplication access loss/system transition detected (HRESULT=0x887A0026). Triggering output-change recovery.
+2026-06-12 23:45:39 [WARNING] dxcam.dxcam:185 Output change/access loss detected (backend=dxgi, output=2560x1440).
+2026-06-12 23:48:20 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-12 23:49:41 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-12 23:51:02 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-13 00:01:59 [WARNING] states.dungeon_exit_nav:467 Confirm button not found after retries, restarting button flow
+2026-06-13 00:14:16 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-13 00:27:23 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-13 00:28:20 [WARNING] states.town_nav:139 Avatar not found after 60 attempts, proceeding anyway
+2026-06-13 00:28:28 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-13 00:30:52 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-13 00:56:42 [WARNING] states.town_nav:98 NPC icon not found after 20 attempts, forcing domain entry
+2026-06-13 00:57:22 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-13 01:18:46 [WARNING] states.town_nav:98 NPC icon not found after 20 attempts, forcing domain entry
+2026-06-13 01:19:07 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-13 01:23:29 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-13 01:44:56 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-13 02:01:24 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-13 02:16:09 [WARNING] states.domain_combat:153 Panel still visible after 3 retries, proceeding anyway
+2026-06-13 02:24:36 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.

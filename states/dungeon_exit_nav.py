@@ -5,6 +5,7 @@ import traceback
 from core.fsm import BaseState
 from recognition.portal_detector import PortalDetector
 from recognition.template import find_template
+from config.settings import parse_template_ref
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class DungeonExitNavState(BaseState):
         self._search_skips = 0
         self._settle_frames = 10
         self._last_ts = 0
-        self._interval = 0.12
+        self._interval = 0.08
         self._button_attempts = 0
         self._near_exit = False
 
@@ -71,8 +72,10 @@ class DungeonExitNavState(BaseState):
         super().enter(blackboard)
         preset = blackboard.get("preset", {})
         portal_tpl = preset.get("portal_template") or ""
+        portal_name, portal_thr = parse_template_ref(portal_tpl)
         self.detector = PortalDetector(
-            portal_template=portal_tpl if portal_tpl else None,
+            portal_template=portal_name if portal_name else None,
+            template_threshold=portal_thr,
         )
         self._set_phase("scan")
         self._last_pos = None
@@ -87,6 +90,7 @@ class DungeonExitNavState(BaseState):
         self._click_stage = 0
         self._click_wait = 0
         self._button_attempts = 0
+        self._confirm_attempts = 0
         self._near_exit = False
         rect = blackboard.get("_window_rect")
         if not rect or len(rect) != 4:
@@ -138,13 +142,14 @@ class DungeonExitNavState(BaseState):
     def _do_rotate(self, off, gw_w):
         abs_off = abs(off)
         if abs_off < gw_w * 0.02: return
-        if abs_off < gw_w * 0.05: step = 10
-        elif abs_off < gw_w * 0.20: step = 20
-        else: step = 35
+        if abs_off < gw_w * 0.05: step = 5
+        elif abs_off < gw_w * 0.10: step = 10
+        elif abs_off < gw_w * 0.20: step = 18
+        else: step = 30
         angle = -step if off < 0 else step
         logger.debug("  rotate off=%d(%.0f%%) deg=%.0f", off, off / gw_w * 100, angle)
         self._rotate(angle)
-        time.sleep(0.08)
+        time.sleep(0.05)
 
     def _find_portal(self, frame):
         result = self.detector.detect(frame)
@@ -159,13 +164,16 @@ class DungeonExitNavState(BaseState):
         runs_done = blackboard.get("domain_run_count", 0)
         domain_runs = char_config.get("runs", 1)
         all_done = runs_done + 1 >= domain_runs
-        rechallenge_tpl = (preset.get("rechallenge_template")
-                          or preset.get("town_nav", {}).get("rechallenge_template"))
-        exit_tpl = (preset.get("exit_domain_template")
-                    or preset.get("town_nav", {}).get("exit_domain_template"))
-        target = exit_tpl if all_done else rechallenge_tpl
-        if not target: return None
-        r = find_template(frame, target, threshold=threshold)
+        rechallenge_name, rechallenge_thr = parse_template_ref(
+            preset.get("rechallenge_template")
+            or preset.get("town_nav", {}).get("rechallenge_template"))
+        exit_name, exit_thr = parse_template_ref(
+            preset.get("exit_domain_template")
+            or preset.get("town_nav", {}).get("exit_domain_template"))
+        target_name = exit_name if all_done else rechallenge_name
+        target_thr = exit_thr if all_done else rechallenge_thr
+        if not target_name: return None
+        r = find_template(frame, target_name, threshold=target_thr)
         return r
 
     def _wd_reset(self, blackboard):
@@ -198,7 +206,7 @@ class DungeonExitNavState(BaseState):
         if frame is None: return
 
         if self._phase != "buttons":
-            btn = self._find_button(frame, blackboard, threshold=0.50)
+            btn = self._find_button(frame, blackboard, threshold=0.65)
             if btn:
                 c = btn["confidence"]
                 if c >= 0.75 or (c >= 0.50 and self._near_exit):
@@ -282,12 +290,39 @@ class DungeonExitNavState(BaseState):
             x, y = portal["center"]
             rel_x = x - self._gw_l
             rel_y = y - self._gw_t
-            logger.debug("Seek: portal off=(%.0f%%,%.0f%%)",
-                        (rel_x - win_cx) / gw * 100, (rel_y - win_cy) / gw * 100)
-            if rel_y < win_cy - gh * 0.10:
-                logger.debug("  clearly upper -> centering")
+            h_off = rel_x - win_cx
+            h_ratio = abs(h_off) / gw if gw > 0 else 0
+            v_ratio = rel_y / gh if gh > 0 else 0
+            logger.debug("Seek: portal off=(%.0f%%,%.0f%%) h_ratio=%.2f v_ratio=%.2f",
+                        (rel_x - win_cx) / gw * 100 if gw else 0,
+                        (rel_y - win_cy) / gw * 100 if gw else 0, h_ratio, v_ratio)
+
+            if h_ratio < 0.05 and v_ratio < 0.66:
+                logger.debug("  centered, switching to center")
                 self._set_phase("center"); return
-            self._search_dir = -1 if rel_x < win_cx else 1
+
+            if h_ratio < 0.05:
+                step = 5
+            elif h_ratio < 0.10:
+                step = 10
+            elif h_ratio < 0.20:
+                step = 18
+            elif h_ratio < 0.30:
+                step = 30
+            elif h_ratio < 0.50:
+                step = 50
+            else:
+                step = 65
+
+            if v_ratio < 0.33:
+                step = int(step * 0.7)
+            elif v_ratio > 0.66:
+                step = int(step * 1.3)
+
+            self._search_dir = -1 if h_off < 0 else 1
+            angle = self._search_dir * max(8, step)
+            logger.debug("  seek rotate %d deg (step=%d h=%.2f v=%.2f)", angle, step, h_ratio, v_ratio)
+            self._rotate(angle)
         else:
             self._lost += 1
             if self._lost == 6:
@@ -295,10 +330,7 @@ class DungeonExitNavState(BaseState):
             elif self._lost > 20:
                 self._set_phase("buttons"); self._click_stage = 0; self._click_wait = 0; self._button_attempts = 0; return
 
-        angle = self._search_dir * 25
-        logger.debug("  seek rotate %d deg", angle)
-        self._rotate(angle)
-        time.sleep(0.15)
+        time.sleep(0.08)
 
     def _do_center(self, frame, gh, gw, win_cx, win_cy):
         if self._last_pos is None: self._set_phase("scan"); self._lost = 0; return
@@ -316,7 +348,7 @@ class DungeonExitNavState(BaseState):
             if self._lost == 5:
                 if self._last_pos and self._last_pos[0] - self._gw_l > win_cx: self._rotate(-8)
                 else: self._rotate(8)
-                time.sleep(0.1)
+                time.sleep(0.05)
             if self._lost > 30: self._set_phase("scan"); self._lost = 0; return
             return
         if self._last_pos is None: self._set_phase("scan"); return
@@ -394,24 +426,28 @@ class DungeonExitNavState(BaseState):
         runs_done = blackboard.get("domain_run_count", 0)
         all_done = runs_done + 1 >= domain_runs
 
-        rechallenge_tpl = (preset.get("rechallenge_template")
-                          or preset.get("town_nav", {}).get("rechallenge_template"))
-        exit_tpl = (preset.get("exit_domain_template")
-                    or preset.get("town_nav", {}).get("exit_domain_template"))
-        confirm_tpl = (preset.get("confirm_button_template")
-                       or preset.get("town_exit", {}).get("confirm_exit_template")
-                       or "确认.png")
+        rechallenge_name, rechallenge_thr = parse_template_ref(
+            preset.get("rechallenge_template")
+            or preset.get("town_nav", {}).get("rechallenge_template"))
+        exit_name, exit_thr = parse_template_ref(
+            preset.get("exit_domain_template")
+            or preset.get("town_nav", {}).get("exit_domain_template"))
+        confirm_name, confirm_thr = parse_template_ref(
+            preset.get("confirm_button_template")
+            or preset.get("town_exit", {}).get("confirm_exit_template")
+            or "确认.png")
 
         if self._click_wait > 0:
             self._click_wait -= 1
             return
 
         if self._click_stage == 0:
-            target = exit_tpl if all_done else rechallenge_tpl
-            if not target:
+            target_name = exit_name if all_done else rechallenge_name
+            target_thr = exit_thr if all_done else rechallenge_thr
+            if not target_name:
                 self._force_transition(blackboard, all_done, runs_done)
                 return
-            r = find_template(frame, target, threshold=0.55)
+            r = find_template(frame, target_name, threshold=target_thr)
             if r:
                 cx, cy = r["center"]
                 self.controller.click_at(cx, cy)
@@ -419,6 +455,7 @@ class DungeonExitNavState(BaseState):
                 logger.info("Clicked %s (run %d/%d)", action, runs_done + 1, domain_runs)
                 self._click_stage = 1
                 self._click_wait = 15
+                self._confirm_attempts = 20
                 self._button_attempts = 0
             else:
                 self._button_attempts += 1
@@ -428,16 +465,27 @@ class DungeonExitNavState(BaseState):
                 return
 
         if self._click_stage == 1:
-            r = find_template(frame, confirm_tpl, threshold=0.55)
+            r = find_template(frame, confirm_name, threshold=confirm_thr)
             if r:
                 cx, cy = r["center"]
                 self.controller.click_at(cx, cy)
                 logger.info("Clicked confirm")
                 self._click_stage = 2
                 self._click_wait = 15
-            self._click_wait -= 1
-            if self._click_wait <= 0:
-                logger.warning("Confirm button not found, retrying")
+                return
+            avatar_tpl = char_config.get("avatar_template")
+            avatar_name, avatar_thr = parse_template_ref(avatar_tpl)
+            if avatar_name:
+                ar = find_template(frame, avatar_name, threshold=avatar_thr)
+                if ar:
+                    logger.info("Avatar detected in town after exit (conf=%.2f), proceeding",
+                                ar["confidence"])
+                    self._click_stage = 2
+                    self._click_wait = 15
+                    return
+            self._confirm_attempts -= 1
+            if self._confirm_attempts <= 0:
+                logger.warning("Confirm button not found after retries, restarting button flow")
                 self._click_stage = 0
             return
 

@@ -1,0 +1,821 @@
+{
+  "description": "临界",
+  "window_title": "晶核：魔导觉醒",
+  "char_count": 7,
+  "stealth": false,
+  "background": false,
+  "enter_game_template": "进入游戏.png",
+  "rechallenge_template": "再次挑战.png",
+  "exit_domain_template": "退出副本.png",
+  "portal_template": "副本出口图标.png",
+  "town_nav": {
+    "domain_select_steps": [
+      "日常按钮.png",
+      "临界1.png",
+      "临界2.png",
+      {
+        "template": "临界3.png",
+        "threshold": 0.85,
+        "reject_flip": true,
+        "color_threshold": 0.7
+      },
+      "临界4.png"
+    ],
+    "alt_for_mouse": true,
+    "confirm_enter_template": [
+      {
+        "template": "临界3.png",
+        "threshold": 0.85,
+        "reject_flip": true,
+        "color_threshold": 0.7
+      },
+      "临界4.png"
+    ],
+    "npc_marker_template": {
+      "template": "npc寻路图标.png",
+      "threshold": 0.65,
+      "reject_flip": true
+    }
+  },
+  "town_exit": {
+    "settings_template": "设置按钮.png",
+    "switch_character_template": "切换角色.png",
+    "exit_game_template": "退出游戏.png",
+    "confirm_exit_template": "确认.png"
+  },
+  "characters": [
+    {
+      "name": "赏金",
+      "portrait_template": {
+        "template": "赏金\\赏金选人界面头像.png",
+        "threshold": 0.7
+      },
+      "skill_bar_template": "赏金\\赏金技能栏.png",
+      "result_screen_template": {
+        "template": "赏金\\赏金结算画面.png",
+        "threshold": 0.75
+      },
+      "avatar_template": {
+        "template": "赏金\\赏金城镇头像.png",
+        "threshold": 0.7
+      },
+      "runs": 3,
+      "fallback_combos": null,
+      "combos": [
+        {
+          "keys": [
+            "w"
+          ],
+          "duration": 2.0,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": true,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "p"
+          ],
+          "duration": 0.5,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.35,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.36,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.35,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.37,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.34,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ]
+    },
+    {
+      "name": "狂战",
+      "portrait_template": "狂战\\狂战选人界面头像.png",
+      "skill_bar_template": {
+        "template": "狂战\\狂战技能栏.png",
+        "threshold": 0.75
+      },
+      "result_screen_template": {
+        "template": "狂战\\狂战结算画面.png",
+        "threshold": 0.75
+      },
+      "avatar_template": {
+        "template": "狂战\\狂战城镇头像.png",
+        "threshold": 0.7
+      },
+      "runs": 3,
+      "fallback_combos": null,
+      "combos": [
+        {
+          "keys": [
+            "w"
+          ],
+          "duration": 2.0,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "p"
+          ],
+          "duration": 0.5,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.35,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.38,
+          "delay_before": 1.0,
+          "delay_after": 2.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.34,
+          "delay_before": 1.0,
+          "delay_after": 2.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.36,
+          "delay_before": 1.0,
+          "delay_after": 2.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ]
+    },
+    {
+      "name": "霜伶",
+      "portrait_template": "霜伶\\霜伶选人界面头像.png",
+      "skill_bar_template": {
+        "template": "霜伶\\霜伶技能栏.png",
+        "threshold": 0.75
+      },
+      "result_screen_template": {
+        "template": "霜伶\\霜伶结算画面.png",
+        "threshold": 0.75
+      },
+      "avatar_template": {
+        "template": "霜伶\\霜伶城镇头像.png",
+        "threshold": 0.68
+      },
+      "runs": 3,
+      "fallback_combos": null,
+      "combos": [
+        {
+          "keys": [
+            "w"
+          ],
+          "duration": 2.0,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "p"
+          ],
+          "duration": 0.5,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.36,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "4"
+          ],
+          "duration": 0.33,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.38,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.35,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ]
+    },
+    {
+      "name": "碎星",
+      "portrait_template": "碎星\\碎星选人界面头像.png",
+      "skill_bar_template": {
+        "template": "碎星\\碎星技能栏.png",
+        "threshold": 0.75
+      },
+      "result_screen_template": {
+        "template": "碎星\\碎星结算画面.png",
+        "threshold": 0.75
+      },
+      "avatar_template": {
+        "template": "碎星\\碎星城镇头像.png",
+        "threshold": 0.7
+      },
+      "runs": 3,
+      "fallback_combos": null,
+      "combos": [
+        {
+          "keys": [
+            "w"
+          ],
+          "duration": 2.0,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "p"
+          ],
+          "duration": 0.5,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.37,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.33,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "4"
+          ],
+          "duration": 0.34,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.38,
+          "delay_before": 1.0,
+          "delay_after": 2.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ]
+    },
+    {
+      "name": "机械",
+      "portrait_template": "机械\\机械选人界面头像.png",
+      "skill_bar_template": {
+        "template": "机械\\机械技能栏.png",
+        "threshold": 0.75
+      },
+      "result_screen_template": {
+        "template": "机械\\机械结算画面.png",
+        "threshold": 0.75
+      },
+      "avatar_template": {
+        "template": "机械\\机械城镇头像.png",
+        "threshold": 0.7
+      },
+      "runs": 3,
+      "fallback_combos": null,
+      "combos": [
+        {
+          "keys": [
+            "w"
+          ],
+          "duration": 2.0,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "p"
+          ],
+          "duration": 0.5,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.35,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "4"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.37,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.34,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.38,
+          "delay_before": 1.0,
+          "delay_after": 2.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ]
+    },
+    {
+      "name": "鬼刃",
+      "portrait_template": "鬼刃\\鬼刃选人界面头像.png",
+      "skill_bar_template": {
+        "template": "鬼刃\\鬼刃技能栏.png",
+        "threshold": 0.75
+      },
+      "result_screen_template": {
+        "template": "鬼刃\\鬼刃结算画面.png",
+        "threshold": 0.75
+      },
+      "avatar_template": {
+        "template": "鬼刃\\鬼刃城镇头像.png",
+        "threshold": 0.7
+      },
+      "runs": 3,
+      "fallback_combos": null,
+      "combos": [
+        {
+          "keys": [
+            "w"
+          ],
+          "duration": 2.0,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "p"
+          ],
+          "duration": 0.5,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.33,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.38,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.35,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.34,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ]
+    },
+    {
+      "name": "音爆",
+      "portrait_template": "音爆\\音爆选人界面头像.png",
+      "skill_bar_template": {
+        "template": "音爆\\音爆技能栏.png",
+        "threshold": 0.75
+      },
+      "result_screen_template": {
+        "template": "音爆\\音爆结算画面.png",
+        "threshold": 0.8
+      },
+      "avatar_template": {
+        "template": "音爆\\音爆城镇头像.png",
+        "threshold": 0.7
+      },
+      "runs": 3,
+      "fallback_combos": null,
+      "combos": [
+        {
+          "keys": [
+            "w"
+          ],
+          "duration": 2.0,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "p"
+          ],
+          "duration": 0.5,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "4"
+          ],
+          "duration": 0.33,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.36,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.35,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.34,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.38,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ]
+    }
+  ],
+  "fallback_combos": [
+    {
+      "keys": [
+        "1"
+      ],
+      "duration": 0.31,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "2"
+      ],
+      "duration": 0.32,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "3"
+      ],
+      "duration": 0.33,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "4"
+      ],
+      "duration": 0.34,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "5"
+      ],
+      "duration": 0.35,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "e"
+      ],
+      "duration": 0.36,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "q"
+      ],
+      "duration": 0.37,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    }
+  ],
+  "char_start": 1
+}

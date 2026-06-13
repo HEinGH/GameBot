@@ -10,12 +10,13 @@ logger = logging.getLogger(__name__)
 
 
 class PortalDetector:
-    def __init__(self, portal_template=None):
+    def __init__(self, portal_template=None, template_threshold=0.65):
         self._portal_template = None
         self._portal_kp = None
         self._portal_des = None
         self._orb = cv2.ORB_create(nfeatures=500)
         self._portal_file = None
+        self._template_threshold = template_threshold
         self._load_templates(portal_template)
 
     def _load_templates(self, portal_template):
@@ -58,7 +59,7 @@ class PortalDetector:
             return None
         try:
             from recognition.template import find_template
-            r = find_template(frame, self._portal_file, threshold=0.40,
+            r = find_template(frame, self._portal_file, threshold=self._template_threshold,
                               scale_range=(0.3, 1.5), scale_steps=13)
             if r:
                 return {

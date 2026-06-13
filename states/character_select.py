@@ -3,7 +3,7 @@ import logging
 
 from core.fsm import BaseState
 from recognition.template import find_template
-from config.settings import Settings
+from config.settings import Settings, parse_template_ref
 from utils.logger import DEBUG_DIR
 
 logger = logging.getLogger(__name__)
@@ -72,8 +72,8 @@ class CharacterSelectState(BaseState):
             blackboard["running"] = False
             return
         char_config = chars[char_index]
-        portrait_template = char_config.get("portrait_template")
-        enter_template = preset.get("enter_game_template")
+        portrait_name, portrait_thr = parse_template_ref(char_config.get("portrait_template"))
+        enter_name, enter_thr = parse_template_ref(preset.get("enter_game_template"))
 
         frame = blackboard["current_frame"]
         if frame is None:
@@ -85,12 +85,12 @@ class CharacterSelectState(BaseState):
         self._last_match_time = now
 
         if self._step == 0:
-            if portrait_template:
-                result = find_template(frame, portrait_template, threshold=0.7)
+            if portrait_name:
+                result = find_template(frame, portrait_name, threshold=portrait_thr)
                 if result:
                     cx, cy = result["center"]
                     self._click(cx, cy, blackboard)
-                    logger.info("Selected character %d via %s (conf=%.2f)", char_index, portrait_template, result["confidence"])
+                    logger.info("Selected character %d via %s (conf=%.2f)", char_index, portrait_name, result["confidence"])
                     self._step = 1
                     time.sleep(self.controller.jitter_delay(2.0))
                     return
@@ -116,8 +116,8 @@ class CharacterSelectState(BaseState):
                 self._step = 1
 
         if self._step == 1:
-            if enter_template:
-                result = find_template(frame, enter_template, threshold=0.65)
+            if enter_name:
+                result = find_template(frame, enter_name, threshold=enter_thr)
                 if result:
                     cx, cy = result["center"]
                     self._click(cx, cy, blackboard)

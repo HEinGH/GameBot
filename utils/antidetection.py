@@ -103,10 +103,3 @@ class BehaviorProfile:
     @lru_cache(maxsize=1)
     def get_profile_name(self):
         return self.name
-
-
-def random_keystroke_rhythm():
-    """Randomly vary which keys are pressed in a rotation"""
-    base = ["1", "2", "3", "4", "5", "e", "q"]
-    random.shuffle(base)
-    return base
