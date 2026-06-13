@@ -130,9 +130,10 @@ class NPCNavigateState(BaseState):
     def _do_rotate(self, off, gw_w):
         abs_off = abs(off)
         if abs_off < gw_w * 0.02: return
-        if abs_off < gw_w * 0.05: step = 10
-        elif abs_off < gw_w * 0.20: step = 20
-        else: step = 35
+        if abs_off < gw_w * 0.05: step = 5
+        elif abs_off < gw_w * 0.10: step = 10
+        elif abs_off < gw_w * 0.20: step = 18
+        else: step = 30
         angle = -step if off < 0 else step
         logger.debug("  rotate off=%d(%.0f%%) deg=%.0f", off, off / gw_w * 100, angle)
         self._rotate(angle)
@@ -206,7 +207,7 @@ class NPCNavigateState(BaseState):
             enter = self._find(tpl_name, frame, threshold=tpl_thr)
             if enter:
                 c = enter["confidence"]
-                if c >= 0.75 or (c >= 0.65 and self._phase == "enter"):
+                if c >= tpl_thr:
                     self._release_w()
                     try: self.controller.click_at(enter["center"][0], enter["center"][1])
                     except Exception: pass
@@ -221,14 +222,23 @@ class NPCNavigateState(BaseState):
                                     self._enter_chain_idx, len(self._enter_chain), tpl_name, c)
                         time.sleep(self.controller.jitter_delay(1.5))
                     return
-                elif self._phase != "enter":
+                else:
                     self._enter_attempts += 1
                     if self._enter_attempts % 5 == 1:
                         logger.debug("Enter sub-threshold (conf=%.2f), attempt %d", c, self._enter_attempts)
             else:
                 self._enter_attempts += 1
+            if self._enter_attempts > 120:
+                logger.warning("Confirm enter timeout after %d attempts, forcing transition",
+                               self._enter_attempts)
+                self._release_w()
+                blackboard["_fsm"].transition("domain_loading", blackboard)
+                return
         else:
             self._enter_attempts = 0
+
+        if self._enter_chain_idx > 0:
+            return
 
         if self._phase == "scan":
             self._do_scan(frame, gw_h, gw_w, win_cx, win_cy)
@@ -281,12 +291,39 @@ class NPCNavigateState(BaseState):
             x, y = icon["center"]
             rel_x = x - self._gw_l
             rel_y = y - self._gw_t
-            logger.debug("Seek: icon rel=(%d,%d) off=(%.0f%%,%.0f%%)",
-                        rel_x, rel_y, (rel_x - win_cx) / gw * 100, (rel_y - win_cy) / gw * 100)
-            if rel_y < win_cy - gh * 0.10:
-                logger.debug("  clearly upper -> centering")
+            h_off = rel_x - win_cx
+            h_ratio = abs(h_off) / gw if gw > 0 else 0
+            v_ratio = rel_y / gh if gh > 0 else 0
+            logger.debug("Seek: icon off=(%.0f%%,%.0f%%) h_ratio=%.2f v_ratio=%.2f",
+                        (rel_x - win_cx) / gw * 100 if gw else 0,
+                        (rel_y - win_cy) / gw * 100 if gw else 0, h_ratio, v_ratio)
+
+            if h_ratio < 0.05 and v_ratio < 0.66:
+                logger.debug("  centered, switching to center")
                 self._set_phase("center"); return
-            self._seek_dir = -1 if rel_x < win_cx else 1
+
+            if h_ratio < 0.05:
+                step = 5
+            elif h_ratio < 0.10:
+                step = 10
+            elif h_ratio < 0.20:
+                step = 18
+            elif h_ratio < 0.30:
+                step = 30
+            elif h_ratio < 0.50:
+                step = 50
+            else:
+                step = 65
+
+            if v_ratio < 0.33:
+                step = int(step * 0.7)
+            elif v_ratio > 0.66:
+                step = int(step * 1.3)
+
+            self._seek_dir = -1 if h_off < 0 else 1
+            angle = self._seek_dir * max(8, step)
+            logger.debug("  seek rotate %d deg (step=%d h=%.2f v=%.2f)", angle, step, h_ratio, v_ratio)
+            self._rotate(angle)
         else:
             self._lost += 1
             if self._lost == 6:
@@ -295,9 +332,7 @@ class NPCNavigateState(BaseState):
             elif self._lost > 20:
                 self._set_phase("enter"); self._wait = 0; return
 
-        logger.debug("  seek rotate %s %d", "left" if self._seek_dir < 0 else "right", abs(self._seek_dir * 25))
-        self._rotate(self._seek_dir * 25)
-        time.sleep(0.15)
+        time.sleep(0.04)
 
     def _do_center(self, frame, gh, gw, win_cx, win_cy):
         if self._last_pos is None: self._set_phase("scan"); self._lost = 0; return

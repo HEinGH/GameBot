@@ -29,8 +29,10 @@
     1.0
   ],
   "debug_screenshot": false,
-  "last_preset": "test1",
+  "last_preset": "临界",
   "last_char_count": 7,
+  "last_char_start": 1,
+  "last_log_debug": true,
   "last_stealth": false,
   "last_background": false
 }

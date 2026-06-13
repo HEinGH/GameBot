@@ -1,5 +1,5 @@
 {
-  "description": "test1",
+  "description": "深渊",
   "window_title": "晶核：魔导觉醒",
   "skill_bar_template": "skill_bar.png",
   "result_screen_template": "result_clear.png",
@@ -35,7 +35,7 @@
       "skill_bar_template": "镰卫技能栏.png",
       "result_screen_template": "镰卫结算画面.png",
       "avatar_template": "镰卫城镇头像.png",
-      "runs": 1,
+      "runs": 12,
       "fallback_combos": null,
       "combos": [
         {
@@ -152,50 +152,71 @@
       "keys": [
         "1"
       ],
-      "duration": 0.1,
-      "delay_after": 0.6
+      "duration": 0.35,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
     },
     {
       "keys": [
         "2"
       ],
-      "duration": 0.1,
-      "delay_after": 0.6
+      "duration": 0.33,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
     },
     {
       "keys": [
         "3"
       ],
-      "duration": 0.1,
-      "delay_after": 0.6
+      "duration": 0.34,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
     },
     {
       "keys": [
         "4"
       ],
-      "duration": 0.1,
-      "delay_after": 0.6
+      "duration": 0.36,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
     },
     {
       "keys": [
         "5"
       ],
-      "duration": 0.1,
-      "delay_after": 0.6
+      "duration": 0.31,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
     },
     {
       "keys": [
         "e"
       ],
-      "duration": 0.15,
-      "delay_after": 1.0
+      "duration": 0.37,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
     },
     {
       "keys": [
         "q"
       ],
-      "duration": 0.15,
-      "delay_after": 2.0
+      "duration": 0.38,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
     }
   ],
   "char_count": 1,

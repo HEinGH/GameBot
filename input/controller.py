@@ -157,7 +157,7 @@ class Controller:
         pydirectinput.mouseUp(button="left")
         time.sleep(0.03)
 
-    def rotate_camera_free(self, angle_deg, sensitivity=800):
+    def rotate_camera_free(self, angle_deg, sensitivity=400):
         pixels = int(angle_deg / 90.0 * sensitivity)
         if abs(pixels) < 3:
             return

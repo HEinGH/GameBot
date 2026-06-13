@@ -39,6 +39,8 @@ DEFAULT_SETTINGS = {
     "debug_screenshot": False,
     "last_preset": "",
     "last_char_count": 1,
+    "last_char_start": 1,
+    "last_log_debug": False,
     "last_stealth": False,
     "last_background": False,
 }
@@ -97,15 +99,24 @@ DEFAULT_TEMPLATE_THRESHOLD = 0.65
 
 
 def parse_template_ref(value, default=None):
-    """Parse a template reference which can be a string or {"template": ..., "threshold": ...} dict.
-    Returns (template_name: str, threshold: float). Returns (None, default) if value is empty/None.
+    """Parse a template reference: string or {"template":..., "threshold":..., "color_threshold":..., "reject_flip":...}.
+    Returns (template_name: str, threshold: float).
     """
     if default is None:
         default = DEFAULT_TEMPLATE_THRESHOLD
     if not value:
         return None, default
     if isinstance(value, dict):
-        return value.get("template") or None, value.get("threshold", default)
+        name = value.get("template") or None
+        thr = value.get("threshold", default)
+        ct = value.get("color_threshold", 0.0)
+        if ct > 0 and name:
+            from recognition.template import _color_registry
+            _color_registry[name] = ct
+        if value.get("reject_flip") and name:
+            from recognition.template import _flip_registry
+            _flip_registry.add(name)
+        return name, thr
     return str(value), default
 
 

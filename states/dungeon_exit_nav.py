@@ -142,9 +142,10 @@ class DungeonExitNavState(BaseState):
     def _do_rotate(self, off, gw_w):
         abs_off = abs(off)
         if abs_off < gw_w * 0.02: return
-        if abs_off < gw_w * 0.05: step = 10
-        elif abs_off < gw_w * 0.20: step = 20
-        else: step = 35
+        if abs_off < gw_w * 0.05: step = 5
+        elif abs_off < gw_w * 0.10: step = 10
+        elif abs_off < gw_w * 0.20: step = 18
+        else: step = 30
         angle = -step if off < 0 else step
         logger.debug("  rotate off=%d(%.0f%%) deg=%.0f", off, off / gw_w * 100, angle)
         self._rotate(angle)
@@ -166,15 +167,11 @@ class DungeonExitNavState(BaseState):
         rechallenge_name, rechallenge_thr = parse_template_ref(
             preset.get("rechallenge_template")
             or preset.get("town_nav", {}).get("rechallenge_template"))
-        exit_name, _ = parse_template_ref(
+        exit_name, exit_thr = parse_template_ref(
             preset.get("exit_domain_template")
             or preset.get("town_nav", {}).get("exit_domain_template"))
         target_name = exit_name if all_done else rechallenge_name
-        target_thr = rechallenge_thr if not all_done else max(threshold, rechallenge_thr if all_done else 0.65)
-        if all_done:
-            target_thr = threshold
-        else:
-            target_thr = max(threshold, rechallenge_thr)
+        target_thr = exit_thr if all_done else rechallenge_thr
         if not target_name: return None
         r = find_template(frame, target_name, threshold=target_thr)
         return r
@@ -293,12 +290,39 @@ class DungeonExitNavState(BaseState):
             x, y = portal["center"]
             rel_x = x - self._gw_l
             rel_y = y - self._gw_t
-            logger.debug("Seek: portal off=(%.0f%%,%.0f%%)",
-                        (rel_x - win_cx) / gw * 100, (rel_y - win_cy) / gw * 100)
-            if rel_y < win_cy - gh * 0.10:
-                logger.debug("  clearly upper -> centering")
+            h_off = rel_x - win_cx
+            h_ratio = abs(h_off) / gw if gw > 0 else 0
+            v_ratio = rel_y / gh if gh > 0 else 0
+            logger.debug("Seek: portal off=(%.0f%%,%.0f%%) h_ratio=%.2f v_ratio=%.2f",
+                        (rel_x - win_cx) / gw * 100 if gw else 0,
+                        (rel_y - win_cy) / gw * 100 if gw else 0, h_ratio, v_ratio)
+
+            if h_ratio < 0.05 and v_ratio < 0.66:
+                logger.debug("  centered, switching to center")
                 self._set_phase("center"); return
-            self._search_dir = -1 if rel_x < win_cx else 1
+
+            if h_ratio < 0.05:
+                step = 5
+            elif h_ratio < 0.10:
+                step = 10
+            elif h_ratio < 0.20:
+                step = 18
+            elif h_ratio < 0.30:
+                step = 30
+            elif h_ratio < 0.50:
+                step = 50
+            else:
+                step = 65
+
+            if v_ratio < 0.33:
+                step = int(step * 0.7)
+            elif v_ratio > 0.66:
+                step = int(step * 1.3)
+
+            self._search_dir = -1 if h_off < 0 else 1
+            angle = self._search_dir * max(8, step)
+            logger.debug("  seek rotate %d deg (step=%d h=%.2f v=%.2f)", angle, step, h_ratio, v_ratio)
+            self._rotate(angle)
         else:
             self._lost += 1
             if self._lost == 6:
@@ -306,9 +330,6 @@ class DungeonExitNavState(BaseState):
             elif self._lost > 20:
                 self._set_phase("buttons"); self._click_stage = 0; self._click_wait = 0; self._button_attempts = 0; return
 
-        angle = self._search_dir * 25
-        logger.debug("  seek rotate %d deg", angle)
-        self._rotate(angle)
         time.sleep(0.08)
 
     def _do_center(self, frame, gh, gw, win_cx, win_cy):

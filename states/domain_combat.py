@@ -16,7 +16,7 @@ class DomainCombatState(BaseState):
         self._combat_start = 0.0
         self._timeout = 180
         self._reload_count = 0
-        self._max_reloads = 2
+        self._max_reloads = 0
         self._phase = "normal"
         self._fallback = None
         self._cycle_count = 0
@@ -120,9 +120,10 @@ class DomainCombatState(BaseState):
                     self._cycle_count += 1
                 self._idle_cycles = 0
 
-        if self.executor.empty and time.time() - self._combat_start > 3.0:
+        if time.time() - self._combat_start > 3.0:
             panel = self._detect_character_panel(blackboard)
             if panel:
+                self.executor.clear()
                 self.controller.release_all()
                 cx, cy = panel["center"]
                 logger.info("Panel at (%d,%d) conf=%.2f template=%s, clicking",
@@ -173,5 +174,5 @@ class DomainCombatState(BaseState):
         from recognition.template import find_template
         r = find_template(frame, template_name, threshold=template_thr)
         if r:
-            r["template"] = template
+            r["template"] = template_name
         return r
