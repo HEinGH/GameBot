@@ -716,13 +716,6 @@ class GameBotGUI:
             self._on_preset_selected()
             self._switch_page("characters")
 
-    def _update_dash_status(self, text):
-        self.dash_status_text.configure(state="normal")
-        self.dash_status_text.insert("end", text + "\n")
-        self._trim_log_lines()
-        self.dash_status_text.see("end")
-        self.dash_status_text.configure(state="disabled")
-
     def _edit_fallback_combo(self):
         FallbackComboDialog(self.root, self._fallback_combos_data, self._on_fallback_save)
 
@@ -1749,7 +1742,7 @@ class GameBotGUI:
             from core.blackboard import Blackboard
             from core.fsm import FSM
             from capture.screen import ScreenCapture
-            from input.controller import Controller
+            from input.controller import Controller, _SAFE_STEALTH_STATES
             from core.watchdog import Watchdog
             from states.character_select import CharacterSelectState
             from states.town_nav import TownNavState
@@ -1870,7 +1863,6 @@ class GameBotGUI:
             fsm.transition(start_state, blackboard)
             logger.info("Bot started via GUI. Preset=%s Characters=%d", preset_name, total_chars)
 
-            _SAFE_STATES = {"domain_loading", "map_loading", "complete", "stuck_recovery"}
             while blackboard["running"] and not self.bot_stop_event.is_set():
                 if window_mgr:
                     if window_mgr.is_minimized:
@@ -1892,7 +1884,7 @@ class GameBotGUI:
                     watchdog.reset()
                     fsm.transition("stuck_recovery", blackboard)
                 fsm.update(blackboard)
-                if stealth and fsm.current in _SAFE_STATES:
+                if stealth and fsm.current in _SAFE_STEALTH_STATES:
                     controller.occasional_look_around()
                 time.sleep(1.0 / max(cfg.fps_limit, 1))
 

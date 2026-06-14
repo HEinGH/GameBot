@@ -119,7 +119,7 @@ def main():
         capture.start(method=cfg.capture_method, fps_limit=cfg.fps_limit)
     blackboard["_capture"] = capture
 
-    from input.controller import Controller
+    from input.controller import Controller, _SAFE_STEALTH_STATES
     controller = Controller(
         stealth=args.stealth,
         combo_randomness=cfg.combo_randomness,
@@ -175,7 +175,6 @@ def main():
                     window_mgr.title, window_mgr.is_focused, args.background)
 
     try:
-        _SAFE_STATES = {"domain_loading", "map_loading", "complete", "stuck_recovery"}
         while blackboard["running"]:
             if window_mgr:
                 if window_mgr.is_minimized:
@@ -207,7 +206,7 @@ def main():
                 watchdog.reset()
                 fsm.transition("stuck_recovery", blackboard)
             fsm.update(blackboard)
-            if args.stealth and fsm.current in _SAFE_STATES:
+            if args.stealth and fsm.current in _SAFE_STEALTH_STATES:
                 controller.occasional_look_around()
             time.sleep(1.0 / max(cfg.fps_limit, 1))
     except KeyboardInterrupt:

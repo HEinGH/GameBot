@@ -40,11 +40,7 @@ DEFAULT_SETTINGS = {
     "line_roi_ratio": [0.3, 0.5, 0.8, 1.0],
     "debug_screenshot": False,
     "last_preset": "",
-    "last_char_count": 1,
-    "last_char_start": 1,
     "last_log_debug": False,
-    "last_stealth": False,
-    "last_background": False,
 }
 
 
@@ -135,6 +131,13 @@ def parse_template_chain(chain_list, default=None):
         if isinstance(item, dict):
             name = item.get("template")
             thr = item.get("threshold", default)
+            ct = item.get("color_threshold", 0.0)
+            if ct > 0 and name:
+                from recognition.template import _color_registry
+                _color_registry[name] = ct
+            if item.get("reject_flip") and name:
+                from recognition.template import _flip_registry
+                _flip_registry.add(name)
         else:
             name = str(item) if item else None
             thr = default
