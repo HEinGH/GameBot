@@ -126,6 +126,10 @@ class TownExitState(BaseState):
 
         if self._step == 2:
             if all_done:
+                if not blackboard.get("exit_after_done", True):
+                    logger.info("All done, skip exit game (per preset setting)")
+                    blackboard["_fsm"].transition("complete", blackboard)
+                    return
                 if exit_name:
                     r = find_template(frame, exit_name, threshold=exit_thr)
                     if r:

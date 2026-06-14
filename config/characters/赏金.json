@@ -1,0 +1,19 @@
+{
+  "portrait_template": {
+    "template": "赏金\\赏金选人界面头像.png",
+    "threshold": 0.7
+  },
+  "skill_bar_template": {
+    "template": "赏金\\赏金技能栏.png",
+    "threshold": 0.75
+  },
+  "result_screen_template": {
+    "template": "赏金\\赏金结算画面.png",
+    "threshold": 0.75
+  },
+  "avatar_template": {
+    "template": "赏金\\赏金城镇头像.png",
+    "threshold": 0.7
+  },
+  "name": "赏金"
+}

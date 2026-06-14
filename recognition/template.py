@@ -35,8 +35,8 @@ def find_template(
     frame,
     template_name,
     threshold=0.8,
-    scale_range=(0.5, 1.5),
-    scale_steps=11,
+    scale_range=(0.7, 1.35),
+    scale_steps=7,
     roi=None,
     color_threshold=0.0,
 ):
@@ -114,11 +114,14 @@ def find_template(
             if rx2 > rx1 and ry2 > ry1:
                 if template_name not in _hgram_cache:
                     _hgram_cache[template_name] = _compute_hgram(template)
-                roi_hgram = _compute_hgram(frame[ry1:ry2, rx1:rx2])
+                roi = frame[ry1:ry2, rx1:rx2]
+                if roi.shape[0] != t_h or roi.shape[1] != t_w:
+                    roi = cv2.resize(roi, (t_w, t_h))
+                roi_hgram = _compute_hgram(roi)
                 color_corr = _compare_hgram(_hgram_cache[template_name], roi_hgram)
-                if color_corr < color_threshold:
+                if color_corr < ct:
                     logger.debug("Template '%s' shape match conf=%.3f, color corr=%.3f < %.2f, rejected",
-                                 template_name, best_val, color_corr, color_threshold)
+                                 template_name, best_val, color_corr, ct)
                     return None
         cx = (best_rect[0] + best_rect[2]) // 2
         cy = (best_rect[1] + best_rect[3]) // 2

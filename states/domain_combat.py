@@ -103,7 +103,7 @@ class DomainCombatState(BaseState):
             self.executor.execute_next()
         else:
             self._idle_cycles += 1
-            if self._idle_cycles >= 50:
+            if self._idle_cycles >= 1:
                 if self._phase == "normal":
                     self._reload_count += 1
                     if self._reload_count > self._max_reloads:

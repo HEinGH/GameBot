@@ -2,7 +2,7 @@
 
 ## 1. 项目概述
 
-从零搭建一个基于图像识别的自动化清体力脚本（GameBot），包含完整的状态机工作流、可视化 GUI 配置界面、以及各类辅助功能（连招录制、反检测隐身模式、后台窗口管理等）。最终交付可直接运行的项目代码和打包脚本。
+从零搭建一个基于图像识别的自动化清体力脚本（GameBot），包含完整的状态机工作流、可视化 GUI 配置界面、角色库独立管理、隐身反检测、开发者调试工具、以及各类辅助功能（连招录制、后台窗口管理等）。最终交付可直接运行的项目代码和打包脚本。
 
 ## 2. 技术难点和解决方案
 
@@ -16,9 +16,15 @@
 | **截图工具颜色失真** | 直接对 BGR 数据调用 `imencode`，OpenCV 内部完成 BGR→RGB 转换 |
 | **中文文件名乱码** | 改用 `cv2.imencode` + `open()` 手动写入；`cv2.imread` → `np.fromfile` + `cv2.imdecode` |
 | **游戏拦截所有软件鼠标点击** | `SetCursorPos` 定位 + `mouse_event` 长按（150-250ms）可绕过；关闭 `pydirectinput.FAILSAFE` |
-| **模板匹配缩放范围太窄** | `scale_range` 从 `(0.8,1.2)` 扩大到 `(0.5,1.5)`，11 步采样，>1920px 降采样 |
+| **模板匹配缩放范围太窄** | `scale_range` 从 `(0.8,1.2)` 扩大到 `(0.7,1.35)`，7 步采样，>1920px 降采样；覆盖窗口化(0.67x)~全屏(1.33x)全尺寸 |
 | **角色列表超一屏（12角色/6可见）** | 窗口相对坐标 + 滚轮翻页（-600=5格/次），4 次匹配/1.2s 触发滚动 |
 | **同名启动器干扰窗口查找** | `WindowManager` 选最大可见非最小化窗口，回退搜索过滤 >1000×700px |
+| **隐身贝塞尔移动被游戏解释为视角转动** | 副本内按钮点击传 `bezier=False`，跳过贝塞尔直接 `SetCursorPos` 瞬移定位 |
+| **角色模板跨预设重复维护** | 角色库解耦：`config/characters/` 独立存储模板，预设 JSON 只存引用 + 覆盖 |
+| **NPC 寻路图标被窗口边缘 UI 误匹配** | 位置连续性校验（跳变 >30% 帧宽拒绝）+ soft-fallback（跟踪中降阈值 0.65 接续）+ scale_range 收紧 |
+| **颜色校验对小图标（半透明边缘）不可靠** | 小图标去掉颜色校验，靠连续性校验 + 高阈值防御；大实体 UI 按钮保留颜色校验 |
+| **开发者模式窗口失焦导致键盘落空** | fallback 窗口检测注入 `wm._window`，开机时点击窗口中央触发 Windows 自动聚焦 |
+| **兜底连招 ~1.7s 延迟衔接** | `idle_cycles` 从 50 帧降至 1 帧，自定义连招放完立即加载兜底 |
 
 ## 3. 关键文件架构
 
@@ -26,9 +32,11 @@
 game_bot/
 ├── main.py / gui.py / gui.pyw    # 入口
 ├── build.py / start.bat / requirements.txt
+├── migrate_characters.py         # 一次性迁移脚本
 ├── config/
 │   ├── settings.py / settings.json
-│   └── presets/                  # 预设 JSON
+│   ├── presets/                  # 预设 JSON（角色引用格式）
+│   └── characters/               # 角色库（独立角色模板 JSON）
 ├── core/
 │   ├── fsm.py                    # 状态机 (BaseState + FSM + 中文映射)
 │   ├── blackboard.py             # 线程安全上下文
@@ -36,11 +44,11 @@ game_bot/
 ├── capture/
 │   └── screen.py                 # 屏幕捕获（dxcam/mss）
 ├── recognition/
-│   ├── template.py               # matchTemplate 多尺度匹配
+│   ├── template.py               # matchTemplate 多尺度 + 颜色/翻转校验
 │   ├── npc_detector.py           # ORB + FLANN NPC 检测
 │   └── portal_detector.py        # ORB + 模板匹配出口检测
 ├── input/
-│   └── controller.py             # Win32 输入模拟
+│   └── controller.py             # Win32 输入模拟（含隐身 bezier 移动）
 ├── combos/
 │   ├── executor.py               # 连招执行器
 │   └── *.json                    # 录制的连招文件
@@ -50,7 +58,7 @@ game_bot/
 │   ├── map_loading.py / town_exit.py / complete.py / stuck_recovery.py
 │   └── result_screen.py / exit_nav.py / exit_menu.py (保留未注册)
 ├── gui/
-│   └── app.py                    # tkinter GUI
+│   └── app.py                    # tkinter GUI（含角色库/预设管理/开发工具）
 ├── utils/
 │   ├── antidetection.py / logger.py / window_manager.py
 │   ├── macro_recorder.py / notify.py / geometry.py
@@ -98,18 +106,26 @@ CHARACTER_SELECT → TOWN_NAV → NPC_NAVIGATE → DOMAIN_LOADING → DOMAIN_COM
 | character_select（选人+进游戏） | ✅ |
 | town_nav（城镇→副本，统一链式操作） | ✅ |
 | npc_navigate（NPC 寻路） | ✅ |
-| domain_loading → domain_combat（战斗→结算） | ✅ |
+| domain_loading → domain_combat（战斗→结算→兜底连招） | ✅ |
 | dungeon_exit_nav（出口寻路→再次挑战/退出） | ✅ |
 | map_loading → town_exit → character_select（循环） | ✅ |
 | 多角色循环 | ✅ |
 | 切换角色测试 | ✅ |
 | 预设管理 GUI | ✅ |
+| 角色库独立管理 | ✅ |
 | 模板置信度可配置化（含颜色/翻转校验） | ✅ |
+| 颜色校验（变量bug+ROI resize已修复） | ✅ |
 | 确认进入多步骤链 | ✅ |
-| 寻路自适应转向 | ✅ |
+| NPC 寻路连续性校验 + soft-fallback | ✅ |
+| 副本出口寻路连续性校验 | ✅ |
 | GUI 启动快捷键 | ✅ |
+| 隐身模式三层方案 | ✅ |
+| 开发者工具状态选择器 | ✅ |
+| "完成后退出"选项 | ✅ |
+| scale_range 全局收紧 (0.7,1.35) | ✅ |
+| 兜底连招即时衔接 | ✅ |
 | 连招录制+执行 | ⏳ 待测试 |
-| 隐身模式 | ⏳ 方案已定，待实施 |
+| 后台模式测试 | ⏳ 待测试 |
 
 ---
 
@@ -550,10 +566,88 @@ ORB 匹配数 10→6，Lowe 比率 0.75→0.80；新增模板匹配回退（`fin
 | 寻路 seek 振荡 | `h_ratio < 2%` 门槛太严→放宽到 5%；seek 角度表与 `_do_rotate` 统一后消除 3× 断崖跳变 |
 | 多确认按钮副本 | `confirm_enter_template` 从单值扩展为链式组件 + `npc_navigate` enter 遍历链 |
 
-### 12.9 待完成项
+
+
+---
+
+## 13. 会话 9（隐身模式实施 & 角色解耦 & 寻路优化 & 冲刺修复）
+
+### 13.1 隐身模式三层实施
+
+| 层 | 功能 | 文件 | 改动 |
+|----|------|------|------|
+| 第一层 | 鼠标路径拟人 | `input/controller.py:105-122` | `click_at()` 新增 `bezier` 参数，stealth=True 时 `GetCursorPos` → `move_to_bezier`（贝塞尔曲线平滑移动 + `pydirectinput.moveTo` 逐段送鼠标事件），替代 `SetCursorPos` 瞬移 |
+| 第二层 | 计时抖动 | 已有 | `tap_key`/`jitter_delay` 在 stealth=True 时走 `HumanDelay` 路径，无需改动 |
+| 第三层 | 随机鼠标晃动白名单 | `gui/app.py:1860`, `main.py:176` | 全局常量 `_SAFE_STATES = {"domain_loading", "map_loading", "complete", "stuck_recovery"}`，仅这 4 个无鼠标操作的状态允许随机晃动；`domain_combat` 等有战斗输入的状态禁止 |
+| — | `_SAFE_STEALTH_STATES` 常量 | `input/controller.py:15` | 新增模块级常量，供外部引用 |
+| — | `_POINT` 结构体 | `input/controller.py:28-29` | `ctypes.Structure` 用于 `GetCursorPos` 获取当前光标位置 |
+
+**非隐身模式下零影响**：`bezier` 和 `SAFE_STATES` 检查均被 `self.stealth` / `stealth` flag 短路，行为与改造前完全一致。
+
+### 13.2 角色与预设解耦
+
+| 阶段 | 文件 | 改动 |
+|------|------|------|
+| 数据层 | `config/settings.py` | 新增 `CHARACTERS_DIR`、`CHARACTER_PROFILE_FIELDS`（4 个模板字段）、`load_character_profile()`、`save_character_profile()`、`list_character_profiles()`、`resolve_characters()`、`serialize_characters()` |
+| 迁移 | `migrate_characters.py` | 一次性脚本：从现有预设提取角色模板到 `config/characters/`，预设 JSON 的 `characters` 数组转为引用格式 |
+| GUI 加载 | `gui/app.py` | `_load_last_preset()` / `_on_preset_selected()` / `_edit_selected_preset()` 加载后调 `resolve_characters()` |
+| GUI 保存 | `gui/app.py` | `_save_preset()` / `_save_preset_as()` 保存前调 `serialize_characters()` 写回引用格式 |
+| GUI 角色库 | `gui/app.py` | 新增"角色库"标签页：增删改排序角色模板；`_CharLibEditDialog` 编辑对话框；`_PickCharacterDialog` 添加角色选择器 |
+| GUI 按钮 | `gui/app.py` | 预设页"添加角色"改为从角色库选择；"编辑角色"→"配置角色"；"删除角色"→"移除角色"；对话框标题同步更名；角色信息框新增提示文字 |
+| CLI | `main.py` | 启动时调 `resolve_characters()` |
+
+**设计决策**：内存中 `preset_data["characters"]` 始终存完整角色。仅在磁盘读写时做序列化/反序列化。模板字段（portrait/skill_bar/result_screen/avatar）存角色库文件，`runs`/`combos`/`fallback_combos` 存预设引用 dict。预设引用可覆盖模板（写回时做 diff，仅不同的字段写入）。
+
+### 13.3 寻路系统多项优化
+
+| 优化 | 文件 | 改动 |
+|------|------|------|
+| 模板缩放收窄 | `recognition/template.py:38-39` | 全局默认 `scale_range=(0.5,1.5)→(0.7,1.35)`, `scale_steps=11→7` |
+| NPC 特化缩放 | `states/npc_navigate.py:113-115` | `_find_npc` 也收紧至 `(0.7,1.35)` |
+| 出口检测缩放 | `recognition/portal_detector.py:62-63` | 模板匹配回退收窄至 `(0.7,1.35), 7步` |
+| 位置连续性校验 | `states/npc_navigate.py:117-130` | `_find_npc` 内：距 `_last_pos` 水平跳变 > 30% 帧宽 → 拒绝。防止窗口右侧日常按钮误匹配 |
+| Soft-fallback | `states/npc_navigate.py` / `states/dungeon_exit_nav.py` | 主阈值未匹配且已有 `_last_pos` 时，降阈值至 0.65 重试，通过连续性校验后接受。解决 NPC 转到暗色背景区域时置信度临时下降 |
+| 贝塞尔跳过 | `states/dungeon_exit_nav.py:453,471` | 再次挑战/退出/确认按钮 `click_at(cx, cy, bezier=False)`，防止贝塞尔移动被游戏解释为视角转动 |
+| Portal 连续性 | `states/dungeon_exit_nav.py:154-164` | `_find_portal` 同等连续性校验 |
+
+**坐标系讨论**：曾尝试将 NPC/出口寻路改为纯帧坐标（去掉 `_gw_l/_gw_t` 的窗口锚点转换），发现游戏窗口偏左时帧中心 ≠ 窗口中心（差 ~100px），导致角色对着空气走。最终回退老方案（窗口锚点坐标系），老方案在 `_window_rect=None` 时 `enter()` 已正确将 `_gw_l/_gw_t=0`，配合 `_do_update` 帧尺寸回退，正常流程一直正确。
+
+### 13.4 兜底连招衔接
+
+| 改动 | 文件 | 说明 |
+|------|------|------|
+| `idle_cycles` 阈值 | `states/domain_combat.py:106` | `>= 50` → `>= 1`，自定义连招放完首个空帧即加载兜底连招，消除 ~1.7s 静默等待。前后延仍遵守 |
+
+### 13.5 开发者工具升级
+
+| 功能 | 文件 | 说明 |
+|------|------|------|
+| 状态选择器 | `gui/app.py:1197-1226` | `dash_skip_combat` 勾选框 → `dash_start_state` 下拉框（9 个状态可选），可从任意状态启动 Bot |
+| 窗口聚焦 | `gui/app.py:1855-1863` | `_run_bot` 开机时若 `window_mgr` 存在但窗口未聚焦，点击窗口中央激活 Windows 自动聚焦。正常流程 `is_focused=True` 直接跳过 |
+| Fallback 窗口 | `gui/app.py:1848` | fallback 路径检测到的 `pywinctl.Window` 注入 `wm._window`，确保 `window_mgr` 赋值，主循环焦点管理生效 |
+
+### 13.6 GUI 易用性
+
+| 改动 | 说明 |
+|------|------|
+| 仪表盘"保存"按钮 | 替换"刷新"，仪表盘可直接保存预设，避免忘记 |
+| "完成后退出"勾选框 | 预设级配置，默认勾选。存 `exit_after_done` 字段，记忆功能完整。全部完成后跳 `complete` 停止，不退出游戏 |
+| 阈值 Spinbox 锁定滚轮 | 所有 6 处 Spinbox 绑 `<MouseWheel>` → `"break"`，防止滚轮翻页误调阈值 |
+
+### 13.7 Bug 修复
+
+| Bug | 根因 | 修复 |
+|-----|------|------|
+| **颜色校验从未生效** | `template.py:119` 比较用 `color_threshold`（函数参数默认 0.0）而非 `ct`（registry 读取的实际阈值 0.7） | `color_threshold` → `ct` |
+| **颜色校验 ROI 尺寸错位** | `_compute_hgram(template)` 用模板原尺寸，`_compute_hgram(ROI)` 用匹配到的 scale 尺寸，直方图分箱不同 | ROI resize 到 `(t_w, t_h)` |
+| **兜底连招不接续** | `idle_cycles >= 50` 空等 ~1.7s，期间面板检测可能误触发 | `>= 1` |
+| **隐身在副本战斗弹结算时旋转视角** | `click_at` 贝塞尔用 `pydirectinput.moveTo()` 被游戏解释为视角输入 | 再次挑战/确认按钮 `bezier=False` |
+| **开发者模式失焦** | fallback 路径未设置 `window_mgr`，焦点检查被跳过 | fallback 找到的窗口赋给 `wm._window` |
+| **`skip_combat` 变量残留** | 状态选择器改造后 `_start_bot` 仍有 `if skip_combat:` 引用 | 改为 `if start_state != "character_select":` |
+
+### 13.8 待完成项
 
 | 项目 | 状态 |
 |------|------|
-| 隐身模式三层方案实施 | ⏳ 方案已评审，待实施 |
 | 连招录制端到端测试 | ⏳ 待测试 |
 | 后台模式测试 | ⏳ 待测试 |

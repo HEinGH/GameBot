@@ -1,0 +1,146 @@
+{
+  "description": "训练场测试",
+  "window_title": "晶核：魔导觉醒",
+  "char_count": 1,
+  "stealth": true,
+  "background": false,
+  "enter_game_template": "进入游戏.png",
+  "rechallenge_template": "再次挑战.png",
+  "exit_domain_template": "退出副本.png",
+  "portal_template": "副本出口图标.png",
+  "town_nav": {
+    "domain_select_steps": [
+      "日常按钮.png",
+      "临界1.png",
+      "训练场1.png",
+      "训练场2.png"
+    ],
+    "alt_for_mouse": true,
+    "confirm_enter_template": [
+      "训练场3.png"
+    ],
+    "npc_marker_template": {
+      "template": "npc寻路图标.png",
+      "threshold": 0.8
+    }
+  },
+  "town_exit": {
+    "settings_template": "设置按钮.png",
+    "switch_character_template": "切换角色.png",
+    "exit_game_template": "退出游戏.png",
+    "confirm_exit_template": "确认.png"
+  },
+  "characters": [
+    {
+      "name": "镰卫",
+      "runs": 1,
+      "combos": [
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.33,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ],
+      "fallback_combos": null
+    }
+  ],
+  "fallback_combos": [
+    {
+      "keys": [
+        "1"
+      ],
+      "duration": 0.3,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "2"
+      ],
+      "duration": 0.3,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "3"
+      ],
+      "duration": 0.3,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "4"
+      ],
+      "duration": 0.3,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "5"
+      ],
+      "duration": 0.3,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "e"
+      ],
+      "duration": 0.3,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "q"
+      ],
+      "duration": 0.3,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    }
+  ],
+  "char_start": 1,
+  "exit_after_done": false
+}
