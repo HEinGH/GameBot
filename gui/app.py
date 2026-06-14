@@ -9,7 +9,10 @@ import time
 from pathlib import Path
 from datetime import datetime
 
-from config.settings import Settings, PRESETS_DIR, ROOT_DIR
+from config.settings import Settings, PRESETS_DIR, ROOT_DIR, CHARACTERS_DIR
+from config.settings import (resolve_characters, serialize_characters,
+                              load_character_profile, save_character_profile,
+                              list_character_profiles, CHARACTER_PROFILE_FIELDS)
 
 logger = logging.getLogger(__name__)
 
@@ -184,6 +187,7 @@ class ChainStepList(tk.Frame):
 
         thr_var = tk.StringVar(value=str(thr))
         thr_spin = ttk.Spinbox(row, from_=0.30, to=0.99, increment=0.05, width=4, textvariable=thr_var)
+        thr_spin.bind("<MouseWheel>", lambda e: "break")
         thr_spin.pack(side="left", padx=1)
 
         def pick_template(en, tv):
@@ -423,7 +427,9 @@ class GameBotGUI:
             if path.exists():
                 try:
                     with open(path, encoding="utf-8") as f:
-                        self.preset_data = json.load(f)
+                        data = json.load(f)
+                    data["characters"] = resolve_characters(data)
+                    self.preset_data = data
                     self.current_preset_path = path
                     logger.info("Loaded last preset: %s", last)
                 except Exception:
@@ -465,6 +471,7 @@ class GameBotGUI:
         nav_items = [
             ("dashboard", "运行控制"),
             ("characters", "预设管理"),
+            ("charlib", "角色库"),
             ("recorder", "连招录制（待测试）"),
             ("screenshot", "截图工具"),
             ("settings", "全局设置"),
@@ -490,7 +497,7 @@ class GameBotGUI:
         container.columnconfigure(0, weight=1)
         container.rowconfigure(0, weight=1)
         self._pages = {}
-        for key in ("dashboard", "characters", "devtools", "recorder", "screenshot", "settings"):
+        for key in ("dashboard", "characters", "charlib", "devtools", "recorder", "screenshot", "settings"):
             frame = ttk.Frame(container)
             frame.grid(row=0, column=0, sticky="nsew")
             frame.columnconfigure(0, weight=1)
@@ -498,6 +505,7 @@ class GameBotGUI:
             self._pages[key] = frame
         self._build_dashboard()
         self._build_characters()
+        self._build_charlib()
         self._build_devtools()
         self._build_recorder()
         self._build_screenshot()
@@ -575,9 +583,9 @@ class GameBotGUI:
         self.dash_preset_combo = ttk.Combobox(row, textvariable=self.dash_preset_var, width=30, state="readonly")
         self.dash_preset_combo.bind("<<ComboboxSelected>>", self._on_preset_selected)
         self.dash_preset_combo.pack(side="left", padx=6)
-        ttk.Button(row, text="刷新", command=self._refresh_preset_list).pack(side="left")
         ttk.Button(row, text="确定", command=self._edit_selected_preset).pack(side="left", padx=4)
         ttk.Button(row, text="删除", command=self._delete_preset).pack(side="left")
+        ttk.Button(row, text="保存", command=self._save_preset).pack(side="left", padx=4)
         row2 = ttk.Frame(card)
         row2.pack(fill="x", pady=(4, 0))
         ttk.Label(row2, text="从第几个角色开始:").pack(side="left")
@@ -594,6 +602,9 @@ class GameBotGUI:
         ttk.Label(row2, text=" 后台（待测试）:").pack(side="left")
         self.dash_background = tk.BooleanVar()
         ttk.Checkbutton(row2, variable=self.dash_background).pack(side="left")
+        self.dash_exit_after_done = tk.BooleanVar(value=True)
+        ttk.Label(row2, text=" 完成后退出:").pack(side="left")
+        ttk.Checkbutton(row2, variable=self.dash_exit_after_done).pack(side="left")
         self.status_frame = ttk.LabelFrame(f, text="运行状态", padding=10)
         self.status_frame.pack(fill="both", expand=True, pady=6)
         status_top = ttk.Frame(self.status_frame)
@@ -643,6 +654,7 @@ class GameBotGUI:
             try:
                 with open(path, encoding="utf-8") as f:
                     data = json.load(f)
+                data["characters"] = resolve_characters(data)
                 self.preset_data = data
                 self.current_preset_path = path
                 count = len(data.get("characters", []))
@@ -658,6 +670,7 @@ class GameBotGUI:
                 self.dash_char_start_spin.configure(to_=max(1, count))
                 self.dash_stealth.set(data.get("stealth", False))
                 self.dash_background.set(data.get("background", False))
+                self.dash_exit_after_done.set(data.get("exit_after_done", True))
                 self._refresh_char_table()
             except Exception:
                 pass
@@ -673,7 +686,9 @@ class GameBotGUI:
         path = self.presets_path / f"{name}.json"
         if path.exists():
             with open(path, encoding="utf-8") as f:
-                self.preset_data = json.load(f)
+                data = json.load(f)
+            data["characters"] = resolve_characters(data)
+            self.preset_data = data
             self.current_preset_path = path
             self._switch_page("characters")
         else:
@@ -761,6 +776,7 @@ class GameBotGUI:
             e = ttk.Entry(f, width=10)
             e.pack(side="left", padx=1)
             thr = ttk.Spinbox(f, from_=0.30, to=0.99, increment=0.05, width=4)
+            thr.bind("<MouseWheel>", lambda e: "break")
             thr.set("0.65")
             thr.pack(side="left", padx=1)
             btn = ttk.Button(f, text="浏览", width=4)
@@ -860,8 +876,8 @@ class GameBotGUI:
         btn_frame = ttk.Frame(table_frame)
         btn_frame.grid(row=1, column=0, columnspan=2, pady=4, sticky="ew")
         ttk.Button(btn_frame, text="添加角色", command=self._add_character).pack(side="left", padx=2)
-        ttk.Button(btn_frame, text="编辑角色", command=self._edit_character).pack(side="left", padx=2)
-        ttk.Button(btn_frame, text="删除角色", command=self._delete_character).pack(side="left", padx=2)
+        ttk.Button(btn_frame, text="配置角色", command=self._edit_character).pack(side="left", padx=2)
+        ttk.Button(btn_frame, text="移除角色", command=self._delete_character).pack(side="left", padx=2)
         ttk.Button(btn_frame, text="上移", command=lambda: self._move_char(-1)).pack(side="left", padx=2)
         ttk.Button(btn_frame, text="下移", command=lambda: self._move_char(1)).pack(side="left", padx=2)
         ttk.Button(btn_frame, text="编辑兜底连招", command=self._edit_fallback_combo).pack(side="left", padx=8)
@@ -886,10 +902,12 @@ class GameBotGUI:
     def _save_preset(self):
         self._sync_char_table_to_data()
         self._sync_global_config()
+        write_data = dict(self.preset_data)
+        write_data["characters"] = serialize_characters(self.preset_data.get("characters", []))
         if self.current_preset_path:
             self.current_preset_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self.current_preset_path, "w", encoding="utf-8") as f:
-                json.dump(self.preset_data, f, indent=2, ensure_ascii=False)
+                json.dump(write_data, f, indent=2, ensure_ascii=False)
             messagebox.showinfo("保存成功", f"已保存到:\n{self.current_preset_path}")
             self._refresh_preset_list()
         else:
@@ -904,8 +922,10 @@ class GameBotGUI:
             filetypes=[("JSON", "*.json")],
         )
         if path:
+            write_data = dict(self.preset_data)
+            write_data["characters"] = serialize_characters(self.preset_data.get("characters", []))
             with open(path, "w", encoding="utf-8") as f:
-                json.dump(self.preset_data, f, indent=2, ensure_ascii=False)
+                json.dump(write_data, f, indent=2, ensure_ascii=False)
             self.current_preset_path = Path(path)
             messagebox.showinfo("保存成功", f"已保存到:\n{path}")
             self._refresh_preset_list()
@@ -947,6 +967,7 @@ class GameBotGUI:
         p["char_start"] = self.dash_char_start.get()
         p["stealth"] = self.dash_stealth.get()
         p["background"] = self.dash_background.get()
+        p["exit_after_done"] = self.dash_exit_after_done.get()
 
     def _sync_char_table_to_data(self):
         chars = []
@@ -1047,13 +1068,27 @@ class GameBotGUI:
             ))
 
     def _add_character(self):
-        char = {"name": "新角色", "portrait_template": "",
-                "skill_bar_template": None, "result_screen_template": None,
-                "avatar_template": None,
-                "runs": 4, "fallback_combos": None, "combos": []}
+        names = self._charlib_ordered_names()
+        if not names:
+            if messagebox.askyesno("提示", "角色库为空，是否创建新角色？"):
+                char = {"name": "新角色", "portrait_template": "",
+                        "skill_bar_template": None, "result_screen_template": None,
+                        "avatar_template": None,
+                        "runs": 4, "fallback_combos": None, "combos": []}
+                self.preset_data.setdefault("characters", []).append(char)
+                self._refresh_char_table()
+                self.root.after(100, lambda: self._edit_character_at(len(self.preset_data["characters"]) - 1))
+            return
+        _PickCharacterDialog(self.root, names, self._on_char_picked)
+
+    def _on_char_picked(self, name):
+        profile = load_character_profile(name) or {}
+        char = {"name": name, "runs": 4, "combos": [], "fallback_combos": None}
+        for k in CHARACTER_PROFILE_FIELDS:
+            if k in profile:
+                char[k] = profile[k]
         self.preset_data.setdefault("characters", []).append(char)
         self._refresh_char_table()
-        self.root.after(100, lambda: self._edit_character_at(len(self.preset_data["characters"]) - 1))
 
     def _edit_character(self):
         sel = self.char_tree.selection()
@@ -1077,7 +1112,7 @@ class GameBotGUI:
         idx = int(self.char_tree.item(sel[0], "values")[0]) - 1
         chars = self.preset_data.get("characters", [])
         if 0 <= idx < len(chars):
-            if messagebox.askyesno("确认", f"删除角色「{chars[idx]['name']}」?"):
+            if messagebox.askyesno("确认", f"移除角色「{chars[idx]['name']}」？"):
                 chars.pop(idx)
                 self._refresh_char_table()
 
@@ -1092,15 +1127,135 @@ class GameBotGUI:
             chars[idx], chars[new_idx] = chars[new_idx], chars[idx]
             self._refresh_char_table()
 
+    # ========== CHARACTER LIBRARY PAGE ==========
+    def _build_charlib(self):
+        f = self._pages["charlib"]
+        top = ttk.Frame(f)
+        top.pack(fill="x")
+        ttk.Label(top, text="角色库", font=("", 14, "bold")).pack(side="left")
+        ttk.Button(top, text="新建角色", command=self._charlib_new).pack(side="right", padx=2)
+        ttk.Button(top, text="编辑", command=self._charlib_edit).pack(side="right", padx=2)
+        ttk.Button(top, text="删除", command=self._charlib_delete).pack(side="right", padx=2)
+        ttk.Button(top, text="上移", command=lambda: self._charlib_move(-1)).pack(side="right", padx=2)
+        ttk.Button(top, text="下移", command=lambda: self._charlib_move(1)).pack(side="right", padx=2)
+
+        cols = ("#", "名称", "选人头像", "技能栏", "结算画面", "城镇头像")
+        self.charlib_tree = ttk.Treeview(f, columns=cols, show="headings", selectmode="browse")
+        for c in cols:
+            self.charlib_tree.heading(c, text=c)
+            self.charlib_tree.column(c, width=30 if c == "#" else 100)
+        self.charlib_tree.column("名称", width=80)
+        scroll = ttk.Scrollbar(f, orient="vertical", command=self.charlib_tree.yview)
+        self.charlib_tree.configure(yscrollcommand=scroll.set)
+        self.charlib_tree.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+        self.charlib_tree.bind("<Double-1>", lambda e: self._charlib_edit())
+
+        self._refresh_charlib()
+
+    def _charlib_order_path(self):
+        return CHARACTERS_DIR / "_order.json"
+
+    def _charlib_load_order(self):
+        path = self._charlib_order_path()
+        if path.exists():
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)
+        return []
+
+    def _charlib_save_order(self, order):
+        with open(self._charlib_order_path(), "w", encoding="utf-8") as f:
+            json.dump(order, f, ensure_ascii=False)
+
+    def _charlib_ordered_names(self):
+        order = self._charlib_load_order()
+        existing = set(list_character_profiles())
+        ordered = [n for n in order if n in existing]
+        for n in sorted(existing - set(ordered)):
+            ordered.append(n)
+        self._charlib_save_order(ordered)
+        return ordered
+
+    def _refresh_charlib(self):
+        self.charlib_tree.delete(*self.charlib_tree.get_children(""))
+        for i, name in enumerate(self._charlib_ordered_names()):
+            p = load_character_profile(name) or {}
+            self.charlib_tree.insert("", "end", values=(
+                i + 1,
+                name,
+                _unpack_tpl_value(p.get("portrait_template", ""))[0],
+                _unpack_tpl_value(p.get("skill_bar_template", "") or "")[0],
+                _unpack_tpl_value(p.get("result_screen_template", "") or "")[0],
+                _unpack_tpl_value(p.get("avatar_template", "") or "")[0],
+            ))
+
+    def _charlib_move(self, direction):
+        sel = self.charlib_tree.selection()
+        if not sel:
+            return
+        idx = int(self.charlib_tree.item(sel[0], "values")[0]) - 1
+        order = self._charlib_ordered_names()
+        new_idx = idx + direction
+        if 0 <= new_idx < len(order):
+            order[idx], order[new_idx] = order[new_idx], order[idx]
+            self._charlib_save_order(order)
+            self._refresh_charlib()
+
+    def _charlib_new(self):
+        self._charlib_edit_at(None)
+
+    def _charlib_edit(self):
+        sel = self.charlib_tree.selection()
+        if not sel:
+            return
+        name = self.charlib_tree.item(sel[0], "values")[1]
+        self._charlib_edit_at(name)
+
+    def _charlib_edit_at(self, name):
+        _CharLibEditDialog(self.root, name, self.templates_path,
+                           lambda: self._refresh_charlib())
+
+    def _charlib_delete(self):
+        sel = self.charlib_tree.selection()
+        if not sel:
+            return
+        name = self.charlib_tree.item(sel[0], "values")[1]
+        if messagebox.askyesno("确认", f"删除角色「{name}」？\n模板文件不会被删除。"):
+            path = CHARACTERS_DIR / f"{name}.json"
+            if path.exists():
+                path.unlink()
+            order = self._charlib_load_order()
+            if name in order:
+                order.remove(name)
+                self._charlib_save_order(order)
+            self._refresh_charlib()
+
     # ========== DEVTOOLS PAGE ==========
     def _build_devtools(self):
         f = self._pages["devtools"]
         ttk.Label(f, text="开发者工具", font=("", 14, "bold")).pack(anchor="w", pady=(0, 8))
         card = ttk.LabelFrame(f, text="调试选项", padding=10)
         card.pack(fill="x")
-        self.dash_skip_combat = tk.BooleanVar()
-        ttk.Checkbutton(card, text="跳过刷本，直接从 town_exit 开始（测试角色切换）",
-                         variable=self.dash_skip_combat).pack(anchor="w")
+        r = ttk.Frame(card); r.pack(fill="x", pady=2)
+        ttk.Label(r, text="起始状态:").pack(side="left")
+        self.dash_start_state = tk.StringVar(value="character_select")
+        states = [
+            ("character_select", "角色选择（默认流程）"),
+            ("town_nav", "城镇导航"),
+            ("npc_navigate", "NPC寻路"),
+            ("domain_loading", "副本加载中"),
+            ("domain_combat", "副本战斗"),
+            ("dungeon_exit_nav", "副本出口寻路"),
+            ("map_loading", "地图加载中"),
+            ("town_exit", "城镇退出（测试角色切换）"),
+            ("complete", "全部完成"),
+        ]
+        state_combo = ttk.Combobox(r, textvariable=self.dash_start_state,
+                                    values=[s[1] for s in states], state="readonly", width=28)
+        state_combo.pack(side="left", padx=4)
+        self._state_keys = dict(states)
+        self._state_cn_to_key = {cn: key for key, cn in states}
+        state_combo.set("角色选择（默认流程）")
 
     # ========== RECORDER PAGE ==========
     def _build_recorder(self):
@@ -1548,7 +1703,9 @@ class GameBotGUI:
         char_start = self.dash_char_start.get()
         stealth = self.dash_stealth.get()
         bg = self.dash_background.get()
-        skip_combat = self.dash_skip_combat.get()
+        exit_after_done = self.dash_exit_after_done.get()
+        start_state_cn = self.dash_start_state.get()
+        start_state = self._state_cn_to_key.get(start_state_cn, "character_select")
         cfg = Settings()
         cfg.last_preset = name
         cfg.save()
@@ -1558,7 +1715,7 @@ class GameBotGUI:
         self.status_label.configure(text="● 运行中", foreground="green")
         self.start_btn.configure(text="⏹ 停止")
 
-        if skip_combat:
+        if start_state != "character_select":
             try:
                 import pywinctl as pwc
                 preset = self.preset_data
@@ -1578,12 +1735,12 @@ class GameBotGUI:
 
         self.bot_thread = threading.Thread(
             target=self._run_bot,
-            args=(name, counts, char_start, stealth, bg, skip_combat),
+            args=(name, counts, char_start, stealth, bg, start_state, exit_after_done),
             daemon=True,
         )
         self.bot_thread.start()
 
-    def _run_bot(self, preset_name, total_chars, char_start, stealth, bg, skip_combat=False):
+    def _run_bot(self, preset_name, total_chars, char_start, stealth, bg, start_state="character_select", exit_after_done=True):
         controller = None
         capture = None
         window_mgr = None
@@ -1615,6 +1772,7 @@ class GameBotGUI:
             blackboard["total_characters"] = max(1, char_start) - 1 + max(1, total_chars)
             blackboard["current_character_index"] = max(0, char_start - 1)
             blackboard["domain_run_count"] = 0
+            blackboard["exit_after_done"] = exit_after_done
 
             capture = ScreenCapture()
             capture.start(method=cfg.capture_method, fps_limit=cfg.fps_limit)
@@ -1667,6 +1825,7 @@ class GameBotGUI:
 
             if blackboard["_window_rect"] is None:
                 best_rect = None
+                best_win = None
                 for _w in _pwc.getAllWindows():
                     _t = _w.title or ""
                     if not _w.visible or _w.isMinimized:
@@ -1683,22 +1842,35 @@ class GameBotGUI:
                         _area = (_rw - _b.left) * (_rh - _b.top)
                         if best_rect is None or _area > best_rect[0]:
                             best_rect = (_area, _b.left, _b.top, _rw, _rh)
+                            best_win = _w
                 if best_rect:
                     blackboard["_window_rect"] = best_rect[1:]
                     logger.info("Game window (fallback): rect=(%d,%d,%d,%d)", *best_rect[1:])
+                    if best_win and wm:
+                        wm._window = best_win
 
             if wm and wm._window:
                 if bg:
                     wm.save_position()
                 window_mgr = wm
 
-            if skip_combat:
-                logger.info("跳过刷本模式：直接从town_exit开始（测试角色切换）")
-                fsm.transition("town_exit", blackboard)
-            else:
-                fsm.transition("character_select", blackboard)
+            # 开发者模式：无前置状态的直启场景，游戏窗口可能未聚焦。
+            # 点击窗口中央触发 Windows 自动聚焦，避免后续 pydirectinput 落空。
+            if window_mgr and not window_mgr.is_focused and not bg:
+                rect = blackboard.get("_window_rect")
+                if rect and len(rect) == 4:
+                    cx = (rect[0] + rect[2]) // 2
+                    cy = (rect[1] + rect[3]) // 2
+                    controller.click_at(cx, cy, bezier=False)
+                    time.sleep(0.3)
+                    logger.info("Focus-activation click at window center (%d,%d)", cx, cy)
+
+            if start_state != "character_select":
+                logger.info("开发者模式：从 %s 状态开始", start_state)
+            fsm.transition(start_state, blackboard)
             logger.info("Bot started via GUI. Preset=%s Characters=%d", preset_name, total_chars)
 
+            _SAFE_STATES = {"domain_loading", "map_loading", "complete", "stuck_recovery"}
             while blackboard["running"] and not self.bot_stop_event.is_set():
                 if window_mgr:
                     if window_mgr.is_minimized:
@@ -1720,7 +1892,7 @@ class GameBotGUI:
                     watchdog.reset()
                     fsm.transition("stuck_recovery", blackboard)
                 fsm.update(blackboard)
-                if stealth and fsm.current != "domain_combat":
+                if stealth and fsm.current in _SAFE_STATES:
                     controller.occasional_look_around()
                 time.sleep(1.0 / max(cfg.fps_limit, 1))
 
@@ -1780,7 +1952,7 @@ class CharacterDialog:
         self.on_save = on_save
         self.char = chars[idx]
         self.dialog = tk.Toplevel(parent)
-        self.dialog.title(f"编辑角色 - {self.char.get('name', '')}")
+        self.dialog.title(f"配置角色 - {self.char.get('name', '')}")
         _center_on_parent(self.dialog, parent, 800, 600)
         self.dialog.transient(parent)
         self.dialog.grab_set()
@@ -1808,6 +1980,10 @@ class CharacterDialog:
         top = ttk.LabelFrame(main, text="角色信息", padding=6)
         top.pack(fill="x")
 
+        note = ttk.Label(top, text="名称、次数和连招仅影响当前预设；修改模板将覆盖角色库的默认配置，不会影响角色库本身",
+                         foreground="#888", font=("", 8))
+        note.pack(fill="x", pady=(0, 4))
+
         r = ttk.Frame(top); r.pack(fill="x", pady=1)
         ttk.Label(r, text="名称:").pack(side="left")
         self.entry_name = ttk.Entry(r, width=16)
@@ -1825,6 +2001,7 @@ class CharacterDialog:
             e = ttk.Entry(f, width=width)
             e.pack(side="left", padx=1)
             thr = ttk.Spinbox(f, from_=0.30, to=0.99, increment=0.05, width=4)
+            thr.bind("<MouseWheel>", lambda e: "break")
             thr.set("0.65")
             thr.pack(side="left", padx=1)
             btn = ttk.Button(f, text="浏览", width=4,
@@ -1840,6 +2017,7 @@ class CharacterDialog:
             ttk.Label(f, text=label1).pack(side="left")
             e1 = ttk.Entry(f, width=10); e1.pack(side="left", padx=1)
             thr1 = ttk.Spinbox(f, from_=0.30, to=0.99, increment=0.05, width=4)
+            thr1.bind("<MouseWheel>", lambda e: "break")
             thr1.set("0.65"); thr1.pack(side="left", padx=1)
             ttk.Button(f, text="浏览", width=4,
                        command=lambda en=e1: self._pick_template(en, label1)).pack(side="left")
@@ -1848,6 +2026,7 @@ class CharacterDialog:
             ttk.Label(f, text=label2).pack(side="left", padx=(8, 0))
             e2 = ttk.Entry(f, width=10); e2.pack(side="left", padx=1)
             thr2 = ttk.Spinbox(f, from_=0.30, to=0.99, increment=0.05, width=4)
+            thr2.bind("<MouseWheel>", lambda e: "break")
             thr2.set("0.65"); thr2.pack(side="left", padx=1)
             ttk.Button(f, text="浏览", width=4,
                        command=lambda en=e2: self._pick_template(en, label2)).pack(side="left")
@@ -2221,7 +2400,8 @@ class BindComboDialog:
             with open(path, encoding="utf-8") as f:
                 data = json.load(f)
             self._selected_preset = data
-            for i, ch in enumerate(data.get("characters", [])):
+            resolved = resolve_characters(data)
+            for i, ch in enumerate(resolved):
                 ch_name = ch.get("name", f"角色{i+1}")
                 runs = ch.get("runs", 1)
                 combo_count = len(ch.get("combos", []))
@@ -2251,6 +2431,7 @@ class BindComboDialog:
         with open(str(path), "w", encoding="utf-8") as f:
             json.dump(self._selected_preset, f, indent=2, ensure_ascii=False)
         if self.current_preset_data.get("description") == self._selected_preset.get("description"):
+            self._selected_preset["characters"] = resolve_characters(self._selected_preset)
             self.current_preset_data["characters"] = self._selected_preset["characters"]
         self.on_save()
         messagebox.showinfo("绑定成功", f"已追加到角色「{target['name']}」的连招列表")
@@ -2408,3 +2589,118 @@ class ScreenshotCropDialog:
         if self.on_save:
             self.on_save()
         self.dialog.destroy()
+
+
+class _CharLibEditDialog:
+    def __init__(self, parent, name, templates_path, on_save):
+        self.original_name = name
+        self.templates_path = templates_path
+        self.on_save = on_save
+        if name:
+            self.data = load_character_profile(name) or {"name": name}
+        else:
+            self.data = {"name": ""}
+        self.dialog = tk.Toplevel(parent)
+        self.dialog.title(f"编辑角色 - {name}" if name else "新建角色")
+        color = parent.cget("bg") if parent.winfo_exists() else "#f0f0f0"
+        self.dialog.configure(bg=color)
+        _center_on_parent(self.dialog, parent, 600, 360)
+        self.dialog.transient(parent)
+        self.dialog.grab_set()
+        self._build()
+        self.dialog.wait_window()
+
+    def _pick_template(self, entry, title):
+        global _last_browse_dir
+        start = _last_browse_dir if _last_browse_dir else self.templates_path
+        path = filedialog.askopenfilename(
+            title=title, initialdir=start,
+            filetypes=[("图片文件", "*.png *.jpg *.jpeg *.bmp"), ("所有文件", "*.*")],
+        )
+        if path:
+            _last_browse_dir = Path(path).parent
+            ename = _import_template_file(path, self.templates_path)
+            entry.delete(0, "end"); entry.insert(0, ename)
+
+    def _build(self):
+        main = ttk.Frame(self.dialog, padding=8)
+        main.pack(fill="both", expand=True)
+        r0 = ttk.Frame(main); r0.pack(fill="x", pady=2)
+        ttk.Label(r0, text="角色名:").pack(side="left")
+        self.name_entry = ttk.Entry(r0, width=20)
+        self.name_entry.pack(side="left", padx=4)
+        self.name_entry.insert(0, self.data.get("name", ""))
+
+        def _row(label, field):
+            f = ttk.Frame(main); f.pack(fill="x", pady=1)
+            ttk.Label(f, text=label).pack(side="left")
+            e = ttk.Entry(f, width=24); e.pack(side="left", padx=2)
+            btn = ttk.Button(f, text="浏览", width=4, command=lambda en=e: self._pick_template(en, label))
+            btn.pack(side="left")
+            thr = ttk.Spinbox(f, from_=0.30, to=0.99, increment=0.05, width=4)
+            thr.bind("<MouseWheel>", lambda e: "break")
+            thr.set("0.65"); thr.pack(side="left", padx=1)
+            n, t = _unpack_tpl_value(self.data.get(field, ""))
+            e.insert(0, n); thr.set(str(t))
+            return e, thr
+
+        self.fields = {}
+        for lbl, key in [("选人界面头像:", "portrait_template"),
+                         ("角色技能栏:", "skill_bar_template"),
+                         ("结算画面:", "result_screen_template"),
+                         ("城镇头像:", "avatar_template")]:
+            self.fields[key] = _row(lbl, key)
+
+        btn_frame = ttk.Frame(main); btn_frame.pack(fill="x", pady=6)
+        ttk.Button(btn_frame, text="保存", command=self._save).pack(side="right", padx=4)
+        ttk.Button(btn_frame, text="取消", command=self.dialog.destroy).pack(side="right", padx=4)
+
+    def _save(self):
+        name = self.name_entry.get().strip()
+        if not name:
+            messagebox.showwarning("提示", "角色名不能为空")
+            return
+        if self.original_name and name != self.original_name:
+            old_path = CHARACTERS_DIR / f"{self.original_name}.json"
+            if old_path.exists():
+                old_path.unlink()
+        profile = {}
+        for key, (entry, thr) in self.fields.items():
+            val = _pack_tpl_value(entry.get(), thr.get(), self.data.get(key))
+            if val:
+                profile[key] = val
+        save_character_profile(name, profile)
+        self.on_save()
+        self.dialog.destroy()
+
+
+class _PickCharacterDialog:
+    def __init__(self, parent, names, on_pick):
+        self.names = names
+        self.on_pick = on_pick
+        self.dialog = tk.Toplevel(parent)
+        self.dialog.title("从角色库添加")
+        _center_on_parent(self.dialog, parent, 350, 300)
+        self.dialog.transient(parent)
+        self.dialog.grab_set()
+        self._build()
+        self.dialog.wait_window()
+
+    def _build(self):
+        main = ttk.Frame(self.dialog, padding=8)
+        main.pack(fill="both", expand=True)
+        ttk.Label(main, text="选择角色:", font=("", 9, "bold")).pack(anchor="w", pady=(0, 4))
+        self.lb = tk.Listbox(main, height=8)
+        self.lb.pack(fill="both", expand=True)
+        for n in self.names:
+            self.lb.insert("end", n)
+        self.lb.bind("<Double-Button-1>", lambda e: self._confirm())
+        btn_frame = ttk.Frame(main); btn_frame.pack(fill="x", pady=6)
+        ttk.Button(btn_frame, text="确定", command=self._confirm).pack(side="right", padx=4)
+        ttk.Button(btn_frame, text="取消", command=self.dialog.destroy).pack(side="right", padx=4)
+
+    def _confirm(self):
+        sel = self.lb.curselection()
+        if sel:
+            self.on_pick(self.names[sel[0]])
+            self.dialog.destroy()

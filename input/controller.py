@@ -12,6 +12,8 @@ pydirectinput.FAILSAFE = False
 
 logger = logging.getLogger(__name__)
 
+_SAFE_STEALTH_STATES = {"domain_loading", "map_loading", "complete", "stuck_recovery"}
+
 _PDI_KEY_MAP = {
     "left_alt": "alt", "alt": "alt",
     "left_shift": "shift", "left_ctrl": "ctrl",
@@ -21,6 +23,10 @@ _PDI_KEY_MAP = {
 
 def _pdi_key(key):
     return _PDI_KEY_MAP.get(key, key)
+
+
+class _POINT(ctypes.Structure):
+    _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
 
 
 class Controller:
@@ -102,13 +108,18 @@ class Controller:
             pts.append((x, y))
         return pts
 
-    def click_at(self, x, y, button="left", jitter=None):
+    def click_at(self, x, y, button="left", jitter=None, bezier=True):
         if jitter is None:
             jitter = self.click_jitter
         jx = random.randint(-jitter, jitter)
         jy = random.randint(-jitter, jitter)
         tx, ty = x + jx, y + jy
-        ctypes.windll.user32.SetCursorPos(tx, ty)
+        if self.stealth and bezier:
+            pt = _POINT()
+            ctypes.windll.user32.GetCursorPos(ctypes.byref(pt))
+            self.move_to_bezier(pt.x, pt.y, tx, ty)
+        else:
+            ctypes.windll.user32.SetCursorPos(tx, ty)
         time.sleep(random.uniform(0.08, 0.15))
         flag_down = 0x0002 if button == "left" else 0x0008
         flag_up = 0x0004 if button == "left" else 0x0010

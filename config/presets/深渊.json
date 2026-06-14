@@ -20,7 +20,10 @@
     "confirm_enter_template": [
       "确认.png"
     ],
-    "npc_marker_template": "npc寻路2.png"
+    "npc_marker_template": {
+      "template": "npc寻路图标.png",
+      "threshold": 0.8
+    }
   },
   "town_exit": {
     "settings_template": "设置按钮.png",
@@ -31,19 +34,14 @@
   "characters": [
     {
       "name": "镰卫",
-      "portrait_template": "镰卫选人界面头像.png",
-      "skill_bar_template": "镰卫技能栏.png",
-      "result_screen_template": "镰卫结算画面.png",
-      "avatar_template": "镰卫城镇头像.png",
-      "runs": 12,
-      "fallback_combos": null,
+      "runs": 3,
       "combos": [
         {
           "keys": [
             "4"
           ],
           "duration": 0.35,
-          "delay_before": 3.0,
+          "delay_before": 1.0,
           "delay_after": 1.0,
           "hold": false,
           "repeat": 1
@@ -108,42 +106,620 @@
           "hold": false,
           "repeat": 1
         }
-      ]
+      ],
+      "fallback_combos": null
     },
     {
-      "name": "狂战",
-      "portrait_template": "狂战选人头像.png",
-      "skill_bar_template": "狂战技能栏.png",
-      "result_screen_template": "狂战结算模板.png",
-      "avatar_template": "狂战城镇头像.png",
-      "runs": 1,
-      "fallback_combos": null,
+      "name": "赏金",
+      "runs": 3,
       "combos": [
         {
           "keys": [
-            "left_click"
+            "2"
           ],
-          "duration": 0.081,
-          "delay_after": 1.058
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
         },
         {
           "keys": [
-            "left_click"
+            "3"
           ],
-          "duration": 0.091,
-          "delay_after": 0.0
+          "duration": 0.33,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.3,
+          "delay_before": 0.0,
+          "delay_after": 0.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.36,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.34,
+          "delay_before": 3.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.37,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.35,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.39,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
         }
-      ]
+      ],
+      "fallback_combos": null
+    },
+    {
+      "name": "狂战",
+      "runs": 3,
+      "combos": [
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "4"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.3,
+          "delay_before": 0.0,
+          "delay_after": 0.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "4",
+            "w"
+          ],
+          "duration": 1.5,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": true,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.37,
+          "delay_before": 1.0,
+          "delay_after": 2.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.34,
+          "delay_before": 3.0,
+          "delay_after": 2.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.35,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.39,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ],
+      "fallback_combos": null
+    },
+    {
+      "name": "霜伶",
+      "runs": 3,
+      "combos": [
+        {
+          "keys": [
+            "4"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.33,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.3,
+          "delay_before": 0.0,
+          "delay_after": 0.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1",
+            "w"
+          ],
+          "duration": 1.5,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": true,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.37,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.34,
+          "delay_before": 3.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.36,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ],
+      "fallback_combos": null
     },
     {
       "name": "碎星",
-      "portrait_template": "",
-      "skill_bar_template": null,
-      "result_screen_template": null,
-      "avatar_template": "碎星城镇头像.png",
-      "runs": 4,
-      "fallback_combos": null,
-      "combos": []
+      "runs": 3,
+      "combos": [
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e",
+            "w"
+          ],
+          "duration": 1.0,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.3,
+          "delay_before": 0.0,
+          "delay_after": 0.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.33,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "4"
+          ],
+          "duration": 0.36,
+          "delay_before": 3.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.34,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.39,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ],
+      "fallback_combos": null
+    },
+    {
+      "name": "机械",
+      "runs": 3,
+      "combos": [
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "4"
+          ],
+          "duration": 0.33,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.3,
+          "delay_before": 0.0,
+          "delay_after": 0.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.35,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.36,
+          "delay_before": 1.0,
+          "delay_after": 2.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "4"
+          ],
+          "duration": 0.34,
+          "delay_before": 3.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.37,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ],
+      "fallback_combos": null
+    },
+    {
+      "name": "鬼刃",
+      "runs": 3,
+      "combos": [
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.33,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.3,
+          "delay_before": 0.0,
+          "delay_after": 0.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.35,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.34,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.36,
+          "delay_before": 3.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "4"
+          ],
+          "duration": 0.37,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "3"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ],
+      "fallback_combos": null
+    },
+    {
+      "name": "音爆",
+      "runs": 3,
+      "combos": [
+        {
+          "keys": [
+            "4"
+          ],
+          "duration": 0.35,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.31,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "q"
+          ],
+          "duration": 0.3,
+          "delay_before": 0.0,
+          "delay_after": 0.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.36,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "1"
+          ],
+          "duration": 0.34,
+          "delay_before": 3.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.32,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "2"
+          ],
+          "duration": 0.37,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        },
+        {
+          "keys": [
+            "e"
+          ],
+          "duration": 0.33,
+          "delay_before": 1.0,
+          "delay_after": 1.0,
+          "hold": false,
+          "repeat": 1
+        }
+      ],
+      "fallback_combos": null
     }
   ],
   "enter_game_template": "进入游戏.png",
@@ -219,7 +795,9 @@
       "repeat": 1
     }
   ],
-  "char_count": 1,
-  "stealth": false,
-  "background": false
+  "char_count": 8,
+  "stealth": true,
+  "background": false,
+  "char_start": 1,
+  "exit_after_done": true
 }

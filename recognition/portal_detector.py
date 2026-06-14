@@ -60,7 +60,7 @@ class PortalDetector:
         try:
             from recognition.template import find_template
             r = find_template(frame, self._portal_file, threshold=self._template_threshold,
-                              scale_range=(0.3, 1.5), scale_steps=13)
+                              scale_range=(0.7, 1.35), scale_steps=7)
             if r:
                 return {
                     "center": r["center"],

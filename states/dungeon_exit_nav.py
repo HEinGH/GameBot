@@ -153,7 +153,31 @@ class DungeonExitNavState(BaseState):
 
     def _find_portal(self, frame):
         result = self.detector.detect(frame)
-        return result.get("portal") if result else None
+        portal = result.get("portal") if result else None
+        if not portal and self._last_pos and self.detector._portal_file:
+            from recognition.template import find_template
+            r = find_template(frame, self.detector._portal_file, threshold=0.65,
+                               scale_range=(0.7, 1.35), scale_steps=7)
+            if r:
+                fw = self._gw_w if self._gw_w > 0 else (frame.shape[1] if frame is not None else 1920)
+                dx = abs(r["center"][0] - self._last_pos[0])
+                if dx <= fw * 0.30:
+                    logger.debug("Portal soft-fallback accepted at conf=%.2f", r["confidence"])
+                    portal = {
+                        "center": r["center"],
+                        "bbox": r.get("bbox"),
+                        "matches": 0,
+                        "size": (r["bbox"][2] - r["bbox"][0]) * (r["bbox"][3] - r["bbox"][1]) if r.get("bbox") else 10000,
+                        "method": "template",
+                    }
+        if portal and self._last_pos:
+            fw = self._gw_w if self._gw_w > 0 else (frame.shape[1] if frame is not None else 1920)
+            dx = abs(portal["center"][0] - self._last_pos[0])
+            if dx > fw * 0.30:
+                logger.debug("Portal pos jumped %dpx (%.0f%%), rejecting",
+                             dx, dx / max(fw, 1) * 100)
+                return None
+        return portal
 
     def _find_button(self, frame, blackboard, threshold=0.65):
         preset = blackboard["preset"]
@@ -450,7 +474,7 @@ class DungeonExitNavState(BaseState):
             r = find_template(frame, target_name, threshold=target_thr)
             if r:
                 cx, cy = r["center"]
-                self.controller.click_at(cx, cy)
+                self.controller.click_at(cx, cy, bezier=False)
                 action = "exit" if all_done else "re-challenge"
                 logger.info("Clicked %s (run %d/%d)", action, runs_done + 1, domain_runs)
                 self._click_stage = 1
@@ -468,7 +492,7 @@ class DungeonExitNavState(BaseState):
             r = find_template(frame, confirm_name, threshold=confirm_thr)
             if r:
                 cx, cy = r["center"]
-                self.controller.click_at(cx, cy)
+                self.controller.click_at(cx, cy, bezier=False)
                 logger.info("Clicked confirm")
                 self._click_stage = 2
                 self._click_wait = 15

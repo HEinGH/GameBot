@@ -111,8 +111,28 @@ class NPCNavigateState(BaseState):
         except Exception: pass
 
     def _find_npc(self, frame):
-        return self._find(self._npc_tpl, frame, threshold=self._npc_thr,
-                          scale_range=(0.3, 1.5), scale_steps=15)
+        r = self._find(self._npc_tpl, frame, threshold=self._npc_thr,
+                        scale_range=(0.7, 1.35), scale_steps=7)
+        if not r and self._last_pos and self._npc_thr > 0.65:
+            r = self._find(self._npc_tpl, frame, threshold=0.65,
+                            scale_range=(0.7, 1.35), scale_steps=7)
+            if r:
+                fw = frame.shape[1] if frame is not None else self._gw_w
+                ref_w = self._gw_w if self._gw_w > 0 else fw
+                dx = abs(r["center"][0] - self._last_pos[0])
+                if dx > ref_w * 0.30:
+                    logger.debug("NPC soft-fallback rejected: jump %dpx", dx)
+                    return None
+                logger.debug("NPC soft-fallback accepted at conf=%.2f", r["confidence"])
+        if r and self._last_pos:
+            fw = frame.shape[1] if frame is not None else self._gw_w
+            ref_w = self._gw_w if self._gw_w > 0 else fw
+            dx = abs(r["center"][0] - self._last_pos[0])
+            if dx > ref_w * 0.30:
+                logger.debug("NPC pos jumped %dpx (%.0f%%), rejecting",
+                             dx, dx / max(ref_w, 1) * 100)
+                return None
+        return r
 
     def _find(self, tpl, frame, threshold=0.65, scale_range=(0.5, 1.5), scale_steps=11):
         if not tpl or frame is None: return None

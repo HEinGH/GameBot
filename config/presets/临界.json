@@ -2,7 +2,7 @@
   "description": "临界",
   "window_title": "晶核：魔导觉醒",
   "char_count": 7,
-  "stealth": false,
+  "stealth": true,
   "background": false,
   "enter_game_template": "进入游戏.png",
   "rechallenge_template": "再次挑战.png",
@@ -33,7 +33,7 @@
     ],
     "npc_marker_template": {
       "template": "npc寻路图标.png",
-      "threshold": 0.65,
+      "threshold": 0.8,
       "reject_flip": true
     }
   },
@@ -46,21 +46,7 @@
   "characters": [
     {
       "name": "赏金",
-      "portrait_template": {
-        "template": "赏金\\赏金选人界面头像.png",
-        "threshold": 0.7
-      },
-      "skill_bar_template": "赏金\\赏金技能栏.png",
-      "result_screen_template": {
-        "template": "赏金\\赏金结算画面.png",
-        "threshold": 0.75
-      },
-      "avatar_template": {
-        "template": "赏金\\赏金城镇头像.png",
-        "threshold": 0.7
-      },
       "runs": 3,
-      "fallback_combos": null,
       "combos": [
         {
           "keys": [
@@ -142,25 +128,12 @@
           "hold": false,
           "repeat": 1
         }
-      ]
+      ],
+      "fallback_combos": null
     },
     {
       "name": "狂战",
-      "portrait_template": "狂战\\狂战选人界面头像.png",
-      "skill_bar_template": {
-        "template": "狂战\\狂战技能栏.png",
-        "threshold": 0.75
-      },
-      "result_screen_template": {
-        "template": "狂战\\狂战结算画面.png",
-        "threshold": 0.75
-      },
-      "avatar_template": {
-        "template": "狂战\\狂战城镇头像.png",
-        "threshold": 0.7
-      },
       "runs": 3,
-      "fallback_combos": null,
       "combos": [
         {
           "keys": [
@@ -242,25 +215,12 @@
           "hold": false,
           "repeat": 1
         }
-      ]
+      ],
+      "fallback_combos": null
     },
     {
       "name": "霜伶",
-      "portrait_template": "霜伶\\霜伶选人界面头像.png",
-      "skill_bar_template": {
-        "template": "霜伶\\霜伶技能栏.png",
-        "threshold": 0.75
-      },
-      "result_screen_template": {
-        "template": "霜伶\\霜伶结算画面.png",
-        "threshold": 0.75
-      },
-      "avatar_template": {
-        "template": "霜伶\\霜伶城镇头像.png",
-        "threshold": 0.68
-      },
       "runs": 3,
-      "fallback_combos": null,
       "combos": [
         {
           "keys": [
@@ -342,25 +302,12 @@
           "hold": false,
           "repeat": 1
         }
-      ]
+      ],
+      "fallback_combos": null
     },
     {
       "name": "碎星",
-      "portrait_template": "碎星\\碎星选人界面头像.png",
-      "skill_bar_template": {
-        "template": "碎星\\碎星技能栏.png",
-        "threshold": 0.75
-      },
-      "result_screen_template": {
-        "template": "碎星\\碎星结算画面.png",
-        "threshold": 0.75
-      },
-      "avatar_template": {
-        "template": "碎星\\碎星城镇头像.png",
-        "threshold": 0.7
-      },
       "runs": 3,
-      "fallback_combos": null,
       "combos": [
         {
           "keys": [
@@ -442,25 +389,12 @@
           "hold": false,
           "repeat": 1
         }
-      ]
+      ],
+      "fallback_combos": null
     },
     {
       "name": "机械",
-      "portrait_template": "机械\\机械选人界面头像.png",
-      "skill_bar_template": {
-        "template": "机械\\机械技能栏.png",
-        "threshold": 0.75
-      },
-      "result_screen_template": {
-        "template": "机械\\机械结算画面.png",
-        "threshold": 0.75
-      },
-      "avatar_template": {
-        "template": "机械\\机械城镇头像.png",
-        "threshold": 0.7
-      },
       "runs": 3,
-      "fallback_combos": null,
       "combos": [
         {
           "keys": [
@@ -542,25 +476,12 @@
           "hold": false,
           "repeat": 1
         }
-      ]
+      ],
+      "fallback_combos": null
     },
     {
       "name": "鬼刃",
-      "portrait_template": "鬼刃\\鬼刃选人界面头像.png",
-      "skill_bar_template": {
-        "template": "鬼刃\\鬼刃技能栏.png",
-        "threshold": 0.75
-      },
-      "result_screen_template": {
-        "template": "鬼刃\\鬼刃结算画面.png",
-        "threshold": 0.75
-      },
-      "avatar_template": {
-        "template": "鬼刃\\鬼刃城镇头像.png",
-        "threshold": 0.7
-      },
       "runs": 3,
-      "fallback_combos": null,
       "combos": [
         {
           "keys": [
@@ -642,25 +563,12 @@
           "hold": false,
           "repeat": 1
         }
-      ]
+      ],
+      "fallback_combos": null
     },
     {
       "name": "音爆",
-      "portrait_template": "音爆\\音爆选人界面头像.png",
-      "skill_bar_template": {
-        "template": "音爆\\音爆技能栏.png",
-        "threshold": 0.75
-      },
-      "result_screen_template": {
-        "template": "音爆\\音爆结算画面.png",
-        "threshold": 0.8
-      },
-      "avatar_template": {
-        "template": "音爆\\音爆城镇头像.png",
-        "threshold": 0.7
-      },
       "runs": 3,
-      "fallback_combos": null,
       "combos": [
         {
           "keys": [
@@ -742,7 +650,8 @@
           "hold": false,
           "repeat": 1
         }
-      ]
+      ],
+      "fallback_combos": null
     }
   ],
   "fallback_combos": [
@@ -817,5 +726,6 @@
       "repeat": 1
     }
   ],
-  "char_start": 1
+  "char_start": 1,
+  "exit_after_done": true
 }

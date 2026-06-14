@@ -20,7 +20,9 @@ def get_writable_dir():
 ROOT_DIR = get_resource_dir()
 CONFIG_DIR = ROOT_DIR / "config"
 PRESETS_DIR = CONFIG_DIR / "presets"
+CHARACTERS_DIR = CONFIG_DIR / "characters"
 TEMPLATES_DIR = ROOT_DIR / "templates"
+CHARACTERS_DIR.mkdir(parents=True, exist_ok=True)
 
 DEFAULT_SETTINGS = {
     "resolution": [1920, 1080],
@@ -138,4 +140,81 @@ def parse_template_chain(chain_list, default=None):
             thr = default
         if name:
             result.append((name, thr))
+    return result
+
+
+CHARACTER_PROFILE_FIELDS = (
+    "portrait_template", "skill_bar_template",
+    "result_screen_template", "avatar_template",
+)
+
+
+def load_character_profile(name):
+    path = CHARACTERS_DIR / f"{name}.json"
+    if path.exists():
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
+
+def save_character_profile(name, data):
+    CHARACTERS_DIR.mkdir(parents=True, exist_ok=True)
+    path = CHARACTERS_DIR / f"{name}.json"
+    data["name"] = name
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def list_character_profiles():
+    if not CHARACTERS_DIR.exists():
+        return []
+    return sorted(p.stem for p in CHARACTERS_DIR.glob("*.json") if not p.stem.startswith("_"))
+
+
+def resolve_characters(preset):
+    chars = []
+    for ref in preset.get("characters", []):
+        if isinstance(ref, str):
+            name = ref
+            overrides = {}
+        else:
+            name = ref.get("name", "")
+            overrides = dict(ref)
+            overrides.pop("name", None)
+        profile = load_character_profile(name)
+        if profile:
+            merged = dict(profile)
+            merged.update(overrides)
+            chars.append(merged)
+        elif any(k in overrides for k in CHARACTER_PROFILE_FIELDS):
+            chars.append(dict(ref))
+        else:
+            ref_copy = dict(ref) if isinstance(ref, dict) else {"name": ref}
+            chars.append(ref_copy)
+    return chars
+
+
+def serialize_characters(chars, profile_map=None):
+    if profile_map is None:
+        profile_map = {}
+        for ch in chars:
+            name = ch.get("name", "")
+            if name:
+                profile_map[name] = load_character_profile(name)
+    result = []
+    for ch in chars:
+        name = ch.get("name", "")
+        profile = profile_map.get(name)
+        if profile:
+            ref = {"name": name}
+            for k in ("runs", "combos", "fallback_combos"):
+                if k in ch:
+                    val = ch[k]
+                    ref[k] = val
+            for k in CHARACTER_PROFILE_FIELDS:
+                if k in ch and ch[k] != profile.get(k):
+                    ref[k] = ch[k]
+            result.append(ref)
+        else:
+            result.append(dict(ch))
     return result
