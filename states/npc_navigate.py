@@ -29,6 +29,7 @@ class NPCNavigateState(BaseState):
         self._npc_thr = 0.65
         self._move_ck = 0
         self._seek_dir = 0
+        self._reversal_count = 0
 
     def _set_phase(self, name):
         if name != self._phase:
@@ -47,6 +48,7 @@ class NPCNavigateState(BaseState):
         self._wait = 0
         self._move_ck = 0
         self._seek_dir = 0
+        self._reversal_count = 0
         self._enter_chain = []
         self._enter_chain_idx = 0
         self._enter_attempts = 0
@@ -154,6 +156,7 @@ class NPCNavigateState(BaseState):
         elif abs_off < gw_w * 0.10: step = 10
         elif abs_off < gw_w * 0.20: step = 18
         else: step = 30
+        step = max(5, step // (self._reversal_count + 1))
         angle = -step if off < 0 else step
         logger.debug("  rotate off=%d(%.0f%%) deg=%.0f", off, off / gw_w * 100, angle)
         self._rotate(angle)
@@ -274,6 +277,7 @@ class NPCNavigateState(BaseState):
             self._do_enter(blackboard)
 
     def _do_scan(self, frame, gh, gw, win_cx, win_cy):
+        self._reversal_count = 0
         if not self._npc_tpl:
             self._release_w()
             blackboard["_fsm"].transition("domain_loading", blackboard)
@@ -341,6 +345,7 @@ class NPCNavigateState(BaseState):
                 step = int(step * 1.3)
 
             self._seek_dir = -1 if h_off < 0 else 1
+            step = max(5, step // (self._reversal_count + 1))
             angle = self._seek_dir * max(8, step)
             logger.debug("  seek rotate %d deg (step=%d h=%.2f v=%.2f)", angle, step, h_ratio, v_ratio)
             self._rotate(angle)
@@ -349,6 +354,7 @@ class NPCNavigateState(BaseState):
             if self._lost == 6:
                 logger.debug("  seek lost, reversing")
                 self._seek_dir = -self._seek_dir; self._lost = 0
+                self._reversal_count += 1
             elif self._lost > 20:
                 self._set_phase("enter"); self._wait = 0; return
 

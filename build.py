@@ -11,6 +11,7 @@ PyInstaller.__main__.run([
     f"--add-data={HERE / 'config'};config",
     f"--add-data={HERE / 'combos'};combos",
     "--noconsole",
+    "--uac-admin",
     "--clean",
     "--noupx",
     "--hidden-import=pydirectinput",

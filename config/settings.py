@@ -1,8 +1,12 @@
 import json
 import os
 import sys
+import hashlib
 import threading
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def get_resource_dir():
@@ -21,8 +25,10 @@ ROOT_DIR = get_resource_dir()
 CONFIG_DIR = ROOT_DIR / "config"
 PRESETS_DIR = CONFIG_DIR / "presets"
 CHARACTERS_DIR = CONFIG_DIR / "characters"
+COMBO_DIR = ROOT_DIR / "combos"
 TEMPLATES_DIR = ROOT_DIR / "templates"
 CHARACTERS_DIR.mkdir(parents=True, exist_ok=True)
+COMBO_DIR.mkdir(parents=True, exist_ok=True)
 
 DEFAULT_SETTINGS = {
     "resolution": [1920, 1080],
@@ -152,6 +158,66 @@ CHARACTER_PROFILE_FIELDS = (
 )
 
 
+def list_combos():
+    if not COMBO_DIR.exists():
+        return []
+    return sorted(p.stem for p in COMBO_DIR.glob("*.json") if not p.stem.startswith("_"))
+
+
+def load_combo(name):
+    path = COMBO_DIR / f"{name}.json"
+    if path.exists():
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
+
+def save_combo(name, data):
+    COMBO_DIR.mkdir(parents=True, exist_ok=True)
+    path = COMBO_DIR / f"{name}.json"
+    data["name"] = name
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def delete_combo(name):
+    path = COMBO_DIR / f"{name}.json"
+    if path.exists():
+        path.unlink()
+
+
+def _combo_content_hash(actions):
+    return hashlib.md5(json.dumps(actions, sort_keys=True).encode()).hexdigest()
+
+
+def _find_combo_by_content(actions):
+    target_hash = _combo_content_hash(actions)
+    for name in list_combos():
+        data = load_combo(name)
+        if data and _combo_content_hash(data.get("actions", [])) == target_hash:
+            return name
+    return None
+
+
+def _migrate_combo_to_file(actions, preferred_name, preset_name=""):
+    if not actions:
+        return None, False
+    existing = _find_combo_by_content(actions)
+    if existing:
+        return existing, False
+    name = preferred_name
+    existing_data = load_combo(name)
+    if existing_data is not None:
+        if _combo_content_hash(existing_data.get("actions", [])) != _combo_content_hash(actions):
+            if preset_name:
+                name = f"{preferred_name}_{preset_name}"
+            else:
+                h = _combo_content_hash(actions)[:6]
+                name = f"{preferred_name}_{h}"
+    save_combo(name, {"name": name, "actions": list(actions)})
+    return name, True
+
+
 def load_character_profile(name):
     path = CHARACTERS_DIR / f"{name}.json"
     if path.exists():
@@ -174,7 +240,7 @@ def list_character_profiles():
     return sorted(p.stem for p in CHARACTERS_DIR.glob("*.json") if not p.stem.startswith("_"))
 
 
-def resolve_characters(preset):
+def resolve_characters(preset, preset_name=""):
     chars = []
     for ref in preset.get("characters", []):
         if isinstance(ref, str):
@@ -194,6 +260,40 @@ def resolve_characters(preset):
         else:
             ref_copy = dict(ref) if isinstance(ref, dict) else {"name": ref}
             chars.append(ref_copy)
+
+    for ch in chars:
+        inline_combos = ch.get("combos")
+        if isinstance(inline_combos, list) and inline_combos:
+            name, migrated = _migrate_combo_to_file(inline_combos, ch.get("name", "unknown"), preset_name)
+            ch["combo"] = name
+            ch["combos"] = inline_combos
+            if migrated:
+                logger.info("Migrated combo for '%s' → %s.json", ch.get("name", "?"), name)
+        elif isinstance(ch.get("combo"), str) and ch["combo"]:
+            data = load_combo(ch["combo"])
+            if data:
+                ch["combos"] = data.get("actions", [])
+            else:
+                ch["combos"] = []
+        else:
+            ch["combos"] = ch.get("combos", []) or []
+
+        inline_fb = ch.get("fallback_combos")
+        if isinstance(inline_fb, list) and inline_fb:
+            fb_name, fb_migrated = _migrate_combo_to_file(inline_fb, ch.get("name", "unknown") + "_兜底", preset_name)
+            ch["fallback_combo"] = fb_name
+            ch["fallback_combos"] = inline_fb
+            if fb_migrated:
+                logger.info("Migrated fallback for '%s' → %s.json", ch.get("name", "?"), fb_name)
+        elif isinstance(ch.get("fallback_combo"), str) and ch["fallback_combo"]:
+            data = load_combo(ch["fallback_combo"])
+            if data:
+                ch["fallback_combos"] = data.get("actions", [])
+            else:
+                ch["fallback_combos"] = None
+        else:
+            ch["fallback_combos"] = ch.get("fallback_combos") or None
+
     return chars
 
 
@@ -210,14 +310,30 @@ def serialize_characters(chars, profile_map=None):
         profile = profile_map.get(name)
         if profile:
             ref = {"name": name}
-            for k in ("runs", "combos", "fallback_combos"):
+            for k in ("runs", "combo", "fallback_combo"):
                 if k in ch:
                     val = ch[k]
-                    ref[k] = val
+                    if val is not None and val != "":
+                        ref[k] = val
             for k in CHARACTER_PROFILE_FIELDS:
                 if k in ch and ch[k] != profile.get(k):
                     ref[k] = ch[k]
             result.append(ref)
         else:
-            result.append(dict(ch))
+            out = dict(ch)
+            out.pop("combos", None)
+            out.pop("fallback_combos", None)
+            result.append(out)
     return result
+
+
+def migrate_preset_fallback(preset, preset_name=""):
+    fb = preset.get("fallback_combos")
+    if isinstance(fb, list) and fb:
+        fb_name, migrated = _migrate_combo_to_file(fb, preset_name + "_兜底" if preset_name else "兜底", preset_name)
+        preset["fallback_combo"] = fb_name
+        if migrated:
+            logger.info("Migrated preset fallback → %s.json", fb_name)
+    elif isinstance(preset.get("fallback_combo"), str) and preset["fallback_combo"]:
+        pass
+    return preset

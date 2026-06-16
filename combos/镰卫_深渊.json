@@ -1,0 +1,77 @@
+{
+  "name": "镰卫_深渊",
+  "actions": [
+    {
+      "keys": [
+        "4"
+      ],
+      "duration": 0.35,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "4"
+      ],
+      "duration": 0.36,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "e"
+      ],
+      "duration": 0.3,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "2"
+      ],
+      "duration": 0.4,
+      "delay_before": 3.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "2"
+      ],
+      "duration": 0.38,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "3"
+      ],
+      "duration": 0.42,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    },
+    {
+      "keys": [
+        "1"
+      ],
+      "duration": 0.37,
+      "delay_before": 1.0,
+      "delay_after": 1.0,
+      "hold": false,
+      "repeat": 1
+    }
+  ],
+  "source": "手动配置",
+  "duration_sec": 18.6
+}

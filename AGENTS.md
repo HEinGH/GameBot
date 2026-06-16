@@ -2,7 +2,7 @@
 
 ## 1. 项目概述
 
-从零搭建一个基于图像识别的自动化清体力脚本（GameBot），包含完整的状态机工作流、可视化 GUI 配置界面、角色库独立管理、隐身反检测、开发者调试工具、以及各类辅助功能（连招录制、后台窗口管理等）。最终交付可直接运行的项目代码和打包脚本。
+从零搭建一个基于图像识别的自动化清体力脚本（GameBot），包含完整的状态机工作流、可视化 GUI 配置界面、角色库独立管理、连招文件独立管理、隐身反检测、开发者调试工具、模板自学习、以及各类辅助功能（连招录制、后台窗口管理等）。**必须以管理员权限运行**以绕过 Windows UIPI 限制。最终交付可直接运行的项目代码和打包脚本（exe 内嵌管理员 Manifest）。
 
 ## 2. 技术难点和解决方案
 
@@ -25,6 +25,12 @@
 | **颜色校验对小图标（半透明边缘）不可靠** | 小图标去掉颜色校验，靠连续性校验 + 高阈值防御；大实体 UI 按钮保留颜色校验 |
 | **开发者模式窗口失焦导致键盘落空** | fallback 窗口检测注入 `wm._window`，开机时点击窗口中央触发 Windows 自动聚焦 |
 | **兜底连招 ~1.7s 延迟衔接** | `idle_cycles` 从 50 帧降至 1 帧，自定义连招放完立即加载兜底 |
+| **pydirectinput.moveRel 窗口边缘失效** | `rotate_camera`/`rotate_camera_free` 改用 Win32 `mouse_event(MOUSEEVENTF_MOVE)` 分步发送相对位移，替代 `pydirectinput.moveRel` |
+| **domain_loading 期间鼠标随机晃动导致镜头转动** | 从 `_SAFE_STEALTH_STATES` 白名单移除 `domain_loading`，该状态下不再触发 `occasional_look_around` |
+| **小模板（技能栏/结算画面）置信度每天波动** | 边缘腐蚀（面积<3000px 灰度图 erode 1px 去抗锯齿过渡区）+ `reject_flip=True`（拒绝翻转误匹配）+ `auto_update`（匹配成功后自动更新模板文件） |
+| **连招内联存储复用困难** | 连招与角色解耦：`combos/` 独立存储 `.json` 文件，角色/预设只存文件名引用；`resolve_characters()` 自动迁移旧内联格式 |
+| **角色列表 Treeview 与预设页风格不统一** | 替换为 Canvas + 行内 Spinbox/Combobox 实时控件列表，与 ChainStepList 风格一致 |
+| **Windows UIPI 阻止低权限进程向游戏发送输入** | GUI 以管理员身份运行；PyInstaller 打包时加 `--uac-admin` 嵌入管理员 Manifest；`start.bat` 自动检测并提权 |
 
 ## 3. 关键文件架构
 
@@ -76,12 +82,14 @@ game_bot/
 
 ### 启动命令
 
+**必须以管理员权限运行**（Windows UIPI 要求），可直接双击 `start.bat`（自动提权）或打包后运行 exe（内嵌 Manifest）。
+
 ```bash
-python gui.py                          # GUI 模式（推荐）
+python gui.py                          # GUI 模式（推荐，需管理员终端）
 python main.py --list                  # 列出预设
-python main.py -p default -c 2         # CLI 模式
+python main.py -p default -c 2         # CLI 模式（需管理员终端）
 python main.py --record-combo my_combo # 录制连招
-python build.py                        # 打包
+python build.py                        # 打包（exe 内嵌 --uac-admin）
 ```
 
 ## 4. 当前状态
@@ -113,18 +121,23 @@ CHARACTER_SELECT → TOWN_NAV → NPC_NAVIGATE → DOMAIN_LOADING → DOMAIN_COM
 | 切换角色测试 | ✅ |
 | 预设管理 GUI | ✅ |
 | 角色库独立管理 | ✅ |
+| 连招与角色解耦（combos/ 独立文件 + 自动迁移） | ✅ |
+| 角色列表控件化（Canvas + 内联 Spinbox/Combobox） | ✅ |
 | 模板置信度可配置化（含颜色/翻转校验） | ✅ |
 | 颜色校验（变量bug+ROI resize已修复） | ✅ |
 | 确认进入多步骤链 | ✅ |
 | NPC 寻路连续性校验 + soft-fallback | ✅ |
-| 副本出口寻路连续性校验 | ✅ |
+| 副本出口寻路连续性校验（seek/center 阶段放宽） | ✅ |
 | GUI 启动快捷键 | ✅ |
-| 隐身模式三层方案 | ✅ |
+| 隐身模式三层方案（domain_loading 已从白名单移除） | ✅ |
 | 开发者工具状态选择器 | ✅ |
 | "完成后退出"选项 | ✅ |
 | scale_range 全局收紧 (0.7,1.35) | ✅ |
 | 兜底连招即时衔接 | ✅ |
-| 连招录制+执行 | ⏳ 待测试 |
+| rotate_camera / rotate_camera_free Win32 重写 | ✅ |
+| 小模板边缘腐蚀 + reject_flip + auto_update | ✅ |
+| 开发者工具模板批量匹配测试 | ✅ |
+| 连招录制+管理 | ⏳ 待测试 |
 | 后台模式测试 | ⏳ 待测试 |
 
 ---
@@ -651,3 +664,117 @@ ORB 匹配数 10→6，Lowe 比率 0.75→0.80；新增模板匹配回退（`fin
 |------|------|
 | 连招录制端到端测试 | ⏳ 待测试 |
 | 后台模式测试 | ⏳ 待测试 |
+
+---
+
+## 14. 会话 10（代码清理 & 连招解耦 & UI 重构 & 实机调试）
+
+### 14.1 代码清理
+
+| 文件 | 改动 |
+|------|------|
+| `combos/executor.py` | 删除死代码：`execute_all()`、`stop()`、`_running`、`_current_action`、`_cycle_count`（被逐帧 `execute_next()` 替代） |
+| `gui/app.py` | 删除 `_update_dash_status()`（被 `_poll_log` 替代） |
+| `config/settings.py` | 删除 `DEFAULT_SETTINGS` 中已迁移到预设 JSON 的 4 个废弃字段（`last_char_count/last_char_start/last_stealth/last_background`） |
+| `config/settings.json` | 同步删除 4 个废弃字段 |
+| `main.py` + `gui/app.py` | `_SAFE_STATES` 去重复，统一 `import` 自 `controller._SAFE_STEALTH_STATES` |
+| `config/settings.py` | `parse_template_chain` 补全 `color_threshold`/`reject_flip` 注册注入（此前仅 `parse_template_ref` 有此逻辑） |
+
+### 14.2 连招与角色解耦
+
+| 阶段 | 文件 | 改动 |
+|------|------|------|
+| 数据层 | `config/settings.py` | 新增 `COMBO_DIR`、`list_combos()`、`load_combo()`、`save_combo()`、`delete_combo()`、`_migrate_combo_to_file()`（自动命名 + 冲突处理 + 内容去重） |
+| 解析 | `config/settings.py` | `resolve_characters(preset, preset_name)` 新增 `preset_name` 参数；检测旧格式（`combos` 是 list）自动迁移为 combo 文件引用；新格式（`combo` 是字符串）自动加载文件解析为运行时 actions |
+| 序列化 | `config/settings.py` | `serialize_characters()` 写出 `combo`/`fallback_combo` 字符串引用，而非内联 actions 数组；`migrate_preset_fallback()` 处理预设级兜底迁移 |
+| 运行时适配 | `gui/app.py:_run_bot` | 补全 `resolve_characters()` + `migrate_preset_fallback()` 调用（修复 Bot 启动时连招未解析的 bug） |
+| 状态机 | `states/domain_combat.py` | `_load_fallback()` 优先读 `fallback_combo` 字符串→`load_combo()` 加载，向后兼容旧 `fallback_combos` 列表 |
+| GUI 连招管理页 | `gui/app.py` | 侧栏"连招录制（待测试）"→"连招管理"；录制区 + 连招库 Treeview（名称/动作数/时长/来源）+ 详情 Treeview；新建/编辑/删除/预览/打开文件夹；`ComboEditDialog` 类 |
+
+**删除的旧类**：`CharacterDialog`（185 行）、`FallbackComboDialog`（90 行）、`BindComboDialog`（115 行）。净减少约 450 行。
+
+### 14.3 角色列表控件化
+
+| 改动 | 说明 |
+|------|------|
+| Treeview → Canvas 控件列表 | 表头 + 滚动画布 + 行内 Spinbox(次数) + Combobox(连招) + 底部按钮栏，与 ChainStepList 风格统一 |
+| 内联编辑 | 次数 Spinbox 直接修改（FocusOut/回车生效）、连招 Combobox 下拉选择（<<ComboboxSelected>> 即时生效） |
+| 兜底连招 | 预设级按钮 `_pick_preset_fallback`，弹出下拉选择 combo 文件名 |
+| 查看角色 | `CharacterViewDialog`：只读展示模板信息 + 连招详情 Treeview（动作列表） |
+| 行选中 | 点击名称/行区域 → 浅蓝色高亮（`SelRow.TFrame` style），可连续上下移；点击列表外区域自动取消选中 |
+| 按钮图标 | `+ 添加角色`、`△ 上移`、`▽ 下移`，与 ChainStepList 一致 |
+
+### 14.4 操作链（ChainStepList）修复
+
+| 改动 | 说明 |
+|------|------|
+| 行空白区域点击选中 | 补全 `<Configure>` 绑定使得 inner Frame 宽度跟随 Canvas 拉伸（此前定义了 `_on_canvas_configure` 但未绑定） |
+| 步骤标签点击选中 | `step_label.bind("<Button-1>")` 补全 |
+| 行内浏览按钮和 Spinbox 点击选中 | 补全绑定 → 点击即可选中行 |
+| 移除 × 行内删除按钮 | 统一使用底部"删除"按钮 |
+| 移除横向滚动条 | `scrollbar_h` + `_on_hmwheel` 删除 |
+| 上下移后保持选中 | `_move()` 在 `_refresh()` 后调用 `_set_selected()` 恢复选中 |
+| 选中高亮 | 统一为 `SelRow.TFrame` 浅蓝色 style |
+
+### 14.5 页面滚动与画布
+
+| 改动 | 说明 |
+|------|------|
+| 连招管理页滚动 | 整个页面包在 Canvas + Scrollbar 中（含标题/录制区/连招库） |
+| 角色列表独立滚动 | `_char_canvas` 内嵌 Canvas，内容不足高度时滚轮无效 |
+| 滚轮智能路由 | `_on_page_scroll`：事件来自 `_char_canvas` 或其子控件 → 只滚角色列表；否则滚页面画布 |
+| `_should_forward_scroll` | Treeview/Combobox/Listbox/Text/Scrollbar/Spinbox 跳过；子窗口 `Toplevel` 跳过；`str` widget 守卫（被销毁控件不崩溃） |
+| 内容不足时不滚动 | 所有 Canvas 在 `bbox("all")[3] <= canvas.winfo_height()` 时跳过 |
+
+### 14.6 输入系统 Win32 重写
+
+| 方法 | 旧实现 | 新实现 |
+|------|--------|--------|
+| `rotate_camera` | `pydirectinput.mouseDown/moveRel/mouseUp`（窗口边缘 moveRel 失效） | `mouse_event(LEFTDOWN)` → `mouse_event(MOVE, dx, 0)` 分 3 步 → `mouse_event(LEFTUP)` |
+| `rotate_camera_free` | `pydirectinput.moveRel`（同上） | `mouse_event(MOVE, dx, 0)` 分 3 步，无按键 |
+| `occasional_look_around` | 仍在用 `pydirectinput.moveRel`（适用非寻路场景） | 不变 |
+
+**隐身模式白名单更新**：`_SAFE_STEALTH_STATES` 从 4 个减为 3 个（移除 `domain_loading`），实测发现加载画面中鼠标移动会转动镜头。
+
+**副本按钮 bezier 恢复**：`dungeon_exit_nav.py` 中挑战/退出/确认按钮 `bezier=False` → `bezier=True`（之前归咎于 domain_loading 的随机晃动，根因已修复）。
+
+### 14.7 模板匹配优化
+
+| 优化 | 文件 | 说明 |
+|------|------|------|
+| 边缘腐蚀 | `recognition/template.py` | 面积 < 3000px 的灰度模板 `cv2.erode` 1px，削掉抗锯齿边缘过渡区 |
+| 自动更新 | `recognition/template.py` | `auto_update=True` 时，匹配成功且面积 < 3000px 且置信度 > 0.75，用截图 ROI 覆盖模板文件 |
+| `reject_flip` 全量启用 | `config/characters/*.json` | 7 个角色全部模板设为 `"reject_flip": true`（UI 元素不对称，翻转不可能匹配） |
+| 颜色校验 | `config/characters/*.json` | portrait/avatar 开 `"color_threshold": 0.7`；skill_bar/result_screen 不开（面积小/边缘差异大，校验不可靠） |
+| 副本出口连续性 | `states/dungeon_exit_nav.py` | `_find_portal` 连续性校验仅在 `move` 阶段生效，`seek`/`center`（旋转中）跳过跳变检查 |
+
+**模板最佳尺寸区间**：
+
+| 类型 | 最小 | 最大 | 理想 |
+|------|------|------|------|
+| portrait（选人界面头像） | 60×60 | 100×100 | 75×75 |
+| skill_bar（技能栏） | 50×50 | 80×80 | 60×55 |
+| result_screen（结算画面） | 60×60 | 150×150 | 80×80 |
+| avatar（城镇头像） | 50×40 | 90×70 | 70×55 |
+
+问题模板：`音爆/音爆技能栏.png`（39×38）、`狂战/狂战结算画面.png`（44×44）、`鬼刃/鬼刃技能栏.png`（49×50）需重截图。
+
+### 14.8 开发者工具新增
+
+| 功能 | 说明 |
+|------|------|
+| 模板批量匹配测试 | 开发者工具页新增按钮，截取当前屏幕 → 遍历所有角色库模板 → `find_template(threshold=0.10)` 宽泛搜索 → 输出置信度和位置到日志面板。独立线程运行，不影响状态机。 |
+
+### 14.9 Bug 修复
+
+| Bug | 根因 | 修复 |
+|-----|------|------|
+| **_start_bot 后 combo 未解析** | `_run_bot` 直接使用 `self.preset_data`，但 GUI 中 `_on_char_combo_changed` 改 combo 名后 pop 了 `combos` 列表 | `_run_bot` 中补 `resolve_characters()` + `migrate_preset_fallback()` |
+| **rotate_camera 窗口边缘失效** | `pydirectinput.moveRel` 在窗口化模式边缘被 `ClipCursor` 钳制 | 改为 Win32 `mouse_event(MOVE)` 分步发送 |
+| **domain_loading 期间镜头随机转动** | `occasional_look_around` 的 `pydirectinput.moveRel` 在加载画面中转动了镜头 | 从 `_SAFE_STEALTH_STATES` 移除 `domain_loading` |
+| **副本出口寻路旋转中图标被 continuity check 误拒** | seek/center 阶段图标必然跳变，连续性校验不应适用 | 校验仅在 `move` 阶段生效 |
+| **ChainStepList 行空白区域无法点击选中** | `_on_canvas_configure` 定义了但从未绑定 `<Configure>`，inner Frame 宽度不随 Canvas 扩展 | 绑定补全 |
+| **绑 all MouseWheel 回调崩溃** | `event.widget` 可能返回 `str`（被销毁的控件） | `hasattr(w, 'winfo_name')` 守卫 |
+| **角色列表滚轮失效** | Canvas 的 Enter/Leave 绑定只对 Canvas 本体生效，子控件事件不冒泡 | 改用 `_on_page_scroll` 统一路由 |
+| **`_sync_char_table_to_data` + 旧 `_refresh_char_table` 重复定义** | 大块替换后残留旧版方法 | 删除重复代码 |
+| **非管理员模式下 SetCursorPos/mouse_event/GetAsyncKeyState 失效** | Windows UIPI 阻止低权限进程向高权限游戏进程注入输入（游戏新版本提升了完整性级别） | 管理员模式运行 GUI；`start.bat` 自动检测提权；`build.py` 加 `--uac-admin` 嵌入 Manifest |

@@ -9,8 +9,11 @@
   },
   "result_screen_template": {
     "template": "霜伶\\霜伶结算画面.png",
-    "threshold": 0.75
+    "threshold": 0.7
   },
-  "avatar_template": "霜伶\\霜伶城镇头像.png",
+  "avatar_template": {
+    "template": "霜伶\\霜伶城镇头像.png",
+    "threshold": 0.6
+  },
   "name": "霜伶"
 }

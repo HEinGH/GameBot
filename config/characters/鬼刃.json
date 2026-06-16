@@ -1,19 +1,25 @@
 {
   "portrait_template": {
     "template": "鬼刃\\鬼刃选人界面头像.png",
-    "threshold": 0.7
+    "threshold": 0.7,
+    "reject_flip": true,
+    "color_threshold": 0.7
   },
   "skill_bar_template": {
     "template": "鬼刃\\鬼刃技能栏.png",
-    "threshold": 0.75
+    "threshold": 0.75,
+    "reject_flip": true
   },
   "result_screen_template": {
     "template": "鬼刃\\鬼刃结算画面.png",
-    "threshold": 0.75
+    "threshold": 0.7,
+    "reject_flip": true
   },
   "avatar_template": {
     "template": "鬼刃\\鬼刃城镇头像.png",
-    "threshold": 0.7
+    "threshold": 0.65,
+    "reject_flip": true,
+    "color_threshold": 0.7
   },
   "name": "鬼刃"
 }

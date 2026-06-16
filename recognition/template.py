@@ -39,6 +39,7 @@ def find_template(
     scale_steps=7,
     roi=None,
     color_threshold=0.0,
+    auto_update=False,
 ):
     if frame is None:
         return None
@@ -55,8 +56,12 @@ def find_template(
     if template is None:
         return None
     t_h, t_w = template.shape[:2]
+    small = t_w * t_h < 3000
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray_template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+    if small:
+        kernel = np.ones((3, 3), np.uint8)
+        gray_template = cv2.erode(gray_template, kernel, iterations=1)
     if roi:
         x1, y1, x2, y2 = roi
         gray_frame = gray_frame[y1:y2, x1:x2]
@@ -125,6 +130,19 @@ def find_template(
                     return None
         cx = (best_rect[0] + best_rect[2]) // 2
         cy = (best_rect[1] + best_rect[3]) // 2
+        if auto_update and t_w * t_h < 3000 and best_val > 0.75:
+            try:
+                rx1, ry1, rx2, ry2 = best_rect
+                rx1, ry1 = max(0, rx1), max(0, ry1)
+                rx2, ry2 = min(frame.shape[1], rx2), min(frame.shape[0], ry2)
+                if rx2 > rx1 and ry2 > ry1:
+                    updated = frame[ry1:ry2, rx1:rx2]
+                    _, buf = cv2.imencode(".png", updated)
+                    with open(str(template_path), "wb") as f:
+                        f.write(buf)
+                    logger.debug("Auto-updated template '%s'", template_name)
+            except Exception:
+                pass
         logger.info("\u8bc6\u56fe\u6210\u529f: %s \u4f4d\u7f6e(%d,%d) \u7f6e\u4fe1\u5ea6=%.3f", template_name, cx, cy, best_val)
         return {
             "center": (cx, cy),
@@ -152,8 +170,12 @@ def find_all_templates(frame, template_name, threshold=0.8, scale_range=(0.5, 1.
     if template is None:
         return []
     t_h, t_w = template.shape[:2]
+    small = t_w * t_h < 3000
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray_template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+    if small:
+        kernel = np.ones((3, 3), np.uint8)
+        gray_template = cv2.erode(gray_template, kernel, iterations=1)
     results = []
     f_h, f_w = gray_frame.shape
     for scale in np.linspace(scale_range[0], scale_range[1], scale_steps):

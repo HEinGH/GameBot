@@ -788,3 +788,53 @@ ValueError: invalid literal for int() with base 10: '0.1'
 2026-06-14 05:03:59 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
 2026-06-14 05:04:45 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
 2026-06-14 05:06:38 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-14 21:33:06 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-14 21:35:23 [WARNING] states.npc_navigate:303 Icon not found, direct entry
+2026-06-14 21:35:26 [WARNING] states.npc_navigate:252 Confirm enter timeout after 121 attempts, forcing transition
+2026-06-14 21:36:26 [WARNING] states.domain_loading:28 Domain loading timed out, assuming loaded
+2026-06-14 21:41:02 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-14 21:43:05 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-14 21:44:06 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-14 22:00:19 [WARNING] states.town_nav:139 Avatar not found after 60 attempts, proceeding anyway
+2026-06-14 22:02:00 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-14 22:02:09 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-14 22:02:23 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-14 22:03:08 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-14 22:19:30 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-14 22:36:18 [WARNING] states.domain_combat:164 Panel still visible after 3 retries, proceeding anyway
+2026-06-14 22:37:26 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-14 22:38:09 [WARNING] states.town_nav:98 NPC icon not found after 20 attempts, forcing domain entry
+2026-06-14 22:43:03 [WARNING] states.character_select:108 Portrait not found, scrolls exhausted, skipping selection
+2026-06-14 22:43:27 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-14 22:44:09 [WARNING] states.town_nav:98 NPC icon not found after 20 attempts, forcing domain entry
+2026-06-14 22:45:09 [WARNING] states.domain_loading:28 Domain loading timed out, assuming loaded
+2026-06-15 21:23:47 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 21:24:22 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 21:26:21 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 21:33:27 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 21:33:48 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 21:34:54 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 21:36:33 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 21:37:39 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 21:41:17 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 21:41:29 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 21:41:50 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 22:19:38 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 22:20:37 [WARNING] states.town_nav:191 '临界2.png' not found after 45 attempts, saving debug frame
+2026-06-15 22:43:56 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 22:45:59 [WARNING] states.town_nav:98 NPC icon not found after 20 attempts, forcing domain entry
+2026-06-15 22:50:29 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 22:51:19 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 22:51:32 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 22:55:36 [WARNING] states.town_nav:139 Avatar not found after 60 attempts, proceeding anyway
+2026-06-15 23:00:33 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 23:00:44 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 23:09:05 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-15 23:17:26 [WARNING] states.domain_loading:28 Domain loading timed out, assuming loaded
+2026-06-16 22:35:34 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-16 22:40:09 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-16 23:35:32 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-17 00:07:44 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-17 00:09:19 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-17 00:10:20 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.
+2026-06-17 00:12:33 [WARNING] dxcam:141 DXCamera instance already exists for device=0 output=0 backend=dxgi; returning existing instance. Delete the old object with `del obj` to recreate it with new parameters.

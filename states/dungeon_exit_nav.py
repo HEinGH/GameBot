@@ -28,6 +28,7 @@ class DungeonExitNavState(BaseState):
         self._interval = 0.08
         self._button_attempts = 0
         self._near_exit = False
+        self._reversal_count = 0
 
     def _set_phase(self, name):
         if name != self._phase:
@@ -92,6 +93,7 @@ class DungeonExitNavState(BaseState):
         self._button_attempts = 0
         self._confirm_attempts = 0
         self._near_exit = False
+        self._reversal_count = 0
         rect = blackboard.get("_window_rect")
         if not rect or len(rect) != 4:
             title = preset.get("window_title", "")
@@ -146,6 +148,7 @@ class DungeonExitNavState(BaseState):
         elif abs_off < gw_w * 0.10: step = 10
         elif abs_off < gw_w * 0.20: step = 18
         else: step = 30
+        step = max(5, step // (self._reversal_count + 1))
         angle = -step if off < 0 else step
         logger.debug("  rotate off=%d(%.0f%%) deg=%.0f", off, off / gw_w * 100, angle)
         self._rotate(angle)
@@ -154,22 +157,6 @@ class DungeonExitNavState(BaseState):
     def _find_portal(self, frame):
         result = self.detector.detect(frame)
         portal = result.get("portal") if result else None
-        if not portal and self._last_pos and self.detector._portal_file:
-            from recognition.template import find_template
-            r = find_template(frame, self.detector._portal_file, threshold=0.65,
-                               scale_range=(0.7, 1.35), scale_steps=7)
-            if r:
-                fw = self._gw_w if self._gw_w > 0 else (frame.shape[1] if frame is not None else 1920)
-                dx = abs(r["center"][0] - self._last_pos[0])
-                if dx <= fw * 0.30:
-                    logger.debug("Portal soft-fallback accepted at conf=%.2f", r["confidence"])
-                    portal = {
-                        "center": r["center"],
-                        "bbox": r.get("bbox"),
-                        "matches": 0,
-                        "size": (r["bbox"][2] - r["bbox"][0]) * (r["bbox"][3] - r["bbox"][1]) if r.get("bbox") else 10000,
-                        "method": "template",
-                    }
         if portal and self._last_pos:
             fw = self._gw_w if self._gw_w > 0 else (frame.shape[1] if frame is not None else 1920)
             dx = abs(portal["center"][0] - self._last_pos[0])
@@ -268,12 +255,21 @@ class DungeonExitNavState(BaseState):
             self._do_move(frame, gw_w, win_cx, win_cy, blackboard)
 
     def _do_scan(self, frame, gh, gw, win_cx, win_cy, blackboard):
+        self._reversal_count = 0
         portal = self._find_portal(frame)
 
         if portal:
             size = portal["size"]
             self._last_pos = portal["center"]
             self._lost = 0
+            x, y = self._last_pos
+            rel_x = x - self._gw_l
+            rel_y = y - self._gw_t
+            if rel_x < 0 or rel_x > gw or rel_y < 0 or rel_y > gh:
+                logger.debug("Portal out of window bounds (rel=%d,%d win=%dx%d), rejecting",
+                             rel_x, rel_y, gw, gh)
+                self._last_pos = None
+                return
             if size > 50000:
                 logger.debug("Portal close (size=%d), switch to buttons", size)
                 self._release_w()
@@ -283,9 +279,6 @@ class DungeonExitNavState(BaseState):
                 self._click_wait = 0
                 self._button_attempts = 0
                 return
-            x, y = self._last_pos
-            rel_x = x - self._gw_l
-            rel_y = y - self._gw_t
             logger.debug("Portal at (%d,%d) rel=(%d,%d) off=(%.0f%%,%.0f%%)",
                         x, y, rel_x, rel_y,
                         (rel_x - win_cx) / gw * 100, (rel_y - win_cy) / gw * 100)
@@ -314,6 +307,10 @@ class DungeonExitNavState(BaseState):
             x, y = portal["center"]
             rel_x = x - self._gw_l
             rel_y = y - self._gw_t
+            if rel_x < 0 or rel_x > gw or rel_y < 0 or rel_y > gh:
+                logger.debug("Seek: portal out of bounds (rel=%d,%d)", rel_x, rel_y)
+                self._lost = 1
+                return
             h_off = rel_x - win_cx
             h_ratio = abs(h_off) / gw if gw > 0 else 0
             v_ratio = rel_y / gh if gh > 0 else 0
@@ -344,6 +341,7 @@ class DungeonExitNavState(BaseState):
                 step = int(step * 1.3)
 
             self._search_dir = -1 if h_off < 0 else 1
+            step = max(5, step // (self._reversal_count + 1))
             angle = self._search_dir * max(8, step)
             logger.debug("  seek rotate %d deg (step=%d h=%.2f v=%.2f)", angle, step, h_ratio, v_ratio)
             self._rotate(angle)
@@ -351,10 +349,11 @@ class DungeonExitNavState(BaseState):
             self._lost += 1
             if self._lost == 6:
                 self._search_dir = -self._search_dir; self._lost = 0
+                self._reversal_count += 1
             elif self._lost > 20:
                 self._set_phase("buttons"); self._click_stage = 0; self._click_wait = 0; self._button_attempts = 0; return
 
-        time.sleep(0.08)
+        time.sleep(0.04)
 
     def _do_center(self, frame, gh, gw, win_cx, win_cy):
         if self._last_pos is None: self._set_phase("scan"); self._lost = 0; return
@@ -363,6 +362,11 @@ class DungeonExitNavState(BaseState):
             self._last_pos = portal["center"]; self._lost = 0
             x, y = portal["center"]
             rel_y = y - self._gw_t
+            rel_x_tmp = x - self._gw_l
+            if rel_x_tmp < 0 or rel_x_tmp > gw or rel_y < 0 or rel_y > gh:
+                logger.debug("Center: portal out of bounds (rel=%d,%d)", rel_x_tmp, rel_y)
+                self._lost = 1
+                return
             if rel_y > win_cy + gh * 0.15:
                 rel_x = x - self._gw_l
                 self._search_dir = -1 if rel_x < win_cx else 1
@@ -372,7 +376,7 @@ class DungeonExitNavState(BaseState):
             if self._lost == 5:
                 if self._last_pos and self._last_pos[0] - self._gw_l > win_cx: self._rotate(-8)
                 else: self._rotate(8)
-                time.sleep(0.05)
+                time.sleep(0.1)
             if self._lost > 30: self._set_phase("scan"); self._lost = 0; return
             return
         if self._last_pos is None: self._set_phase("scan"); return
@@ -474,7 +478,7 @@ class DungeonExitNavState(BaseState):
             r = find_template(frame, target_name, threshold=target_thr)
             if r:
                 cx, cy = r["center"]
-                self.controller.click_at(cx, cy, bezier=False)
+                self.controller.click_at(cx, cy, bezier=True)
                 action = "exit" if all_done else "re-challenge"
                 logger.info("Clicked %s (run %d/%d)", action, runs_done + 1, domain_runs)
                 self._click_stage = 1
@@ -492,7 +496,7 @@ class DungeonExitNavState(BaseState):
             r = find_template(frame, confirm_name, threshold=confirm_thr)
             if r:
                 cx, cy = r["center"]
-                self.controller.click_at(cx, cy, bezier=False)
+                self.controller.click_at(cx, cy, bezier=True)
                 logger.info("Clicked confirm")
                 self._click_stage = 2
                 self._click_wait = 15
@@ -500,7 +504,7 @@ class DungeonExitNavState(BaseState):
             avatar_tpl = char_config.get("avatar_template")
             avatar_name, avatar_thr = parse_template_ref(avatar_tpl)
             if avatar_name:
-                ar = find_template(frame, avatar_name, threshold=avatar_thr)
+                ar = find_template(frame, avatar_name, threshold=avatar_thr, auto_update=True)
                 if ar:
                     logger.info("Avatar detected in town after exit (conf=%.2f), proceeding",
                                 ar["confidence"])

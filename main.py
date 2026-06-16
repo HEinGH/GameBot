@@ -4,7 +4,7 @@ import json
 import logging
 
 from config.settings import Settings, ROOT_DIR, PRESETS_DIR
-from config.settings import resolve_characters
+from config.settings import resolve_characters, migrate_preset_fallback
 from utils.logger import setup_logger, setup_excepthook, LOG_DIR
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,8 @@ def main():
         sys.exit(1)
 
     preset = presets[preset_name]
-    preset["characters"] = resolve_characters(preset)
+    preset["characters"] = resolve_characters(preset, preset_name)
+    migrate_preset_fallback(preset, preset_name)
     total_chars = max(1, args.characters) if args.characters is not None else max(1, len(preset.get("characters", [])))
     if args.fps:
         cfg._data["fps_limit"] = args.fps

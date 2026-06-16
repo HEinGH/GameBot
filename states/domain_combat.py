@@ -3,7 +3,7 @@ import logging
 
 from core.fsm import BaseState
 from combos.executor import ComboExecutor
-from config.settings import parse_template_ref
+from config.settings import parse_template_ref, load_combo
 
 logger = logging.getLogger(__name__)
 
@@ -62,8 +62,19 @@ class DomainCombatState(BaseState):
     def _load_fallback(self, blackboard):
         if self._fallback is None:
             preset = blackboard["preset"]
-            if preset and preset.get("fallback_combos"):
-                self._fallback = list(preset["fallback_combos"])
+            fb_name = None
+            if preset:
+                fb_name = preset.get("fallback_combo")
+                if fb_name:
+                    data = load_combo(fb_name)
+                    if data:
+                        self._fallback = data.get("actions", [])
+                    else:
+                        self._fallback = self._gen_fallback()
+                elif preset.get("fallback_combos"):
+                    self._fallback = list(preset["fallback_combos"])
+                else:
+                    self._fallback = self._gen_fallback()
             else:
                 self._fallback = self._gen_fallback()
         self.executor.load_combos(self._fallback)
@@ -172,7 +183,7 @@ class DomainCombatState(BaseState):
         if frame is None:
             return None
         from recognition.template import find_template
-        r = find_template(frame, template_name, threshold=template_thr)
+        r = find_template(frame, template_name, threshold=template_thr, auto_update=True)
         if r:
             r["template"] = template_name
         return r

@@ -46,7 +46,7 @@ class DomainLoadingState(BaseState):
         if not skill_name:
             skill_name = preset.get("skill_bar_template") or "skill_bar.png"
 
-        result = find_template(frame, skill_name, threshold=skill_thr)
+        result = find_template(frame, skill_name, threshold=skill_thr, auto_update=True)
         if result:
             logger.info("Skill bar '%s' detected, domain loaded (%.1fs)",
                         skill_name, time.time() - self._start)

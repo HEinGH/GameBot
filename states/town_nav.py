@@ -128,7 +128,7 @@ class TownNavState(BaseState):
                 avatar_template = nav.get("avatar_template")
             avatar_name, avatar_thr = parse_template_ref(avatar_template)
             if avatar_name:
-                result = find_template(frame, avatar_name, threshold=avatar_thr)
+                result = find_template(frame, avatar_name, threshold=avatar_thr, auto_update=True)
                 if result:
                     logger.info("Avatar detected, confirmed in town")
                     self._avatar_done = True
