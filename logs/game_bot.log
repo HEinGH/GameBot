@@ -25752,3 +25752,4 @@ ValueError: invalid literal for int() with base 10: '0.1'
 2026-06-17 00:13:02 [INFO   ] recognition.portal_detector:20 Portal detected: center=(664,858) size=1189
 2026-06-17 00:13:04 [INFO   ] gui.app:2174 Bot stopped
 2026-06-17 00:35:58 [INFO   ] gui.app:443 Loaded last preset: 训练场测试
+2026-06-17 00:38:36 [INFO   ] gui.app:443 Loaded last preset: 训练场测试

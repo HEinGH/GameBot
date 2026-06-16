@@ -121,7 +121,10 @@ CHARACTER_SELECT → TOWN_NAV → NPC_NAVIGATE → DOMAIN_LOADING → DOMAIN_COM
 | 切换角色测试 | ✅ |
 | 预设管理 GUI | ✅ |
 | 角色库独立管理 | ✅ |
+| 角色库修改即时生效（自动刷新预设） | ✅ |
 | 连招与角色解耦（combos/ 独立文件 + 自动迁移） | ✅ |
+| 连招元数据补全（source + duration_sec） | ✅ |
+| 连招库模糊搜索 | ✅ |
 | 角色列表控件化（Canvas + 内联 Spinbox/Combobox） | ✅ |
 | 模板置信度可配置化（含颜色/翻转校验） | ✅ |
 | 颜色校验（变量bug+ROI resize已修复） | ✅ |
@@ -772,9 +775,96 @@ ORB 匹配数 10→6，Lowe 比率 0.75→0.80；新增模板匹配回退（`fin
 | **_start_bot 后 combo 未解析** | `_run_bot` 直接使用 `self.preset_data`，但 GUI 中 `_on_char_combo_changed` 改 combo 名后 pop 了 `combos` 列表 | `_run_bot` 中补 `resolve_characters()` + `migrate_preset_fallback()` |
 | **rotate_camera 窗口边缘失效** | `pydirectinput.moveRel` 在窗口化模式边缘被 `ClipCursor` 钳制 | 改为 Win32 `mouse_event(MOVE)` 分步发送 |
 | **domain_loading 期间镜头随机转动** | `occasional_look_around` 的 `pydirectinput.moveRel` 在加载画面中转动了镜头 | 从 `_SAFE_STEALTH_STATES` 移除 `domain_loading` |
-| **副本出口寻路旋转中图标被 continuity check 误拒** | seek/center 阶段图标必然跳变，连续性校验不应适用 | 校验仅在 `move` 阶段生效 |
+| **副本出口寻路旋转中图标被 continuity check 误拒** | seek/center 阶段图标必然跳变，连续性校验不应适用 | **后续修正**：会话 10 已恢复全阶段连续性校验，改为配合边界校验 + 阻尼机制处理振荡 |
 | **ChainStepList 行空白区域无法点击选中** | `_on_canvas_configure` 定义了但从未绑定 `<Configure>`，inner Frame 宽度不随 Canvas 扩展 | 绑定补全 |
 | **绑 all MouseWheel 回调崩溃** | `event.widget` 可能返回 `str`（被销毁的控件） | `hasattr(w, 'winfo_name')` 守卫 |
 | **角色列表滚轮失效** | Canvas 的 Enter/Leave 绑定只对 Canvas 本体生效，子控件事件不冒泡 | 改用 `_on_page_scroll` 统一路由 |
 | **`_sync_char_table_to_data` + 旧 `_refresh_char_table` 重复定义** | 大块替换后残留旧版方法 | 删除重复代码 |
 | **非管理员模式下 SetCursorPos/mouse_event/GetAsyncKeyState 失效** | Windows UIPI 阻止低权限进程向高权限游戏进程注入输入（游戏新版本提升了完整性级别） | 管理员模式运行 GUI；`start.bat` 自动检测提权；`build.py` 加 `--uac-admin` 嵌入 Manifest |
+
+---
+
+## 15. 会话 11（实机调试 & 连招管理优化 & 寻路阻尼）
+
+### 15.1 Portal 检测器简化
+
+| 改动 | 说明 |
+|------|------|
+| `recognition/portal_detector.py` 移除 ORB | 删除全部 ORB/FLANN/Homography 特征点匹配代码，`detect()` 只走模板匹配。副本出口图标（浅蓝圆圈+中心点）图案简单，ORB 特征点少、易误配到窗外纹理。模板匹配坐标天然在帧内。 |
+| `scale_steps` 7 → 11 | 小图标（38-47px）采样密度加倍，匹配更精确 |
+| 模板切换 | 3 个预设的 portal_template 改为 `副本出口图标3.png`（不对称版本，h_sym=-0.108，破坏圆形对称性避免镜像误匹配）+ `"color_threshold": 0.6` |
+
+### 15.2 副本出口寻路整治
+
+| 改动 | 文件 | 说明 |
+|------|------|------|
+| 窗口边界校验 | `dungeon_exit_nav.py` `_do_scan`/`_do_seek`/`_do_center` | `rel_x`/`rel_y` 越界当 lost |
+| `rotate_camera_free` sensitivity 400→200 | `controller.py` | 与 NPC 寻路 `rotate_camera` 一致 |
+| seek sleep 0.08→0.04 | `dungeon_exit_nav.py` | 与 NPC 对齐 |
+| center lost sleep 0.05→0.1 | 同上 | 与 NPC 对齐 |
+| `bezier=False` → `bezier=True` | 同上 | `domain_loading` 从安全白名单移除后，按钮恢复贝塞尔路径 |
+
+### 15.3 寻路阻尼（NPC + 副本出口同步）
+
+**机制**：新增 `_reversal_count` 计数器。每次旋转方向反转（lost 6 帧），计数 +1。步长除以 `(reversal_count + 1)`，最小 5。scan 阶段归零。
+
+```
+实际步长 = max(5, 原始步长 // (reversal_count + 1))
+```
+
+| 反转次数 | 步长 65→ | 步长 30→ |
+|:---:|------|------|
+| 0 | 65 | 30 |
+| 1 | 32 | 15 |
+| 2 | 21 | 10 |
+| 3+ | 16→ | 7→ |
+
+正常寻路反转数始终为 0，不影响正常流程。仅在 portal/图标在身后的极端场景触发。
+
+**效果验证**：碎星和鬼刃在特定战斗后 portal 起始在身后，触发振荡→阻尼加速收敛。实测碎星从 111s 降至预期 ~15s。
+
+### 15.4 录制功能修复与优化
+
+| 改动 | 说明 |
+|------|------|
+| `RegisterHotKey` → `GetAsyncKeyState` | 旧版 `RegisterHotKey(NULL,...)` 的 `WM_HOTKEY` 投递到了主线程而非轮询子线程，F5 永远收不到。改为与 Ctrl+Alt+B 相同的 20ms 边沿触发轮询 |
+| 移除 F6 热键 | F5 切换开始/停止，F6 冗余（`GetAsyncKeyState` 响应可靠，无需备用） |
+| 录制预览 Text → Treeview | 删除 JSON 文本预览区，录制结果直接写入选中的"连招详情" Treeview |
+| 移除录制后自动弹窗 | 不再弹出"是否保存"对话框，用户自行决定何时保存 |
+| 点"否"不丢失数据 | `_prompt_save_combo` 取消时保留 `_recorded_actions`，后续仍可保存 |
+
+### 15.5 连招元数据补全
+
+| 改动 | 说明 |
+|------|------|
+| 新增 `source` 字段 | `"录制"`（有 `recorded_at`）/ `"手动配置"`（无 `recorded_at`） |
+| `_ensure_combo_metadata()` | 首次加载连招列表时自动补全缺失的 `source` 和 `duration_sec`（从 actions 累加计算），写回文件 |
+| 修复来源显示 bug | `source = "" if rec_at else ""`（两分支全空）→ 正确分支 |
+| 修复"按住"列显示 bug | 同类型 bug，两分支全空 → `"是"` / `"否"` |
+| `ComboEditDialog._save` | 写入 `"source": "手动配置"` + 自动计算 `duration_sec` |
+| `_prompt_save_combo` | 写入 `"source": "录制"` |
+
+### 15.6 连招库 UI 增强
+
+| 改动 | 说明 |
+|------|------|
+| 模糊搜索 | 连招库新增搜索框 + ✕清除按钮，`<KeyRelease>` 实时过滤 |
+| 智能排序 | 角色连招下拉框中，包含角色名称的连招排在前面 |
+| 使用说明更新 | 增加手动连招说明，去掉 F6 相关描述 |
+
+### 15.7 角色库即时生效
+
+| 改动 | 说明 |
+|------|------|
+| `_on_charlib_saved()` | 角色库编辑/删除保存后，若预设管理页可见则自动调用 `resolve_characters` 刷新角色列表，无需切预设或重启 |
+
+### 15.8 Bug 修复
+
+| Bug | 根因 | 修复 |
+|-----|------|------|
+| **录制 F5 无响应** | `RegisterHotKey(NULL)` 消息投递到主线程但轮询在子线程 | 改为 `GetAsyncKeyState` 边沿触发 |
+| **录制预览无动作详情** | `rec_result_text` 只显示 JSON 字符串 | 改为直接填充 combo_detail_tree |
+| **点击"否"后无法再保存录制结果** | 取消时清空了 `_recorded_actions` | 取消时保留数据，仅在新录制开始时清空 |
+| **连招来源列始终为空** | `source = "" if rec_at else ""` 两分支都是空串 | `source = "录制" if rec_at else "手动配置"` |
+| **"按住"列始终为空** | 同上模式 | `"是" if hold else "否"` |
+| **鬼刃/碎星副本出口长时间振荡** | portal 起始在身后，大步长旋转过冲→反转→反复 | 阻尼机制逐次减半步长，3-5 次反转后收敛 |
