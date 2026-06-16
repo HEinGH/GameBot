@@ -86,7 +86,7 @@ class CharacterSelectState(BaseState):
 
         if self._step == 0:
             if portrait_name:
-                result = find_template(frame, portrait_name, threshold=portrait_thr)
+                result = find_template(frame, portrait_name, threshold=portrait_thr, auto_update=True)
                 if result:
                     cx, cy = result["center"]
                     self._click(cx, cy, blackboard)

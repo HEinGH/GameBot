@@ -40,7 +40,7 @@ class MapLoadingState(BaseState):
             avatar_template = preset.get("town_nav", {}).get("avatar_template") if preset else None
         avatar_name, avatar_thr = parse_template_ref(avatar_template)
         if avatar_name:
-            r = find_template(frame, avatar_name, threshold=avatar_thr)
+            r = find_template(frame, avatar_name, threshold=avatar_thr, auto_update=True)
             if r:
                 logger.info("Avatar detected, town loaded (%.1fs)",
                             time.time() - self._start)

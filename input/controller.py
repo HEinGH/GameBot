@@ -12,7 +12,7 @@ pydirectinput.FAILSAFE = False
 
 logger = logging.getLogger(__name__)
 
-_SAFE_STEALTH_STATES = {"domain_loading", "map_loading", "complete", "stuck_recovery"}
+_SAFE_STEALTH_STATES = {"map_loading", "complete", "stuck_recovery"}
 
 _PDI_KEY_MAP = {
     "left_alt": "alt", "alt": "alt",
@@ -161,19 +161,33 @@ class Controller:
         pixels = int(angle_deg / 90.0 * sensitivity)
         if pixels == 0:
             return
-        pydirectinput.mouseDown(button="left")
-        time.sleep(0.02)
-        pydirectinput.moveRel(pixels, 0)
-        time.sleep(0.02)
-        pydirectinput.mouseUp(button="left")
+        ctypes.windll.user32.mouse_event(0x0002, 0, 0, 0, 0)
+        time.sleep(0.03)
+        per_step = max(1, abs(pixels) // 3)
+        sign = 1 if pixels > 0 else -1
+        remaining = abs(pixels)
+        for _ in range(3):
+            step = min(per_step, remaining)
+            if step > 0:
+                ctypes.windll.user32.mouse_event(0x0001, sign * step, 0, 0, 0)
+                remaining -= step
+            time.sleep(0.01)
+        ctypes.windll.user32.mouse_event(0x0004, 0, 0, 0, 0)
         time.sleep(0.03)
 
-    def rotate_camera_free(self, angle_deg, sensitivity=400):
+    def rotate_camera_free(self, angle_deg, sensitivity=200):
         pixels = int(angle_deg / 90.0 * sensitivity)
         if abs(pixels) < 3:
             return
-        pydirectinput.moveRel(pixels, 0)
-        time.sleep(0.03)
+        per_step = max(1, abs(pixels) // 3)
+        sign = 1 if pixels > 0 else -1
+        remaining = abs(pixels)
+        for _ in range(3):
+            step = min(per_step, remaining)
+            if step > 0:
+                ctypes.windll.user32.mouse_event(0x0001, sign * step, 0, 0, 0)
+                remaining -= step
+            time.sleep(0.01)
 
     def alt_press(self):
         self.key_down("left_alt")

@@ -16,9 +16,6 @@ class ComboExecutor:
         self.randomness = randomness
         self.delay = HumanDelay()
         self._queue = deque()
-        self._running = False
-        self._current_action = None
-        self._cycle_count = 0
 
     def load_combos(self, combo_list):
         self._queue.clear()
@@ -101,20 +98,6 @@ class ComboExecutor:
             pydirectinput.mouseUp(button="left")
         else:
             self.controller.key_up(key)
-
-    def execute_all(self, timeout=120):
-        self._running = True
-        start = time.time()
-        while self._queue and self._running:
-            if time.time() - start > timeout:
-                logger.warning("Combo execution timed out (%ds)", timeout)
-                break
-            self.execute_next()
-        self._running = False
-
-    def stop(self):
-        self._running = False
-        self.controller.release_all()
 
     def _press_key(self, key, duration):
         if key in ("right_click", "right"):

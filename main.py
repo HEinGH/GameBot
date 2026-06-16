@@ -4,7 +4,7 @@ import json
 import logging
 
 from config.settings import Settings, ROOT_DIR, PRESETS_DIR
-from config.settings import resolve_characters
+from config.settings import resolve_characters, migrate_preset_fallback
 from utils.logger import setup_logger, setup_excepthook, LOG_DIR
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,8 @@ def main():
         sys.exit(1)
 
     preset = presets[preset_name]
-    preset["characters"] = resolve_characters(preset)
+    preset["characters"] = resolve_characters(preset, preset_name)
+    migrate_preset_fallback(preset, preset_name)
     total_chars = max(1, args.characters) if args.characters is not None else max(1, len(preset.get("characters", [])))
     if args.fps:
         cfg._data["fps_limit"] = args.fps
@@ -119,7 +120,7 @@ def main():
         capture.start(method=cfg.capture_method, fps_limit=cfg.fps_limit)
     blackboard["_capture"] = capture
 
-    from input.controller import Controller
+    from input.controller import Controller, _SAFE_STEALTH_STATES
     controller = Controller(
         stealth=args.stealth,
         combo_randomness=cfg.combo_randomness,
@@ -175,7 +176,6 @@ def main():
                     window_mgr.title, window_mgr.is_focused, args.background)
 
     try:
-        _SAFE_STATES = {"domain_loading", "map_loading", "complete", "stuck_recovery"}
         while blackboard["running"]:
             if window_mgr:
                 if window_mgr.is_minimized:
@@ -207,7 +207,7 @@ def main():
                 watchdog.reset()
                 fsm.transition("stuck_recovery", blackboard)
             fsm.update(blackboard)
-            if args.stealth and fsm.current in _SAFE_STATES:
+            if args.stealth and fsm.current in _SAFE_STEALTH_STATES:
                 controller.occasional_look_around()
             time.sleep(1.0 / max(cfg.fps_limit, 1))
     except KeyboardInterrupt:

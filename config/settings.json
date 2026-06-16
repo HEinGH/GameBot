@@ -30,9 +30,5 @@
   ],
   "debug_screenshot": false,
   "last_preset": "训练场测试",
-  "last_char_count": 7,
-  "last_char_start": 1,
-  "last_log_debug": true,
-  "last_stealth": false,
-  "last_background": false
+  "last_log_debug": true
 }
