@@ -30,7 +30,8 @@ class _POINT(ctypes.Structure):
 
 
 class Controller:
-    def __init__(self, stealth=False, combo_randomness=0.2, bezier_steps=20, click_jitter=5):
+    def __init__(self, stealth=False, combo_randomness=0.2, bezier_steps=20, click_jitter=5,
+                 background_mode=False):
         self.combo_randomness = combo_randomness
         self.bezier_steps = bezier_steps
         self.click_jitter = click_jitter
@@ -39,11 +40,12 @@ class Controller:
         self.trajectory = MouseTrajectory()
         self.profile = BehaviorProfile()
         self.stealth = stealth
+        self.background_mode = background_mode
 
         if stealth:
             self._max_strafe_interval = 45.0
             self._last_strafe = time.time()
-            logger.info("Stealth mode: behavioral anti-detection active (profile=%s)",
+            logger.info("隐身模式: 行为反检测已启用 (配置=%s)",
                         self.profile.get_profile_name())
 
     def release_all(self):
@@ -80,9 +82,6 @@ class Controller:
             time.sleep(self.delay.vary(delay_after, 0.2) if self.stealth else delay_after)
         self.delay.random_pause()
 
-    def move_to(self, x, y):
-        ctypes.windll.user32.SetCursorPos(x, y)
-
     def move_to_bezier(self, x1, y1, x2, y2, steps=None):
         if self.stealth:
             pts = self.trajectory.generate(x1, y1, x2, y2, steps or self.bezier_steps)
@@ -109,6 +108,11 @@ class Controller:
         return pts
 
     def click_at(self, x, y, button="left", jitter=None, bezier=True):
+        _saved = None
+        if self.background_mode:
+            _pt = _POINT()
+            ctypes.windll.user32.GetCursorPos(ctypes.byref(_pt))
+            _saved = (_pt.x, _pt.y)
         if jitter is None:
             jitter = self.click_jitter
         jx = random.randint(-jitter, jitter)
@@ -127,40 +131,30 @@ class Controller:
         time.sleep(random.uniform(0.25, 0.40))
         ctypes.windll.user32.mouse_event(flag_up, 0, 0, 0, 0)
         time.sleep(random.uniform(0.10, 0.20))
+        if _saved is not None:
+            ctypes.windll.user32.SetCursorPos(_saved[0], _saved[1])
 
-    def move_direction(self, direction, duration=0.1):
-        if direction == "forward":
-            self.key_down("w")
-            time.sleep(self.delay.vary(duration, 0.2) if self.stealth else duration)
-            self.key_up("w")
-        elif direction == "left":
-            self.key_down("a")
-            self.key_down("w")
-            time.sleep(self.delay.vary(duration, 0.2) if self.stealth else duration)
-            self.key_up("a")
-            self.key_up("w")
-        elif direction == "right":
-            self.key_down("d")
-            self.key_down("w")
-            time.sleep(self.delay.vary(duration, 0.2) if self.stealth else duration)
-            self.key_up("d")
-            self.key_up("w")
-        elif direction == "backward":
-            self.key_down("s")
-            time.sleep(self.delay.vary(duration, 0.2) if self.stealth else duration)
-            self.key_up("s")
-        elif direction == "stop":
+    def _bg_center_on_game(self):
+        try:
+            hwnd = ctypes.windll.user32.GetForegroundWindow()
+            rect = ctypes.wintypes.RECT()
+            ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
+            cx = (rect.left + rect.right) // 2
+            cy = (rect.top + rect.bottom) // 2
+            ctypes.windll.user32.SetCursorPos(cx, cy)
+        except Exception:
             pass
-
-    def move_rel(self, dx, dy):
-        pydirectinput.moveRel(dx, dy)
-        if self.stealth:
-            time.sleep(random.uniform(0.01, 0.04))
 
     def rotate_camera(self, angle_deg, sensitivity=200):
         pixels = int(angle_deg / 90.0 * sensitivity)
         if pixels == 0:
             return
+        _saved = None
+        if self.background_mode:
+            _pt = _POINT()
+            ctypes.windll.user32.GetCursorPos(ctypes.byref(_pt))
+            _saved = (_pt.x, _pt.y)
+            self._bg_center_on_game()
         ctypes.windll.user32.mouse_event(0x0002, 0, 0, 0, 0)
         time.sleep(0.03)
         per_step = max(1, abs(pixels) // 3)
@@ -174,11 +168,19 @@ class Controller:
             time.sleep(0.01)
         ctypes.windll.user32.mouse_event(0x0004, 0, 0, 0, 0)
         time.sleep(0.03)
+        if _saved is not None:
+            ctypes.windll.user32.SetCursorPos(_saved[0], _saved[1])
 
     def rotate_camera_free(self, angle_deg, sensitivity=200):
         pixels = int(angle_deg / 90.0 * sensitivity)
         if abs(pixels) < 3:
             return
+        _saved = None
+        if self.background_mode:
+            _pt = _POINT()
+            ctypes.windll.user32.GetCursorPos(ctypes.byref(_pt))
+            _saved = (_pt.x, _pt.y)
+            self._bg_center_on_game()
         per_step = max(1, abs(pixels) // 3)
         sign = 1 if pixels > 0 else -1
         remaining = abs(pixels)
@@ -188,6 +190,8 @@ class Controller:
                 ctypes.windll.user32.mouse_event(0x0001, sign * step, 0, 0, 0)
                 remaining -= step
             time.sleep(0.01)
+        if _saved is not None:
+            ctypes.windll.user32.SetCursorPos(_saved[0], _saved[1])
 
     def alt_press(self):
         self.key_down("left_alt")
@@ -196,6 +200,11 @@ class Controller:
         self.key_up("left_alt")
 
     def mouse_scroll(self, amount, x=None, y=None):
+        _saved = None
+        if self.background_mode and x is not None:
+            _pt = _POINT()
+            ctypes.windll.user32.GetCursorPos(ctypes.byref(_pt))
+            _saved = (_pt.x, _pt.y)
         if x is not None and y is not None:
             x = max(10, min(x, 65530))
             y = max(10, min(y, 65530))
@@ -203,6 +212,8 @@ class Controller:
             time.sleep(0.02)
         ctypes.windll.user32.mouse_event(0x0800, 0, 0, amount, 0)
         time.sleep(random.uniform(0.05, 0.1))
+        if _saved is not None:
+            ctypes.windll.user32.SetCursorPos(_saved[0], _saved[1])
 
     def jitter_delay(self, base):
         if self.stealth:
@@ -221,4 +232,4 @@ class Controller:
             pydirectinput.moveRel(-dx // 2, -dy // 2)
             time.sleep(0.1)
             self._last_strafe = now
-            logger.debug("Looked around (anti-detection)")
+            logger.debug("随机视角晃动 (反检测)")

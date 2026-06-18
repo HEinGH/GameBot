@@ -36,7 +36,6 @@ class FSM:
     def __init__(self):
         self._states = {}
         self._current = None
-        self._previous = None
 
     def add(self, name, state):
         if not isinstance(state, BaseState):
@@ -51,7 +50,6 @@ class FSM:
             self._states[self._current].exit(blackboard)
         else:
             logger.info("\u521d\u59cb\u72b6\u6001: %s", _cn(name))
-        self._previous = self._current
         self._current = name
         self._states[self._current].enter(blackboard)
 
@@ -63,9 +61,3 @@ class FSM:
     @property
     def current(self):
         return self._current
-
-    @property
-    def current_state(self):
-        if self._current is None:
-            return None
-        return self._states[self._current]

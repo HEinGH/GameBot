@@ -39,7 +39,7 @@ class CharacterSelectState(BaseState):
 
     def _scroll_list(self, blackboard):
         if self._scroll_count >= self._max_scrolls:
-            logger.warning("Reached max scrolls (%d), giving up", self._max_scrolls)
+            logger.warning("已达最大翻页次数(%d)，放弃选择", self._max_scrolls)
             return
         rect = blackboard.get("_window_rect")
         if rect:
@@ -51,7 +51,7 @@ class CharacterSelectState(BaseState):
             sh = ctypes.windll.user32.GetSystemMetrics(1)
             sx = int(sw * 0.20)
             sy = int(sh * 0.45)
-        logger.info("Scrolling %d/%d at (%d,%d)", self._scroll_count + 1, self._max_scrolls, sx, sy)
+        logger.info("翻页 %d/%d 位置(%d,%d)", self._scroll_count + 1, self._max_scrolls, sx, sy)
         self.controller.mouse_scroll(-600, sx, sy)
         self._scroll_count += 1
         self._portrait_attempts = 0
@@ -68,7 +68,7 @@ class CharacterSelectState(BaseState):
         char_index = blackboard["current_character_index"]
         chars = preset.get("characters", [])
         if char_index >= len(chars):
-            logger.warning("No characters in preset or index out of range (%d >= %d)", char_index, len(chars))
+            logger.warning("预设中无角色或索引超限 (%d >= %d)", char_index, len(chars))
             blackboard["running"] = False
             return
         char_config = chars[char_index]
@@ -90,7 +90,7 @@ class CharacterSelectState(BaseState):
                 if result:
                     cx, cy = result["center"]
                     self._click(cx, cy, blackboard)
-                    logger.info("Selected character %d via %s (conf=%.2f)", char_index, portrait_name, result["confidence"])
+                    logger.info("选中角色 %d 模板=%s (置信度=%.2f)", char_index, portrait_name, result["confidence"])
                     self._step = 1
                     time.sleep(self.controller.jitter_delay(2.0))
                     return
@@ -99,20 +99,20 @@ class CharacterSelectState(BaseState):
                     if self._scroll_count >= self._max_scrolls:
                         self._scroll_exhausted_attempts += 1
                         if self._scroll_exhausted_attempts >= self._max_portrait_attempts * 3:
-                            logger.warning("Portrait not found after scrolls exhausted, skipping to enter")
+                            logger.warning("翻页用完仍未找到头像，跳过选人直接进入")
                             self._step = 1
                             self._portrait_attempts = 0
                             return
                     if self._portrait_attempts >= self._max_portrait_attempts:
                         if self._scroll_count >= self._max_scrolls:
-                            logger.warning("Portrait not found, scrolls exhausted, skipping selection")
+                            logger.warning("翻页用完仍未找到头像，跳过选人")
                             self._step = 1
                             self._portrait_attempts = 0
                             return
-                        logger.info("Portrait not found in %d attempts, scrolling", self._max_portrait_attempts)
+                        logger.info("头像未匹配 %d 次，开始翻页", self._max_portrait_attempts)
                         self._scroll_list(blackboard)
             else:
-                logger.info("No portrait_template for character %d", char_index)
+                logger.info("角色 %d 未配置头像模板", char_index)
                 self._step = 1
 
         if self._step == 1:
@@ -121,13 +121,13 @@ class CharacterSelectState(BaseState):
                 if result:
                     cx, cy = result["center"]
                     self._click(cx, cy, blackboard)
-                    logger.info("Clicked enter game (conf=%.2f)", result["confidence"])
+                    logger.info("点击进入游戏 (置信度=%.2f)", result["confidence"])
                     blackboard["_fsm"].transition("town_nav", blackboard)
                     return
                 else:
                     self._enter_attempts += 1
                     if self._enter_attempts >= self._max_enter_attempts:
-                        logger.warning("Enter game template not found after %d attempts, saving debug frame", self._max_enter_attempts)
+                        logger.warning("进入游戏按钮未匹配 %d 次，保存调试截图", self._max_enter_attempts)
                         try:
                             import cv2, numpy as np
                             time_str = time.strftime("%H%M%S")
@@ -136,16 +136,16 @@ class CharacterSelectState(BaseState):
                             if success:
                                 with open(snap_path, "wb") as fp:
                                     fp.write(encoded)
-                                logger.info("Debug frame saved: %s", snap_path)
+                                logger.info("调试截图已保存: %s", snap_path)
                         except Exception:
                             pass
-                        logger.warning("Restarting selection flow")
+                        logger.warning("重新开始选人流程")
                         self._step = 0
                         self._enter_attempts = 0
                         self._portrait_attempts = 0
                     elif self._enter_attempts % 10 == 0:
-                        logger.info("Waiting for enter_game_template... (attempt %d/%d)", self._enter_attempts, self._max_enter_attempts)
+                        logger.info("等待进入游戏按钮... (尝试 %d/%d)", self._enter_attempts, self._max_enter_attempts)
             else:
-                logger.warning("No enter_game_template configured, cannot enter game")
+                logger.warning("未配置进入游戏模板，无法进入游戏")
                 blackboard["running"] = False
                 return

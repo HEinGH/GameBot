@@ -28,7 +28,7 @@ class Watchdog:
                 elapsed = time.time() - self._last_active
                 if elapsed > self.threshold_sec:
                     self._stuck_count += 1
-                    logger.warning("Stuck #%d | SSIM=%.3f", self._stuck_count, score)
+                    logger.warning("卡死检测 #%d | 相似度=%.3f", self._stuck_count, score)
                     time_str = time.strftime("%H%M%S")
                     snap_path = DEBUG_DIR / f"stuck_{time_str}_{self._stuck_count}.png"
                     success, encoded = cv2.imencode(".png", frame)

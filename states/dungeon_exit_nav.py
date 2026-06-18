@@ -29,6 +29,8 @@ class DungeonExitNavState(BaseState):
         self._button_attempts = 0
         self._near_exit = False
         self._reversal_count = 0
+        self._last_search_dir = 0
+        self._last_rotate_sign = 0
 
     def _set_phase(self, name):
         if name != self._phase:
@@ -57,16 +59,16 @@ class DungeonExitNavState(BaseState):
                 if matches:
                     best = max(matches, key=lambda x: x[0])
                     b = best[1].box
-                    logger.info("DungeonExitNav: window by title '%s' -> '%s' (%dx%d)",
+                    logger.info("副本出口寻路: 按标题'%s'找到窗口'%s' (%dx%d)",
                                 title_keyword, best[1].title, b.width, b.height)
                     return (b.left, b.top, b.left + b.width, b.top + b.height)
-                logger.warning("DungeonExitNav: no window matching title '%s', falling back to largest", title_keyword)
+                logger.warning("副本出口寻路: 未找到标题'%s'的窗口，回退到最大窗口", title_keyword)
             best = max(all_visible, key=lambda x: x[0])
             b = best[1].box
-            logger.info("DungeonExitNav: auto-detected window '%s' (%dx%d)", best[1].title, b.width, b.height)
+            logger.info("副本出口寻路: 自动检测窗口'%s' (%dx%d)", best[1].title, b.width, b.height)
             return (b.left, b.top, b.left + b.width, b.top + b.height)
         except Exception as e:
-            logger.warning("DungeonExitNav: _find_window_rect failed: %s", e)
+            logger.warning("副本出口寻路: 窗口检测失败: %s", e)
         return None
 
     def enter(self, blackboard):
@@ -94,13 +96,15 @@ class DungeonExitNavState(BaseState):
         self._confirm_attempts = 0
         self._near_exit = False
         self._reversal_count = 0
+        self._last_search_dir = 0
+        self._last_rotate_sign = 0
         rect = blackboard.get("_window_rect")
         if not rect or len(rect) != 4:
             title = preset.get("window_title", "")
             rect = self._find_window_rect(title)
             if rect:
                 blackboard["_window_rect"] = rect
-                logger.info("DungeonExitNav: self-found window rect=%s", rect)
+                logger.info("副本出口寻路: 自动检测窗口 rect=%s", rect)
         if rect and len(rect) == 4:
             self._gw_l, self._gw_t, self._gw_r, self._gw_b = rect
         else:
@@ -123,7 +127,7 @@ class DungeonExitNavState(BaseState):
             pydirectinput.mouseUp(button="right")
         except Exception:
             pass
-        logger.info("Exit: DungeonExitNav")
+        logger.info("退出: 副本出口寻路")
 
     def _release_w(self):
         if self._w_held:
@@ -139,7 +143,7 @@ class DungeonExitNavState(BaseState):
 
     def _rotate(self, angle):
         try: self.controller.rotate_camera_free(angle)
-        except Exception as e: logger.error("rotate_free(%.0f): %s", angle, e)
+        except Exception as e: logger.error("自由旋转(%.0f°)失败: %s", angle, e)
 
     def _do_rotate(self, off, gw_w):
         abs_off = abs(off)
@@ -148,7 +152,12 @@ class DungeonExitNavState(BaseState):
         elif abs_off < gw_w * 0.10: step = 10
         elif abs_off < gw_w * 0.20: step = 18
         else: step = 30
-        step = max(5, step // (self._reversal_count + 1))
+        sign = -1 if off < 0 else 1
+        if self._last_rotate_sign != 0 and sign != self._last_rotate_sign:
+            self._reversal_count += 1
+            logger.debug("  rotate reversal #%d", self._reversal_count)
+        self._last_rotate_sign = sign
+        step = max(3, step // (self._reversal_count + 1))
         angle = -step if off < 0 else step
         logger.debug("  rotate off=%d(%.0f%%) deg=%.0f", off, off / gw_w * 100, angle)
         self._rotate(angle)
@@ -163,6 +172,12 @@ class DungeonExitNavState(BaseState):
             if dx > fw * 0.30:
                 logger.debug("Portal pos jumped %dpx (%.0f%%), rejecting",
                              dx, dx / max(fw, 1) * 100)
+                return None
+        if portal and self._gw_w > 0 and self._gw_h > 0:
+            rx = portal["center"][0] - self._gw_l
+            ry = portal["center"][1] - self._gw_t
+            if rx < self._gw_w * 0.05 or rx > self._gw_w * 0.95 or ry < self._gw_h * 0.05 or ry > self._gw_h * 0.95:
+                logger.debug("Portal at (%d,%d) rejected (edge zone)", portal["center"][0], portal["center"][1])
                 return None
         return portal
 
@@ -185,6 +200,13 @@ class DungeonExitNavState(BaseState):
         target_thr = exit_thr if all_done else rechallenge_thr
         if not target_name: return None
         r = find_template(frame, target_name, threshold=target_thr)
+        if r and self._gw_w > 0 and self._gw_h > 0:
+            rx = r["center"][0] - self._gw_l
+            ry = r["center"][1] - self._gw_t
+            if rx < self._gw_w * 0.05 or rx > self._gw_w * 0.95 or ry < self._gw_h * 0.05 or ry > self._gw_h * 0.95:
+                logger.debug("Button at (%d,%d) rejected (edge zone)",
+                             r["center"][0], r["center"][1])
+                return None
         return r
 
     def _wd_reset(self, blackboard):
@@ -196,7 +218,7 @@ class DungeonExitNavState(BaseState):
     def update(self, blackboard):
         try: self._do_update(blackboard)
         except Exception:
-            logger.error("DungeonExitNav crash:\n%s", traceback.format_exc())
+            logger.error("副本出口寻路崩溃:\n%s", traceback.format_exc())
             self._release_w()
             blackboard["_fsm"].transition("domain_loading", blackboard)
 
@@ -221,7 +243,7 @@ class DungeonExitNavState(BaseState):
             if btn:
                 c = btn["confidence"]
                 if c >= 0.75 or (c >= 0.50 and self._near_exit):
-                    logger.info("Exit button detected (conf=%.3f near_exit=%s), switching to buttons",
+                    logger.info("识别到退出按钮 (置信度=%.3f 接近出口=%s)，切换到按钮阶段",
                                 c, self._near_exit)
                     self._release_w()
                     self.controller.release_all()
@@ -237,7 +259,7 @@ class DungeonExitNavState(BaseState):
 
         gw_w, gw_h = self._gw_w, self._gw_h
         if gw_w <= 0:
-            logger.warning("DungeonExitNav: _window_rect not available, using frame center")
+            logger.warning("副本出口寻路: 窗口坐标不可用，使用帧中心")
             gw_w, gw_h = frame.shape[1], frame.shape[0]
             win_cx = gw_w // 2
             win_cy = gw_h // 2
@@ -255,7 +277,6 @@ class DungeonExitNavState(BaseState):
             self._do_move(frame, gw_w, win_cx, win_cy, blackboard)
 
     def _do_scan(self, frame, gh, gw, win_cx, win_cy, blackboard):
-        self._reversal_count = 0
         portal = self._find_portal(frame)
 
         if portal:
@@ -292,7 +313,7 @@ class DungeonExitNavState(BaseState):
         self._lost += 1
         if self._lost % 5 == 1: logger.debug("Scanning... (%d/80)", self._lost)
         if self._lost > 80:
-            logger.warning("Portal not found, direct buttons")
+            logger.warning("出口图标未找到，直接进入按钮阶段")
             self._release_w()
             self._set_phase("buttons")
             self._click_stage = 0
@@ -341,8 +362,12 @@ class DungeonExitNavState(BaseState):
                 step = int(step * 1.3)
 
             self._search_dir = -1 if h_off < 0 else 1
-            step = max(5, step // (self._reversal_count + 1))
-            angle = self._search_dir * max(8, step)
+            if self._last_search_dir != 0 and self._search_dir != self._last_search_dir:
+                self._reversal_count += 1
+                logger.debug("  seek visible reversal #%d", self._reversal_count)
+            self._last_search_dir = self._search_dir
+            step = max(3, step // (self._reversal_count + 1))
+            angle = self._search_dir * step
             logger.debug("  seek rotate %d deg (step=%d h=%.2f v=%.2f)", angle, step, h_ratio, v_ratio)
             self._rotate(angle)
         else:
@@ -374,8 +399,9 @@ class DungeonExitNavState(BaseState):
         else:
             self._lost += 1
             if self._lost == 5:
-                if self._last_pos and self._last_pos[0] - self._gw_l > win_cx: self._rotate(-8)
-                else: self._rotate(8)
+                nudge = max(3, 8 // (self._reversal_count + 1))
+                if self._last_pos and self._last_pos[0] - self._gw_l > win_cx: self._rotate(-nudge)
+                else: self._rotate(nudge)
                 time.sleep(0.1)
             if self._lost > 30: self._set_phase("scan"); self._lost = 0; return
             return
@@ -418,7 +444,7 @@ class DungeonExitNavState(BaseState):
                 if d < 8:
                     self._stuck += 1
                     if self._stuck > 15:
-                        logger.warning("Stuck %d", self._stuck)
+                        logger.warning("卡住 %d 次", self._stuck)
                         self._release_w()
                         self.controller.tap_key("space", duration=0.1, delay_after=1.0)
                         self._stuck = 0
@@ -439,7 +465,7 @@ class DungeonExitNavState(BaseState):
             if self._lost > 10:
                 self._near_exit = True
             if self._lost > 20:
-                logger.info("Portal lost, near exit?")
+                logger.info("出口图标丢失，可能已接近出口")
                 self._release_w()
                 self._set_phase("buttons"); self._click_stage = 0; self._click_wait = 0; self._button_attempts = 0; return
 
@@ -476,11 +502,16 @@ class DungeonExitNavState(BaseState):
                 self._force_transition(blackboard, all_done, runs_done)
                 return
             r = find_template(frame, target_name, threshold=target_thr)
+            if r and self._gw_w > 0 and self._gw_h > 0:
+                rx = r["center"][0] - self._gw_l
+                ry = r["center"][1] - self._gw_t
+                if rx < self._gw_w * 0.05 or rx > self._gw_w * 0.95 or ry < self._gw_h * 0.05 or ry > self._gw_h * 0.95:
+                    r = None
             if r:
                 cx, cy = r["center"]
                 self.controller.click_at(cx, cy, bezier=True)
-                action = "exit" if all_done else "re-challenge"
-                logger.info("Clicked %s (run %d/%d)", action, runs_done + 1, domain_runs)
+                action = "退出副本" if all_done else "再次挑战"
+                logger.info("点击%s (第%d/%d次)", action, runs_done + 1, domain_runs)
                 self._click_stage = 1
                 self._click_wait = 15
                 self._confirm_attempts = 20
@@ -488,7 +519,7 @@ class DungeonExitNavState(BaseState):
             else:
                 self._button_attempts += 1
                 if self._button_attempts > 60:
-                    logger.warning("Button not found after 60 attempts, forcing transition")
+                    logger.warning("按钮 60 次未匹配，强制跳转")
                     self._force_transition(blackboard, all_done, runs_done)
                 return
 
@@ -497,7 +528,7 @@ class DungeonExitNavState(BaseState):
             if r:
                 cx, cy = r["center"]
                 self.controller.click_at(cx, cy, bezier=True)
-                logger.info("Clicked confirm")
+                logger.info("点击确认")
                 self._click_stage = 2
                 self._click_wait = 15
                 return
@@ -506,24 +537,24 @@ class DungeonExitNavState(BaseState):
             if avatar_name:
                 ar = find_template(frame, avatar_name, threshold=avatar_thr, auto_update=True)
                 if ar:
-                    logger.info("Avatar detected in town after exit (conf=%.2f), proceeding",
+                    logger.info("退出后识别到城镇头像 (置信度=%.2f)，继续",
                                 ar["confidence"])
                     self._click_stage = 2
                     self._click_wait = 15
                     return
             self._confirm_attempts -= 1
             if self._confirm_attempts <= 0:
-                logger.warning("Confirm button not found after retries, restarting button flow")
+                logger.warning("确认按钮重试失败，重新开始按钮流程")
                 self._click_stage = 0
             return
 
         if self._click_stage == 2:
             if all_done:
-                logger.info("Exiting domain")
+                logger.info("退出副本")
                 blackboard["_fsm"].transition("map_loading", blackboard)
             else:
                 blackboard["domain_run_count"] = runs_done + 1
-                logger.info("Re-enter domain (run %d/%d)", runs_done + 1, domain_runs)
+                logger.info("再次进入副本 (第%d/%d次)", runs_done + 1, domain_runs)
                 blackboard["_fsm"].transition("domain_loading", blackboard)
 
     def _force_transition(self, blackboard, all_done, runs_done):

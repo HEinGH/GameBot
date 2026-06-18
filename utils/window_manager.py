@@ -1,4 +1,3 @@
-import sys
 import time
 import logging
 from typing import Optional
@@ -36,7 +35,7 @@ class WindowManager:
                     if best:
                         self._window = best
                         _bb = best.box
-                        logger.info("Found window: %s (handle=%s size=%dx%d)",
+                        logger.info("找到窗口: %s (句柄=%s 大小=%dx%d)",
                                     best.title, best.getHandle(), _bb.width, _bb.height)
                         return True
             else:
@@ -60,7 +59,7 @@ class WindowManager:
                 if best:
                     self._window = best
                     _bb = best.box
-                    logger.info("Found window (no title keyword): %s (size=%dx%d)",
+                    logger.info("找到窗口(无标题关键词): %s (大小=%dx%d)",
                                 best.title, _bb.width, _bb.height)
                     return True
             if self.class_name:
@@ -68,10 +67,10 @@ class WindowManager:
                 for w in all_wins:
                     if w.getHandle() and self._class_matches(w):
                         self._window = w
-                        logger.info("Found window by class: handle=%s title=%s",
+                        logger.info("按类名找到窗口: 句柄=%s 标题=%s",
                                     w.getHandle(), w.title)
                         return True
-            logger.debug("Window not found (attempt %d/%d)", i + 1, retries)
+            logger.debug("未找到窗口 (尝试 %d/%d)", i + 1, retries)
             time.sleep(interval)
         return False
 
@@ -102,15 +101,6 @@ class WindowManager:
             return False
 
     @property
-    def is_visible(self) -> bool:
-        if not self._window:
-            return False
-        try:
-            return self._window.isVisible
-        except Exception:
-            return False
-
-    @property
     def exists(self) -> bool:
         if not self._window:
             return False
@@ -130,7 +120,7 @@ class WindowManager:
             time.sleep(0.3)
             return True
         except Exception as e:
-            logger.warning("Activate failed: %s", e)
+            logger.warning("激活窗口失败: %s", e)
             return False
 
     def save_position(self):
@@ -138,9 +128,9 @@ class WindowManager:
             return
         try:
             self._saved_box = self._window.box
-            logger.debug("Saved window position: %s", self._saved_box)
+            logger.debug("已保存窗口位置: %s", self._saved_box)
         except Exception as e:
-            logger.warning("Save position failed: %s", e)
+            logger.warning("保存窗口位置失败: %s", e)
 
     def restore_position(self):
         if not self._window or not self._saved_box:
@@ -148,22 +138,9 @@ class WindowManager:
         try:
             self._window.moveTo(self._saved_box.left, self._saved_box.top)
             self._window.resizeTo(self._saved_box.width, self._saved_box.height)
-            logger.info("Restored window position: %s", self._saved_box)
+            logger.info("已恢复窗口位置: %s", self._saved_box)
         except Exception as e:
-            logger.warning("Restore position failed: %s", e)
-
-    def get_client_rect(self):
-        if not self._window:
-            return None
-        try:
-            return self._window.getClientFrame()
-        except Exception:
-            try:
-                b = self._window.box
-                return {"left": b.left, "top": b.top,
-                        "width": b.width, "height": b.height}
-            except Exception:
-                return None
+            logger.warning("恢复窗口位置失败: %s", e)
 
     def get_monitor_index(self) -> int:
         if not self._window:
@@ -184,16 +161,16 @@ class WindowManager:
         try:
             monitors = pwc.getAllScreens()
             if monitor_index >= len(monitors):
-                logger.warning("Monitor %d not found, have %d", monitor_index, len(monitors))
+                logger.warning("显示器 %d 不存在，共 %d 个", monitor_index, len(monitors))
                 return False
             target = monitors[monitor_index]
             h = self._window.height
             self._window.moveTo(target.left + 50, target.top + 50)
-            logger.info("Moved window to monitor %d at (%d, %d)",
+            logger.info("窗口已移至显示器 %d 位置(%d, %d)",
                         monitor_index, target.left + 50, target.top + 50)
             return True
         except Exception as e:
-            logger.warning("Move to monitor failed: %s", e)
+            logger.warning("移动窗口到显示器失败: %s", e)
             return False
 
     @property

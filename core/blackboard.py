@@ -33,18 +33,6 @@ class Blackboard:
         with self._lock:
             return self._data.get(key, default)
 
-    def set(self, key, value):
-        with self._lock:
-            self._data[key] = value
-
     def update(self, mapping):
         with self._lock:
             self._data.update(mapping)
-
-    def keys(self):
-        with self._lock:
-            return list(self._data.keys())
-
-    def elapsed_in_state(self):
-        import time
-        return time.time() - self["state_start_time"]

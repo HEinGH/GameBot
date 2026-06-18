@@ -25,7 +25,7 @@ class DomainLoadingState(BaseState):
         if blackboard["stuck"]:
             return
         if time.time() - self._start > self._timeout:
-            logger.warning("Domain loading timed out, assuming loaded")
+            logger.warning("副本加载超时，假定已加载")
             blackboard["_fsm"].transition("domain_combat", blackboard)
             return
 
@@ -48,6 +48,6 @@ class DomainLoadingState(BaseState):
 
         result = find_template(frame, skill_name, threshold=skill_thr, auto_update=True)
         if result:
-            logger.info("Skill bar '%s' detected, domain loaded (%.1fs)",
+            logger.info("识别到技能栏 '%s'，副本加载完成 (%.1f秒)",
                         skill_name, time.time() - self._start)
             blackboard["_fsm"].transition("domain_combat", blackboard)

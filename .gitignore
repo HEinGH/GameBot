@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 虚拟环境
+venv/
+
+# 打包产物
+dist/
+build/
+*.spec
+
+# 用户配置（预设、角色库、全局设置）
+config/settings.json
+config/presets/*.json
+config/characters/*.json
+config/characters/_order.json
+
+# 截图模板（用户截取的游戏截图）
+templates/
+
+# 连招文件（用户录制/配置的连招）
+combos/*.json
+
+# 日志与调试
+logs/
+debug/
+*.log
+
+# IDE
+.vscode/
+.idea/

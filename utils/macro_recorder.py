@@ -7,7 +7,6 @@ from datetime import datetime
 from collections import defaultdict
 
 import ctypes
-import ctypes.wintypes
 
 logger = logging.getLogger(__name__)
 

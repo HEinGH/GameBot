@@ -56,7 +56,7 @@ class ComboExecutor:
         delay_before = action.get("delay_before", 0.0)
         delay_after = action.get("delay_after", 0.0)
 
-        logger.info("Combo: keys=%s hold=%s dur=%.2f before=%.2f after=%.2f",
+        logger.info("连招: 按键=%s 按住=%s 时长=%.2f 前延=%.2f 后延=%.2f",
                     keys, hold, duration, delay_before, delay_after)
 
         db = self._jitter(delay_before)
@@ -84,7 +84,7 @@ class ComboExecutor:
 
     def _press_down(self, key):
         if key in ("right_click", "right"):
-            logger.debug("Skipping %s (unsupported in combos)", key)
+            logger.debug("跳过 %s (连招中不支持)", key)
             return
         if key == "left_click":
             pydirectinput.mouseDown(button="left")
@@ -101,19 +101,19 @@ class ComboExecutor:
 
     def _press_key(self, key, duration):
         if key in ("right_click", "right"):
-            logger.debug("Skipping %s (unsupported in combos)", key)
+            logger.debug("跳过 %s (连招中不支持)", key)
             return
         if key == "left_click":
             pydirectinput.mouseDown(button="left")
             time.sleep(duration)
             pydirectinput.mouseUp(button="left")
         else:
-            logger.info("  press %s dur=%.2f", key, duration)
+            logger.info("  按下 %s 时长=%.2f", key, duration)
             self.controller.tap_key(key, duration=duration)
 
     def _hold_key(self, key, duration):
         if key in ("right_click", "right"):
-            logger.debug("Skipping %s (unsupported in combos)", key)
+            logger.debug("跳过 %s (连招中不支持)", key)
             return
         if key == "left_click":
             pydirectinput.mouseDown(button="left")
