@@ -13,7 +13,7 @@ class CompleteState(BaseState):
     def enter(self, blackboard):
         super().enter(blackboard)
         self.controller.release_all()
-        logger.info("All characters completed. Stopping.")
+        logger.info("全部角色执行完成，停止运行")
         blackboard["running"] = False
 
     def update(self, blackboard):

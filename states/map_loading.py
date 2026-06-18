@@ -24,7 +24,7 @@ class MapLoadingState(BaseState):
         if blackboard["stuck"]:
             return
         if time.time() - self._start > self._timeout:
-            logger.warning("Map loading timed out")
+            logger.warning("地图加载超时")
             blackboard["_fsm"].transition("town_exit", blackboard)
             return
 
@@ -42,7 +42,7 @@ class MapLoadingState(BaseState):
         if avatar_name:
             r = find_template(frame, avatar_name, threshold=avatar_thr, auto_update=True)
             if r:
-                logger.info("Avatar detected, town loaded (%.1fs)",
+                logger.info("识别到城镇头像，回城完成 (%.1f秒)",
                             time.time() - self._start)
                 blackboard["_fsm"].transition("town_exit", blackboard)
                 return

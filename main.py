@@ -4,7 +4,7 @@ import json
 import logging
 
 from config.settings import Settings, ROOT_DIR, PRESETS_DIR
-from config.settings import resolve_characters, migrate_preset_fallback
+from config.settings import resolve_characters
 from utils.logger import setup_logger, setup_excepthook, LOG_DIR
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ def load_presets():
                 with open(f, encoding="utf-8") as fp:
                     presets[f.stem] = json.load(fp)
             except Exception as e:
-                logger.warning("Failed to load preset %s: %s", f.name, e)
+                logger.warning("加载预设失败 %s: %s", f.name, e)
     return presets
 
 
@@ -37,13 +37,13 @@ def main():
     presets = load_presets()
 
     logger.info("=" * 50)
-    logger.info("GameBot started")
-    logger.info("Log directory: %s", LOG_DIR)
-    logger.info("Presets dir:  %s", PRESETS_DIR)
+    logger.info("GameBot 已启动")
+    logger.info("日志目录: %s", LOG_DIR)
+    logger.info("预设目录: %s", PRESETS_DIR)
     logger.info("=" * 50)
 
     if not presets:
-        logger.error("No presets found in %s", PRESETS_DIR)
+        logger.error("未找到预设文件: %s", PRESETS_DIR)
         sys.exit(1)
 
     list_presets(presets)
@@ -78,15 +78,14 @@ def main():
     preset_name = args.preset
     if not preset_name:
         preset_name = next(iter(presets))
-        logger.info("Using preset: %s", preset_name)
+        logger.info("使用预设: %s", preset_name)
 
     if preset_name not in presets:
-        logger.error("Preset '%s' not found", preset_name)
+        logger.error("预设 '%s' 不存在", preset_name)
         sys.exit(1)
 
     preset = presets[preset_name]
     preset["characters"] = resolve_characters(preset, preset_name)
-    migrate_preset_fallback(preset, preset_name)
     total_chars = max(1, args.characters) if args.characters is not None else max(1, len(preset.get("characters", [])))
     if args.fps:
         cfg._data["fps_limit"] = args.fps
@@ -97,7 +96,7 @@ def main():
         title = args.window_title or preset.get("window_title", "")
         window_mgr = WindowManager(title_keyword=title)
         if not window_mgr.find_window(retries=5):
-            logger.warning("Game window not found. Focus monitoring disabled.")
+            logger.warning("未找到游戏窗口，焦点监控已禁用")
 
     from core.blackboard import Blackboard
     from core.fsm import FSM
@@ -126,6 +125,7 @@ def main():
         combo_randomness=cfg.combo_randomness,
         bezier_steps=cfg.mouse_bezier_steps,
         click_jitter=cfg.click_jitter_px,
+        background_mode=args.background,
     )
 
     fsm = FSM()
@@ -160,19 +160,42 @@ def main():
     )
     blackboard["_watchdog"] = watchdog
 
+    _vdm = None
     if window_mgr and args.background:
         window_mgr.save_position()
-        logger.info("Background mode ON: window will be managed automatically")
-        if args.secondary_monitor is not None:
+        logger.info("后台模式已开启: 窗口将自动管理")
+        from utils.virtual_display import VirtualDisplayManager
+        _vdm = VirtualDisplayManager()
+        if _vdm.is_installed():
+            if _vdm.enable(timeout=10):
+                vdd_idx = _vdm.get_monitor_index()
+                if vdd_idx >= 0:
+                    window_mgr.move_to_monitor(vdd_idx)
+                    time.sleep(1.0)
+                    dxcam_info = _vdm.get_dxcam_output_idx()
+                    capture.stop()
+                    time.sleep(0.3)
+                    if isinstance(dxcam_info, tuple) and dxcam_info[0] >= 0:
+                        capture.start(method=cfg.capture_method, fps_limit=cfg.fps_limit,
+                                      device_idx=dxcam_info[0], output_idx=dxcam_info[1])
+                    else:
+                        capture.start(method=cfg.capture_method, fps_limit=cfg.fps_limit,
+                                      monitor=vdd_idx)
+                    logger.info("游戏已移至虚拟显示器 %d，截图已重定向", vdd_idx)
+                else:
+                    logger.warning("无法确定虚拟显示器索引")
+            else:
+                logger.warning("虚拟显示器启用失败")
+        elif args.secondary_monitor is not None:
             window_mgr.move_to_monitor(args.secondary_monitor)
-            logger.info("Window moved to monitor %d", args.secondary_monitor)
+            logger.info("窗口已移至显示器 %d", args.secondary_monitor)
 
     fsm.transition("character_select", blackboard)
-    logger.info("Bot started. Preset=%s Characters=%d", preset_name, total_chars)
-    logger.info("Press Ctrl+C to stop")
+    logger.info("Bot已启动 预设=%s 角色数=%d", preset_name, total_chars)
+    logger.info("按 Ctrl+C 停止")
 
     if window_mgr:
-        logger.info("Game window: %s | Focused: %s | Background: %s",
+        logger.info("游戏窗口: %s | 焦点: %s | 后台: %s",
                     window_mgr.title, window_mgr.is_focused, args.background)
 
     try:
@@ -183,14 +206,14 @@ def main():
                         window_mgr.activate()
                         time.sleep(0.5)
                     else:
-                        logger.info("Game minimized. Waiting for restore...")
+                        logger.info("游戏已最小化，等待恢复...")
                         while window_mgr.is_minimized and blackboard["running"]:
                             time.sleep(1.0)
-                        logger.info("Game restored, resuming")
+                        logger.info("游戏已恢复，继续运行")
                         time.sleep(0.5)
 
                 if not window_mgr.is_focused and not args.background:
-                    logger.info("Game window not focused. Focus it or press Ctrl+C.")
+                    logger.info("游戏窗口未聚焦，请点击游戏窗口或按 Ctrl+C")
                     while not window_mgr.is_focused and blackboard["running"]:
                         time.sleep(0.5)
 
@@ -203,7 +226,7 @@ def main():
             if frame is not None:
                 watchdog.update(frame, blackboard)
             if blackboard["stuck"] and fsm.current != "stuck_recovery":
-                logger.warning("Stuck detected, entering recovery")
+                logger.warning("检测到卡死，进入恢复流程")
                 watchdog.reset()
                 fsm.transition("stuck_recovery", blackboard)
             fsm.update(blackboard)
@@ -211,13 +234,15 @@ def main():
                 controller.occasional_look_around()
             time.sleep(1.0 / max(cfg.fps_limit, 1))
     except KeyboardInterrupt:
-        logger.info("Stopping by user request")
+        logger.info("用户请求停止")
     finally:
         controller.release_all()
         capture.stop()
         if window_mgr:
             window_mgr.close()
-        logger.info("Bot stopped")
+        if _vdm and _vdm.is_enabled():
+            _vdm.disable()
+        logger.info("Bot已停止")
 
 
 if __name__ == "__main__":

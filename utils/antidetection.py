@@ -8,8 +8,6 @@ class HumanDelay:
     def __init__(self, seed=None):
         self._rng = random.Random(seed)
         self._session_rhythm = self._rng.uniform(0.85, 1.15)
-        self._hurst = 0.7
-        self._last_noise = 0.0
 
     def delay(self, base_ms, variance=0.3):
         delay = self._rng.gauss(base_ms, base_ms * variance / 2.5)
@@ -18,12 +16,6 @@ class HumanDelay:
         if self._rng.random() < 0.04:
             delay += self._rng.uniform(0.06, 0.18)
         return delay
-
-    def click_interval(self):
-        return self._rng.gauss(0.08, 0.035)
-
-    def reaction(self):
-        return self._rng.gauss(0.22, 0.06)
 
     def hold_duration(self, base):
         dur = base * self._rng.gauss(1.0, 0.15)
@@ -91,10 +83,6 @@ class MouseTrajectory:
 class BehaviorProfile:
     def __init__(self):
         self.session_id = random.randint(0, 2 ** 16)
-        self.speed_bias = random.uniform(0.9, 1.15)
-        self.precision = random.choice(["precise", "normal", "sloppy"])
-        self.idle_freq = random.uniform(0.01, 0.04)
-        self.look_around_freq = random.uniform(0.005, 0.02)
 
     @property
     def name(self):

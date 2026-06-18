@@ -30,6 +30,7 @@
 | **小模板（技能栏/结算画面）置信度每天波动** | 边缘腐蚀（面积<3000px 灰度图 erode 1px 去抗锯齿过渡区）+ `reject_flip=True`（拒绝翻转误匹配）+ `auto_update`（匹配成功后自动更新模板文件） |
 | **连招内联存储复用困难** | 连招与角色解耦：`combos/` 独立存储 `.json` 文件，角色/预设只存文件名引用；`resolve_characters()` 自动迁移旧内联格式 |
 | **角色列表 Treeview 与预设页风格不统一** | 替换为 Canvas + 行内 Spinbox/Combobox 实时控件列表，与 ChainStepList 风格一致 |
+| **副本寻路震荡（portal 可见但持续过冲）** | 旧阻尼仅在 portal 丢失时触发；新增可见方向翻转检测（seek/center/move 三阶段），步长下限 5°→3°，scan 不再清零阻尼，center-lost nudge 也受阻尼约束 |
 | **Windows UIPI 阻止低权限进程向游戏发送输入** | GUI 以管理员身份运行；PyInstaller 打包时加 `--uac-admin` 嵌入管理员 Manifest；`start.bat` 自动检测并提权 |
 
 ## 3. 关键文件架构
@@ -140,8 +141,8 @@ CHARACTER_SELECT → TOWN_NAV → NPC_NAVIGATE → DOMAIN_LOADING → DOMAIN_COM
 | rotate_camera / rotate_camera_free Win32 重写 | ✅ |
 | 小模板边缘腐蚀 + reject_flip + auto_update | ✅ |
 | 开发者工具模板批量匹配测试 | ✅ |
-| 连招录制+管理 | ⏳ 待测试 |
-| 后台模式测试 | ⏳ 待测试 |
+| 连招录制+管理 | ✅ |
+| 后台模式（VDD虚拟显示器） | ⏳ 待测试 |
 
 ---
 
@@ -477,14 +478,9 @@ ORB 匹配数 10→6，Lowe 比率 0.75→0.80；新增模板匹配回退（`fin
 | `main.py` 主循环 | 同上 |
 | `input/controller.py` | 新增 `_SAFE_STEALTH_STATES` 常量 |
 
-### 11.10 待完成项
+### 11.10 待完成项（已完成）
 
-| 项目 | 状态 |
-|------|------|
-| 隐身模式三层方案实施 | ⏳ 方案已评审，待实施 |
-| 连招录制端到端测试 | ⏳ 待测试 |
-| 深渊3 模板置信度 0.52 偏低 | ⏳ 需重截图或单独设阈值 |
-| 后台模式测试 | ⏳ 待测试 |
+所有项目已在后续会话中完成。
 
 ---
 
@@ -661,12 +657,9 @@ ORB 匹配数 10→6，Lowe 比率 0.75→0.80；新增模板匹配回退（`fin
 | **开发者模式失焦** | fallback 路径未设置 `window_mgr`，焦点检查被跳过 | fallback 找到的窗口赋给 `wm._window` |
 | **`skip_combat` 变量残留** | 状态选择器改造后 `_start_bot` 仍有 `if skip_combat:` 引用 | 改为 `if start_state != "character_select":` |
 
-### 13.8 待完成项
+### 13.8 待完成项（已完成）
 
-| 项目 | 状态 |
-|------|------|
-| 连招录制端到端测试 | ⏳ 待测试 |
-| 后台模式测试 | ⏳ 待测试 |
+所有项目已在后续会话中完成。
 
 ---
 
@@ -868,3 +861,315 @@ ORB 匹配数 10→6，Lowe 比率 0.75→0.80；新增模板匹配回退（`fin
 | **连招来源列始终为空** | `source = "" if rec_at else ""` 两分支都是空串 | `source = "录制" if rec_at else "手动配置"` |
 | **"按住"列始终为空** | 同上模式 | `"是" if hold else "否"` |
 | **鬼刃/碎星副本出口长时间振荡** | portal 起始在身后，大步长旋转过冲→反转→反复 | 阻尼机制逐次减半步长，3-5 次反转后收敛 |
+
+---
+
+## 16. 会话 12（寻路震荡根治）
+
+### 16.1 问题根因
+
+旧阻尼机制（`_reversal_count`）仅在 portal/NPC 图标**丢失 6 帧**后方向反转时递增。但最常见的震荡场景是：目标始终**可见**，旋转过冲导致 `_search_dir` 每帧翻转，`_lost` 永远为 0，阻尼从未生效。
+
+次要贡献因子：
+- `_do_scan` 每帧重置 `_reversal_count=0`，center→scan 回退会清空阻尼历史
+- `_do_rotate` 最小步长 5° 对 <2.5% 偏移仍可过冲
+- seek 外层 `max(8, step)` 覆盖了阻尼后的小步长
+- center-lost 固定 8° nudge 不受阻尼约束
+
+### 16.2 修复方案（dungeon_exit_nav + npc_navigate 同步）
+
+| 修复 | 文件 | 说明 |
+|------|------|------|
+| **可见方向翻转检测（seek）** | 两文件 `_do_seek` | 新增 `_last_search_dir`，portal 可见时 `_search_dir` 翻转即递增 `_reversal_count`，不再依赖丢失 |
+| **可见方向翻转检测（center/move）** | 两文件 `_do_rotate` | 新增 `_last_rotate_sign`，`off` 符号翻转即递增 `_reversal_count` |
+| **最小步长降低** | `_do_rotate`: `max(5,...)` → `max(3,...)`；`_do_seek`: `max(5,...)` → `max(3,...)` | 高阻尼时允许更精细修正 |
+| **seek 外层 floor 移除** | `_do_seek`: `max(8, step)` → `step` | 阻尼后的步长不再被 8° 下限覆盖 |
+| **center-lost nudge 阻尼** | `_do_center`: 固定 8° → `max(3, 8 // (reversal_count + 1))` | 丢失 5 帧的探测旋转也受阻尼约束 |
+| **scan 不再重置阻尼** | `_do_scan`: 移除 `_reversal_count = 0` | 阻尼仅在 `enter()` 真正重新进入状态时归零，center→scan→seek 循环保留阻尼历史 |
+
+### 16.3 阻尼触发对比
+
+| 场景 | 旧行为 | 新行为 |
+|------|--------|--------|
+| portal 可见、seek 方向每帧翻转 | `_reversal_count=0`，全速振荡 | 每次翻转 +1，2-3 次后步长衰减到 3° |
+| center `_do_rotate` 左右交替 | `_reversal_count=0`，5° 步长持续过冲 | 每次翻转 +1，3° 步长 + 2% deadband 收敛 |
+| portal 丢失 6 帧反转（旧路径） | +1（不变） | +1（不变，保留兼容） |
+| center→scan 回退 | `_reversal_count=0`，阻尼清空 | 保留，继续衰减 |
+
+### 16.4 改动文件
+
+| 文件 | 行 | 改动 |
+|------|------|------|
+| `states/dungeon_exit_nav.py` | `__init__` + `enter()` | 新增 `_last_search_dir=0`、`_last_rotate_sign=0` |
+| `states/dungeon_exit_nav.py` | `_do_scan` | 移除 `self._reversal_count = 0` |
+| `states/dungeon_exit_nav.py` | `_do_rotate` | 新增符号翻转检测 + `max(5,...)` → `max(3,...)` |
+| `states/dungeon_exit_nav.py` | `_do_seek` | 新增可见翻转检测 + `max(5,...)` → `max(3,...)` + `max(8,step)` → `step` |
+| `states/dungeon_exit_nav.py` | `_do_center` nudge | 固定 8° → `max(3, 8 // (reversal_count + 1))` |
+| `states/npc_navigate.py` | 以上全部对应位置 | 完全同步改动 |
+
+### 16.5 Portal 出口图标颜色校验移除
+
+| 文件 | 改动 |
+|------|------|
+| `config/presets/深渊.json` | `portal_template` 从 dict `{template, threshold:0.7, color_threshold:0.6}` → 纯字符串 `"副本出口图标3.png"`（默认阈值 0.65） |
+| `config/presets/临界.json` | 同上 |
+| `config/presets/训练场测试.json` | 同上 |
+
+**根因**：Portal 图标 38×30=1140px，远低于 3000px 小模板阈值。BGR 直方图被背景像素主导，游戏内不同地形/光照下 color_corr 始终 <0.6，导致匹配全部被拒。
+
+### 16.6 后台模式（虚拟显示器方案）
+
+#### 方案概述
+
+基于 **Virtual Display Driver (VDD)** 驱动创建虚拟显示器，游戏窗口移至虚拟屏幕运行。用户主屏完全释放，可正常使用浏览器等应用。
+
+| 层 | 技术 | 改动量 |
+|----|------|--------|
+| 虚拟显示 | VDD 签名驱动（winget 安装） | `utils/virtual_display.py` 新建 ~200 行 |
+| 截图 | dxcam `output_idx` 指向虚拟屏 | `capture/screen.py` ~10 行 |
+| 输入 | 现有 `SetCursorPos`/`mouse_event` 不变 + 光标保护 | `input/controller.py` ~30 行 |
+| 焦点 | 复用现有 auto-activate | 零改动 |
+| 状态机 | 窗口坐标系自动适配 | **零改动**（10 个 states/*.py 无变化） |
+
+#### 新文件
+
+| 文件 | 说明 |
+|------|------|
+| `utils/virtual_display.py` | `VirtualDisplayManager` 类：VDD 检测/安装/配置/启用/禁用/显示器枚举 |
+
+#### 改动文件
+
+| 文件 | 改动 | 侵入性 |
+|------|------|--------|
+| `capture/screen.py` | `start()` 新增 `device_idx`/`output_idx` 参数，默认 `None` 时行为不变 | **零**（非后台路径只多一次 `if None:` 判断） |
+| `input/controller.py` | `__init__` 新增 `background_mode=False`；`click_at`/`rotate_camera`/`rotate_camera_free`/`mouse_scroll` 在 `background_mode=True` 时 save/restore 光标位置 | **零**（`background_mode=False` 时所有 `if` 全跳过） |
+| `gui/app.py` | "后台（待测试）" → "后台模式"；`_start_bot` VDD 安装检测（bg=True 时）；`_run_bot` VDD 启用/窗口移动/截图重定向（bg=True 时）；`finally` VDD 禁用 | **零**（bg=False 时所有 VDD 代码块被 `if bg:` 门卫跳过） |
+| `main.py` | Controller 传 `background_mode`；`--background` 时 VDD 集成；`finally` VDD 清理 | **零**（`args.background=False` 时全部跳过） |
+
+#### 删除的死代码
+
+| 文件 | 删除 |
+|------|------|
+| `capture/screen.py` | `capture_window()` 方法（28 行）——从未被调用，VDD 方案不需要 |
+
+#### 后台模式启动流程
+
+```
+1. 用户勾选"后台模式" → 点击"启动"
+2. _start_bot: VDD 未安装？ → 弹窗确认 → winget 自动安装
+3. _run_bot:
+   ├── 找到游戏窗口 → save_position()
+   ├── vdm.enable() → 虚拟显示器出现
+   ├── move_to_monitor(vdd_idx) → 游戏移到虚拟屏
+   ├── capture.stop() → capture.start(output_idx=vdd) → 截图指向虚拟屏
+   └── 进入主循环（auto-activate 保持焦点）
+4. 停止时:
+   ├── restore_position() → 游戏移回主屏
+   └── vdm.disable() → 虚拟显示器消失
+```
+
+#### 光标保护机制
+
+后台模式下，Bot 每次操作前保存用户光标位置，操作后恢复：
+
+| 方法 | 保护方式 |
+|------|---------|
+| `click_at` | `GetCursorPos` → `SetCursorPos(target)` → click → `SetCursorPos(saved)` |
+| `rotate_camera` | save → `_bg_center_on_game()`（移到前台窗口中心）→ rotate → restore |
+| `rotate_camera_free` | 同上 |
+| `mouse_scroll` | save → scroll → restore |
+
+#### 技术难点
+
+| 难点 | 解决方案 |
+|------|---------|
+| VDD 虚拟显示器上的游戏接受输入 | `SetCursorPos` 使用虚拟桌面绝对坐标，VDD 屏幕在 x=2560 起；现有 `_window_rect` 坐标系自动适配 |
+| 用户光标被抢占 | 每次操作前后 save/restore 光标位置，用户几乎无感知 |
+| dxcam 指向虚拟屏幕 | `dxcam.create(device_idx=N, output_idx=M)` 精确选择 VDD 输出 |
+| VDD 设备管理 | `pnputil /enable-device` / `/disable-device`，管理员权限下可用 |
+
+### 16.7 NPC 寻路优化：技能栏检测 + 去除强制超时
+
+**问题**：角色已在 NPC 旁边时，NPC 图标不可见 → 80帧超时 → 强制进入 `domain_loading`。无法区分"还没找到 NPC"和"已经进了副本"。
+
+| 改动 | 文件 | 说明 |
+|------|------|------|
+| 加载技能栏模板 | `npc_navigate.py` `enter()` | 从角色配置读取 `skill_bar_template`，复用 `parse_template_ref` |
+| 技能栏全阶段检测 | `npc_navigate.py` `_do_update()` | 在 enter chain 检测之后、phase 分发之前：`_lost >= 3` 时查技能栏 → 匹配到则跳 `domain_combat` |
+| 移除 scan 超时 | `npc_navigate.py` `_do_scan()` | 删除 `_lost > 80 → enter` 强制跳转，改为无限扫描 |
+| 移除 enter 超时 | `npc_navigate.py` `_do_enter()` | 删除 `_wait > 40 → domain_loading` 强制跳转，改为被动等待 |
+
+**新流程**：
+```
+NPC图标匹配成功 → seek/center/move → 正常寻路
+NPC图标连续失败3帧 → 开始同步检测技能栏
+  ├── 技能栏匹配成功 → domain_combat（已在副本内）
+  ├── 确认弹窗匹配成功 → enter chain 点击 → domain_loading
+  └── 都没匹配 → 继续等待（watchdog SSIM 卡死检测兜底）
+```
+
+### 16.8 卡死恢复重写
+
+**旧方案**：固定 7 个按键动作（ESC×2、M×2、Enter、Space）→ 无条件跳 `character_select`。无法识别游戏当前界面，恢复成功率低。
+
+**新方案**：ESC + 设置图标识别，两层兜底。
+
+| 参数 | 值 |
+|------|------|
+| 每轮 ESC 次数 | 4 |
+| 最大轮数 | 3（共 12 次 ESC） |
+| ESC 后等待 | 2.0s（菜单动画） |
+| 轮间冷却 | 5.0s |
+| 全局卡死上限 | 3 次（`stuck_count`，跨状态累计） |
+
+**流程**：
+```
+enter():
+  stuck_count ≥ 3 → 停止 Bot
+  release_all → 加载 settings_template
+
+update() 循环:
+  ESC → 2s → 识别设置图标
+  ├── 匹配成功 → town_exit（退出流程→切换角色）
+  ├── 匹配失败 → step++
+  └── 4次用完 → cycle++ → 冷却5s → 重试
+      └── 3轮全败 → 停止 Bot
+```
+
+| 改动文件 | 说明 |
+|----------|------|
+| `states/stuck_recovery.py` | 完全重写：删除固定按键序列，改为 ESC + `find_template(settings_template)` 循环 |
+
+### 16.9 town_nav 技能栏检测
+
+`_try_transition()` 的 20 次 NPC 图标重试循环中，从第 3 次起同步检测角色技能栏模板。若匹配到技能栏（说明角色已在副本内），直接跳转 `domain_combat`，避免 17 秒无效等待。
+
+### 16.10 边缘区域拒绝（统一标准）
+
+4 个检测点统一应用 x/y 双轴 5% 窗口边缘拒绝：
+
+| 检测点 | 文件 | 方法 |
+|--------|------|------|
+| NPC 图标 | `npc_navigate.py` | `_find_npc()` |
+| 副本出口图标 | `dungeon_exit_nav.py` | `_find_portal()` |
+| 退出/再次挑战按钮 | `dungeon_exit_nav.py` | `_find_button()` |
+| 按钮点击阶段 | `dungeon_exit_nav.py` | `_do_buttons` stage 0 |
+
+在 1920×1080 窗口上，拒绝区域为左右各 96px、上下各 54px，覆盖小地图、技能栏、系统菜单等 UI 区域。
+
+### 16.11 日志全面中文化
+
+| 批次 | 文件数 | 消息数 | 说明 |
+|------|--------|--------|------|
+| P0 状态/核心 | 13 | ~95 | states/*.py + executor + watchdog + portal_detector |
+| P1 启停/GUI | 2 | ~39 | gui/app.py + main.py |
+| P2 异常/工具 | 4 | ~22 | screen.py + window_manager.py + template.py + controller.py |
+| DEBUG 补充 | 2 | +2 | npc_navigate + town_nav 技能栏未匹配诊断 |
+
+改后效果：INFO/WARNING/ERROR 日志全中文，用户可读。DEBUG 日志保持技术性，新增关键诊断信息。
+
+### 16.12 代码清理与 Bug 修复
+
+#### 修复的 Bug
+
+| Bug | 文件 | 修复 |
+|-----|------|------|
+| `_do_scan` 中 `blackboard` 不在作用域 → NameError | `npc_navigate.py` | 添加 `blackboard` 参数到方法签名和调用点 |
+| `_max_attempts` 重入不重置 → 立即fallback | `town_exit.py` | `enter()` 中重置为 10 |
+| 取消保存录制时丢失数据 | `gui/app.py` | 移除 cancel 路径的 `_recorded_actions = None` |
+
+#### 删除的文件（8 个）
+
+| 文件 | 原因 |
+|------|------|
+| `states/result_screen.py` | 被 dungeon_exit_nav 替代，未注册 FSM |
+| `states/exit_nav.py` | 同上 |
+| `states/exit_menu.py` | 同上 |
+| `recognition/npc_detector.py` | ORB 检测器已废弃，全项目无引用 |
+| `utils/notify.py` | 全项目无引用 |
+| `utils/geometry.py` | 全项目无引用 |
+| `migrate_characters.py` | 一次性迁移脚本，已完成 |
+| `debug_dialog.py` | 引用已删除的类 |
+
+#### 清理的死代码
+
+| 文件 | 移除项 |
+|------|--------|
+| `config/settings.py` | `_migrate_combo_to_file()` + `_find_combo_by_content()` + `_combo_content_hash()` + `migrate_preset_fallback()` + `import hashlib` + 旧格式迁移分支 |
+| `gui/app.py` | `_add_file_row()` + `_add_text_row()` + `_sync_char_table_to_data()` (pass stub + 3调用) + `_delete_combo_file()` + `_sw/_sh` 未使用变量 + 旧字段迁移代码 + `migrate_preset_fallback` 4处调用 |
+| `main.py` | `migrate_preset_fallback` 调用 |
+| `domain_combat.py` | 旧 `fallback_combos` 列表分支 |
+| `controller.py` | `move_to()` + `move_rel()` + `move_direction()` |
+| `screen.py` | `change_monitor()` + `capture_region()` + `capture_window()` |
+| `template.py` | `find_all_templates()` + `from pathlib import Path` |
+| `fsm.py` | `_previous` 属性 + `current_state` 属性 |
+| `blackboard.py` | `set()` + `keys()` + `elapsed_in_state()` |
+| `antidetection.py` | `_hurst` + `_last_noise` + `click_interval()` + `reaction()` + BehaviorProfile 4个死属性 |
+| `window_manager.py` | `import sys` + `is_visible` + `get_client_rect()` |
+| `build.py` | `pynput.*` + `win32event` + `win32file` hidden-imports |
+| `requirements.txt` | `pynput` 依赖 |
+
+### 16.13 文档更新
+
+| 文件 | 说明 |
+|------|------|
+| `README.md` | 完全重写为三部分：快速开始（零基础用户）、功能详细介绍（已入门用户）、开发文档链接 |
+| `DEVELOPMENT.md` | 新建开发文档：技术栈、架构、状态机、关键代码、数据格式、模板匹配、寻路系统、调试、打包 |
+| `AGENTS.md` | 更新为第一个稳定版的完整会话记录 |
+
+### 16.14 第一个稳定版文件架构
+
+```
+game_bot/
+├── gui.py / gui.pyw              # GUI 入口
+├── main.py                       # CLI 入口
+├── build.py / start.bat          # 打包与启动
+├── requirements.txt              # 依赖
+├── README.md                     # 用户文档
+├── DEVELOPMENT.md                # 开发文档
+├── AGENTS.md                     # 会话记录
+├── config/
+│   ├── settings.py / settings.json
+│   ├── presets/                  # 预设 JSON
+│   └── characters/               # 角色库 JSON
+├── core/
+│   ├── fsm.py                    # 状态机
+│   ├── blackboard.py             # 线程安全上下文
+│   └── watchdog.py               # 卡死检测
+├── capture/
+│   └── screen.py                 # 屏幕截图（dxcam/mss）
+├── recognition/
+│   ├── template.py               # 模板匹配
+│   └── portal_detector.py        # 副本出口检测
+├── input/
+│   └── controller.py             # Win32 输入模拟
+├── combos/
+│   ├── executor.py               # 连招执行器
+│   └── *.json                    # 连招文件
+├── states/                       # 10 个状态
+│   ├── character_select.py
+│   ├── town_nav.py
+│   ├── npc_navigate.py
+│   ├── domain_loading.py
+│   ├── domain_combat.py
+│   ├── dungeon_exit_nav.py
+│   ├── map_loading.py
+│   ├── town_exit.py
+│   ├── complete.py
+│   └── stuck_recovery.py
+├── gui/
+│   └── app.py                    # tkinter GUI
+├── utils/
+│   ├── antidetection.py          # 反检测
+│   ├── logger.py                 # 日志系统
+│   ├── window_manager.py         # 窗口管理
+│   ├── macro_recorder.py         # 连招录制
+│   └── virtual_display.py        # 虚拟显示器（后台模式）
+└── templates/                    # 截图模板
+```
+
+### 16.15 待完成项
+
+| 项目 | 状态 |
+|------|------|
+| 后台模式 VDD 实机验证 | ⏳ 待测试 |

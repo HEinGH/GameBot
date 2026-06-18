@@ -56,7 +56,7 @@ class DomainCombatState(BaseState):
                 if fallback:
                     self._fallback = list(fallback)
                 self.executor.load_combos(combos)
-                logger.info("Loaded %d combo actions for character %d",
+                logger.info("加载 %d 个连招动作 (角色 %d)",
                             len(combos), char_index)
 
     def _load_fallback(self, blackboard):
@@ -71,15 +71,13 @@ class DomainCombatState(BaseState):
                         self._fallback = data.get("actions", [])
                     else:
                         self._fallback = self._gen_fallback()
-                elif preset.get("fallback_combos"):
-                    self._fallback = list(preset["fallback_combos"])
                 else:
                     self._fallback = self._gen_fallback()
             else:
                 self._fallback = self._gen_fallback()
         self.executor.load_combos(self._fallback)
         self._phase = "fallback"
-        logger.info("Switched to fallback rotation (%d actions)", len(self._fallback))
+        logger.info("切换到兜底连招循环 (%d 个动作)", len(self._fallback))
 
     def _gen_fallback(self):
         return [
@@ -99,7 +97,7 @@ class DomainCombatState(BaseState):
             return
 
         if time.time() - self._combat_start > self._timeout:
-            logger.info("Combat timeout (%ds), assuming cleared", self._timeout)
+            logger.info("战斗超时 (%d秒)，假定已通关", self._timeout)
             self.controller.release_all()
             self.controller.click()
             time.sleep(0.3)
@@ -137,7 +135,7 @@ class DomainCombatState(BaseState):
                 self.executor.clear()
                 self.controller.release_all()
                 cx, cy = panel["center"]
-                logger.info("Panel at (%d,%d) conf=%.2f template=%s, clicking",
+                logger.info("结算面板 位置(%d,%d) 置信度=%.2f 模板=%s，点击关闭",
                             cx, cy, panel["confidence"], panel.get("template", "?"))
                 self.controller.click_at(cx, cy)
                 self._dismissing = True
@@ -149,7 +147,7 @@ class DomainCombatState(BaseState):
         panel = self._detect_character_panel(blackboard)
 
         if not panel:
-            logger.info("Panel dismissed after %.1fs", elapsed)
+            logger.info("结算面板已关闭 (%.1f秒)", elapsed)
             self._dismissing = False
             blackboard["_fsm"].transition("dungeon_exit_nav", blackboard)
             return
@@ -157,11 +155,11 @@ class DomainCombatState(BaseState):
         if elapsed > 1.0:
             self._dismiss_retries += 1
             if self._dismiss_retries <= 2:
-                logger.info("Panel retry click #%d (%.1fs)", self._dismiss_retries, elapsed)
+                logger.info("结算面板重试点击 #%d (%.1f秒)", self._dismiss_retries, elapsed)
                 self.controller.click()
                 self._dismiss_time = time.time()
                 return
-            logger.warning("Panel still visible after %d retries, proceeding anyway", self._dismiss_retries)
+            logger.warning("结算面板 %d 次重试后仍可见，强制继续", self._dismiss_retries)
             self._dismissing = False
             blackboard["_fsm"].transition("dungeon_exit_nav", blackboard)
 

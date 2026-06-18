@@ -34,7 +34,8 @@ class ScreenCapture:
         self._fps_limit = 30
         self._monitor_index = 0
 
-    def start(self, method="auto", fps_limit=30, monitor=0):
+    def start(self, method="auto", fps_limit=30, monitor=0,
+              device_idx=0, output_idx=None):
         self._fps_limit = fps_limit
         self._monitor_index = monitor
         if self._running:
@@ -44,16 +45,20 @@ class ScreenCapture:
             try:
                 import dxcam
                 logging.getLogger("dxcam").setLevel(logging.WARNING)
-                self._capture = dxcam.create(output_color="BGR")
+                create_kw = {"output_color": "BGR"}
+                if output_idx is not None:
+                    create_kw["device_idx"] = device_idx
+                    create_kw["output_idx"] = output_idx
+                self._capture = dxcam.create(**create_kw)
                 self._capture.start(target_fps=fps_limit, video_mode=True)
                 self._method = "dxcam"
-                logger.info("ScreenCapture: using dxcam (monitor %d)", monitor)
+                logger.info("屏幕截图: 使用dxcam (显示器 %d)", monitor)
             except ValueError:
-                logger.info("ScreenCapture: dxcam signal init skipped (non-main thread), using mss")
+                logger.info("屏幕截图: dxcam初始化跳过(非主线程)，使用mss")
                 self._capture = None
                 method = "mss"
             except Exception as e:
-                logger.warning("dxcam unavailable (%s), falling back to mss", e)
+                logger.warning("dxcam不可用 (%s)，回退到mss", e)
                 self._capture = None
                 method = "mss"
 
@@ -66,7 +71,7 @@ class ScreenCapture:
                 self._monitor = self._capture.monitors[mss_idx]
             else:
                 self._monitor = self._capture.monitors[1]
-            logger.info("ScreenCapture: using mss (monitor=%d -> mss[%d])", monitor, mss_idx)
+            logger.info("屏幕截图: 使用mss (显示器=%d -> mss[%d])", monitor, mss_idx)
 
         self._running = True
         self._thread = Thread(target=self._capture_loop, daemon=True)
@@ -83,18 +88,6 @@ class ScreenCapture:
                 self._capture = None
             except Exception:
                 pass
-
-    def change_monitor(self, monitor_index: int):
-        if self._method == "dxcam":
-            self._monitor_index = monitor_index
-            logger.info("dxcam: capture target is monitor %d", monitor_index)
-        elif self._method == "mss":
-            import mss
-            mss_idx = monitor_index + 1
-            if mss_idx < len(self._capture.monitors):
-                self._monitor = self._capture.monitors[mss_idx]
-                self._monitor_index = monitor_index
-                logger.info("mss: switched to monitor %d -> mss[%d]", monitor_index, mss_idx)
 
     def _capture_loop(self):
         interval = 1.0 / max(self._fps_limit, 1)
@@ -118,7 +111,7 @@ class ScreenCapture:
                 raw = self._capture.grab(self._monitor)
                 return np.array(raw)[:, :, :3]
         except Exception as e:
-            logger.error("Grab failed: %s", e)
+            logger.error("截图失败: %s", e)
         return None
 
     @property
@@ -133,44 +126,3 @@ class ScreenCapture:
         with self._lock:
             return self._timestamp
 
-    def capture_region(self, left, top, right, bottom):
-        full = self.frame
-        if full is None:
-            return None
-        fh, fw = full.shape[:2]
-        x1 = max(0, left)
-        y1 = max(0, top)
-        x2 = min(fw, right)
-        y2 = min(fh, bottom)
-        if x2 <= x1 or y2 <= y1:
-            return None
-        return full[y1:y2, x1:x2].copy()
-
-    def capture_window(self, window_mgr):
-        rect = window_mgr.get_client_rect()
-        if rect is None:
-            return self.frame
-        mon_index = window_mgr.get_monitor_index()
-        if mon_index != self._monitor_index:
-            self.change_monitor(mon_index)
-            time.sleep(0.05)
-        frame = self.frame
-        if frame is None:
-            return None
-        left = rect.get("left", 0)
-        top = rect.get("top", 0)
-        right = left + rect.get("width", 0)
-        bottom = top + rect.get("height", 0)
-        import win32gui
-        try:
-            offset_left, offset_top = win32gui.ScreenToClient(
-                window_mgr.hwnd, (left, top))
-            hwnd_left, hwnd_top = win32gui.ClientToScreen(
-                window_mgr.hwnd, (0, 0))
-            left = hwnd_left
-            top = hwnd_top
-            right = left + rect["width"]
-            bottom = top + rect["height"]
-        except Exception:
-            pass
-        return self.capture_region(left, top, right, bottom)

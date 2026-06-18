@@ -17,6 +17,7 @@ class TownExitState(BaseState):
     def enter(self, blackboard):
         super().enter(blackboard)
         self._step = 0
+        self._max_attempts = 10
         self.controller.release_all()
         self._activate_game_window(blackboard)
         logger.debug("State: TownExit")
@@ -27,7 +28,7 @@ class TownExitState(BaseState):
             rect = self._find_window_rect(blackboard)
             if rect:
                 blackboard["_window_rect"] = rect
-                logger.info("TownExit: self-found window rect=%s", rect)
+                logger.info("城镇退出: 自动检测窗口 rect=%s", rect)
         if rect and len(rect) == 4:
             cx = (rect[0] + rect[2]) // 2
             cy = (rect[1] + rect[3]) // 2
@@ -38,7 +39,7 @@ class TownExitState(BaseState):
             time.sleep(0.08)
             ctypes.windll.user32.mouse_event(0x0004, 0, 0, 0, 0)
             time.sleep(0.2)
-            logger.info("TownExit: clicked game center (%d,%d) to ensure focus", cx, cy)
+            logger.info("城镇退出: 点击游戏窗口中心(%d,%d)确保焦点", cx, cy)
 
     def _find_window_rect(self, blackboard):
         try:
@@ -69,7 +70,7 @@ class TownExitState(BaseState):
             b = best[1].box
             return (b.left, b.top, b.left + b.width, b.top + b.height)
         except Exception as e:
-            logger.warning("TownExit: _find_window_rect failed: %s", e)
+            logger.warning("城镇退出: 窗口检测失败: %s", e)
         return None
 
     def update(self, blackboard):
@@ -113,7 +114,7 @@ class TownExitState(BaseState):
                 if r:
                     cx, cy = r["center"]
                     self.controller.click_at(cx, cy)
-                    logger.info("Clicked settings")
+                    logger.info("点击设置按钮")
                     self._step = 2
                     time.sleep(1.0)
                     return
@@ -121,13 +122,13 @@ class TownExitState(BaseState):
                 time.sleep(0.5)
                 return
             else:
-                logger.warning("No settings_template, skipping to step 2")
+                logger.warning("未配置设置模板，跳过到步骤2")
                 self._step = 2
 
         if self._step == 2:
             if all_done:
                 if not blackboard.get("exit_after_done", True):
-                    logger.info("All done, skip exit game (per preset setting)")
+                    logger.info("全部完成，跳过退出游戏（按预设设置）")
                     blackboard["_fsm"].transition("complete", blackboard)
                     return
                 if exit_name:
@@ -135,11 +136,11 @@ class TownExitState(BaseState):
                     if r:
                         cx, cy = r["center"]
                         self.controller.click_at(cx, cy)
-                        logger.info("All done, clicking exit game")
+                        logger.info("全部完成，点击退出游戏")
                         self._step = 3
                         time.sleep(1.5)
                         return
-                logger.info("All done, no exit template, going to confirm step")
+                logger.info("全部完成，无退出模板，进入确认步骤")
                 self._step = 3
                 time.sleep(0.5)
                 return
@@ -149,14 +150,14 @@ class TownExitState(BaseState):
                     if r:
                         cx, cy = r["center"]
                         self.controller.click_at(cx, cy)
-                        logger.info("Clicked switch character")
+                        logger.info("点击切换角色")
                         self._step = 4
                         time.sleep(2.0)
                         return
 
             self._max_attempts -= 1
             if self._max_attempts <= 0:
-                logger.warning("Town exit: template not found, using fallback")
+                logger.warning("城镇退出: 模板未找到，使用备用方案")
                 self._step = 4
                 self._max_attempts = 10
             time.sleep(0.5)
@@ -168,7 +169,7 @@ class TownExitState(BaseState):
                 if r:
                     cx, cy = r["center"]
                     self.controller.click_at(cx, cy)
-                    logger.info("Confirmed exit game")
+                    logger.info("确认退出游戏")
                     blackboard["_fsm"].transition("complete", blackboard)
                     return
             self._max_attempts -= 1

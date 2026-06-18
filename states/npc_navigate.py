@@ -27,9 +27,13 @@ class NPCNavigateState(BaseState):
         self._enter_chain_idx = 0
         self._enter_attempts = 0
         self._npc_thr = 0.65
+        self._skill_tpl = None
+        self._skill_thr = 0.65
         self._move_ck = 0
         self._seek_dir = 0
         self._reversal_count = 0
+        self._last_seek_dir = 0
+        self._last_rotate_sign = 0
 
     def _set_phase(self, name):
         if name != self._phase:
@@ -49,6 +53,8 @@ class NPCNavigateState(BaseState):
         self._move_ck = 0
         self._seek_dir = 0
         self._reversal_count = 0
+        self._last_seek_dir = 0
+        self._last_rotate_sign = 0
         self._enter_chain = []
         self._enter_chain_idx = 0
         self._enter_attempts = 0
@@ -63,13 +69,18 @@ class NPCNavigateState(BaseState):
         else:
             name, thr = parse_template_ref(ce)
             self._enter_chain = [(name, thr)] if name else []
+        char_index = blackboard.get("current_character_index", 0)
+        chars = preset.get("characters", [])
+        char_cfg = chars[char_index] if char_index < len(chars) else {}
+        skill_tpl = char_cfg.get("skill_bar_template") or preset.get("skill_bar_template")
+        self._skill_tpl, self._skill_thr = parse_template_ref(skill_tpl)
         rect = blackboard.get("_window_rect")
         if not rect or len(rect) != 4:
             title = preset.get("window_title", "")
             rect = self._find_window_rect(title)
             if rect:
                 blackboard["_window_rect"] = rect
-                logger.info("NPCNavigate: self-found window rect=%s", rect)
+                logger.info("NPC寻路: 自动检测窗口 rect=%s", rect)
         if rect and len(rect) == 4:
             self._gw_l, self._gw_t, self._gw_r, self._gw_b = rect
         else:
@@ -92,7 +103,7 @@ class NPCNavigateState(BaseState):
             pydirectinput.mouseUp(button="right")
         except Exception:
             pass
-        logger.info("Exit: NPCNavigate")
+        logger.info("退出: NPC寻路")
 
     def _release_w(self):
         if self._w_held:
@@ -134,6 +145,12 @@ class NPCNavigateState(BaseState):
                 logger.debug("NPC pos jumped %dpx (%.0f%%), rejecting",
                              dx, dx / max(ref_w, 1) * 100)
                 return None
+        if r and self._gw_w > 0 and self._gw_h > 0:
+            rx = r["center"][0] - self._gw_l
+            ry = r["center"][1] - self._gw_t
+            if rx < self._gw_w * 0.05 or rx > self._gw_w * 0.95 or ry < self._gw_h * 0.05 or ry > self._gw_h * 0.95:
+                logger.debug("NPC at (%d,%d) rejected (edge zone)", r["center"][0], r["center"][1])
+                return None
         return r
 
     def _find(self, tpl, frame, threshold=0.65, scale_range=(0.5, 1.5), scale_steps=11):
@@ -142,12 +159,12 @@ class NPCNavigateState(BaseState):
             return find_template(frame, tpl, threshold=threshold,
                                  scale_range=scale_range, scale_steps=scale_steps)
         except Exception as e:
-            logger.error("find('%s'): %s", tpl, e)
+            logger.error("模板匹配('%s')失败: %s", tpl, e)
             return None
 
     def _rotate(self, angle):
         try: self.controller.rotate_camera(angle)
-        except Exception as e: logger.error("rotate(%.0f): %s", angle, e)
+        except Exception as e: logger.error("旋转(%.0f°)失败: %s", angle, e)
 
     def _do_rotate(self, off, gw_w):
         abs_off = abs(off)
@@ -156,7 +173,12 @@ class NPCNavigateState(BaseState):
         elif abs_off < gw_w * 0.10: step = 10
         elif abs_off < gw_w * 0.20: step = 18
         else: step = 30
-        step = max(5, step // (self._reversal_count + 1))
+        sign = -1 if off < 0 else 1
+        if self._last_rotate_sign != 0 and sign != self._last_rotate_sign:
+            self._reversal_count += 1
+            logger.debug("  rotate reversal #%d", self._reversal_count)
+        self._last_rotate_sign = sign
+        step = max(3, step // (self._reversal_count + 1))
         angle = -step if off < 0 else step
         logger.debug("  rotate off=%d(%.0f%%) deg=%.0f", off, off / gw_w * 100, angle)
         self._rotate(angle)
@@ -184,22 +206,22 @@ class NPCNavigateState(BaseState):
                 if matches:
                     best = max(matches, key=lambda x: x[0])
                     b = best[1].box
-                    logger.info("NPCNavigate: window by title '%s' -> '%s' (%dx%d)",
+                    logger.info("NPC寻路: 按标题'%s'找到窗口'%s' (%dx%d)",
                                 title_keyword, best[1].title, b.width, b.height)
                     return (b.left, b.top, b.left + b.width, b.top + b.height)
-                logger.warning("NPCNavigate: no window matching title '%s', falling back to largest", title_keyword)
+                logger.warning("NPC寻路: 未找到标题'%s'的窗口，回退到最大窗口", title_keyword)
             best = max(all_visible, key=lambda x: x[0])
             b = best[1].box
-            logger.info("NPCNavigate: auto-detected window '%s' (%dx%d)", best[1].title, b.width, b.height)
+            logger.info("NPC寻路: 自动检测窗口'%s' (%dx%d)", best[1].title, b.width, b.height)
             return (b.left, b.top, b.left + b.width, b.top + b.height)
         except Exception as e:
-            logger.warning("NPCNavigate: _find_window_rect failed: %s", e)
+            logger.warning("NPC寻路: 窗口检测失败: %s", e)
         return None
 
     def update(self, blackboard):
         try: self._do_update(blackboard)
         except Exception:
-            logger.error("NPCNavigate crash:\n%s", traceback.format_exc())
+            logger.error("NPC寻路崩溃:\n%s", traceback.format_exc())
             self._release_w()
             blackboard["_fsm"].transition("domain_loading", blackboard)
 
@@ -217,7 +239,7 @@ class NPCNavigateState(BaseState):
 
         gw_w, gw_h = self._gw_w, self._gw_h
         if gw_w <= 0:
-            logger.warning("NPCNavigate: _window_rect not available, using frame center")
+            logger.warning("NPC寻路: 窗口坐标不可用，使用帧中心")
             gw_w, gw_h = frame.shape[1], frame.shape[0]
             win_cx = gw_w // 2
             win_cy = gw_h // 2
@@ -236,12 +258,12 @@ class NPCNavigateState(BaseState):
                     except Exception: pass
                     self._enter_chain_idx += 1
                     if self._enter_chain_idx >= len(self._enter_chain):
-                        logger.info("Confirm enter chain complete (step %d/%d conf=%.2f)",
+                        logger.info("确认进入链完成 (步骤 %d/%d 置信度=%.2f)",
                                     self._enter_chain_idx, len(self._enter_chain), c)
                         time.sleep(1.0)
                         blackboard["_fsm"].transition("domain_loading", blackboard)
                     else:
-                        logger.info("Confirm enter step %d/%d: %s (conf=%.2f)",
+                        logger.info("确认进入 步骤%d/%d: %s (置信度=%.2f)",
                                     self._enter_chain_idx, len(self._enter_chain), tpl_name, c)
                         time.sleep(self.controller.jitter_delay(1.5))
                     return
@@ -252,7 +274,7 @@ class NPCNavigateState(BaseState):
             else:
                 self._enter_attempts += 1
             if self._enter_attempts > 120:
-                logger.warning("Confirm enter timeout after %d attempts, forcing transition",
+                logger.warning("确认进入超时 %d 次，强制跳转",
                                self._enter_attempts)
                 self._release_w()
                 blackboard["_fsm"].transition("domain_loading", blackboard)
@@ -263,8 +285,19 @@ class NPCNavigateState(BaseState):
         if self._enter_chain_idx > 0:
             return
 
+        if self._skill_tpl and self._lost >= 3:
+            skill = self._find(self._skill_tpl, frame, threshold=self._skill_thr)
+            if skill:
+                logger.info("识别到技能栏 (置信度=%.2f)，进入副本战斗",
+                            skill["confidence"])
+                self._release_w()
+                blackboard["_fsm"].transition("domain_combat", blackboard)
+                return
+            elif self._lost == 3:
+                logger.debug("技能栏未匹配 (模板=%s 阈值=%.2f)", self._skill_tpl, self._skill_thr)
+
         if self._phase == "scan":
-            self._do_scan(frame, gw_h, gw_w, win_cx, win_cy)
+            self._do_scan(frame, gw_h, gw_w, win_cx, win_cy, blackboard)
         elif self._phase == "seek":
             self._do_seek(frame, gw_h, gw_w, win_cx, win_cy)
         elif self._phase == "center":
@@ -276,8 +309,7 @@ class NPCNavigateState(BaseState):
         elif self._phase == "enter":
             self._do_enter(blackboard)
 
-    def _do_scan(self, frame, gh, gw, win_cx, win_cy):
-        self._reversal_count = 0
+    def _do_scan(self, frame, gh, gw, win_cx, win_cy, blackboard):
         if not self._npc_tpl:
             self._release_w()
             blackboard["_fsm"].transition("domain_loading", blackboard)
@@ -302,10 +334,7 @@ class NPCNavigateState(BaseState):
                 self._set_phase("center")
         else:
             self._lost += 1
-            if self._lost % 5 == 1: logger.debug("Scanning... (%d/80)", self._lost)
-            if self._lost > 80:
-                logger.warning("Icon not found, direct entry")
-                self._set_phase("enter"); self._wait = 0
+            if self._lost % 10 == 1: logger.debug("Scanning... (%d)", self._lost)
 
     def _do_seek(self, frame, gh, gw, win_cx, win_cy):
         icon = self._find_npc(frame)
@@ -345,8 +374,12 @@ class NPCNavigateState(BaseState):
                 step = int(step * 1.3)
 
             self._seek_dir = -1 if h_off < 0 else 1
-            step = max(5, step // (self._reversal_count + 1))
-            angle = self._seek_dir * max(8, step)
+            if self._last_seek_dir != 0 and self._seek_dir != self._last_seek_dir:
+                self._reversal_count += 1
+                logger.debug("  seek visible reversal #%d", self._reversal_count)
+            self._last_seek_dir = self._seek_dir
+            step = max(3, step // (self._reversal_count + 1))
+            angle = self._seek_dir * step
             logger.debug("  seek rotate %d deg (step=%d h=%.2f v=%.2f)", angle, step, h_ratio, v_ratio)
             self._rotate(angle)
         else:
@@ -374,8 +407,9 @@ class NPCNavigateState(BaseState):
         else:
             self._lost += 1
             if self._lost == 5:
-                if self._last_pos and self._last_pos[0] - self._gw_l > win_cx: self._rotate(-8)
-                else: self._rotate(8)
+                nudge = max(3, 8 // (self._reversal_count + 1))
+                if self._last_pos and self._last_pos[0] - self._gw_l > win_cx: self._rotate(-nudge)
+                else: self._rotate(nudge)
                 time.sleep(0.1)
             if self._lost > 30: self._set_phase("scan"); self._lost = 0; return
             return
@@ -407,7 +441,7 @@ class NPCNavigateState(BaseState):
                 if d < 8:
                     self._stuck += 1
                     if self._stuck > 15:
-                        logger.warning("Stuck %d", self._stuck)
+                        logger.warning("卡住 %d 次", self._stuck)
                         self._set_phase("recover"); self._stuck = 0
                         self._release_w(); return
                 else:
@@ -430,18 +464,18 @@ class NPCNavigateState(BaseState):
 
     def _do_recover(self, blackboard):
         if self._jumps == 0:
-            logger.info("Recover: jump")
+            logger.info("恢复: 跳跃")
             try: self.controller.tap_key("space", duration=0.1, delay_after=1.0)
             except Exception: pass
             self._jumps += 1; self._set_phase("move"); self._hold_w()
         elif self._jumps <= 2:
             k = "a" if self._jumps == 1 else "d"
-            logger.info("Recover: strafe %s", k)
+            logger.info("恢复: 横移 %s", k)
             try: self.controller.tap_key(k, duration=0.3, delay_after=0.5)
             except Exception: pass
             self._jumps += 1; self._set_phase("move"); self._hold_w()
         else:
-            logger.warning("All recovery failed")
+            logger.warning("所有恢复操作失败")
             self._release_w()
             try:
                 self.controller.tap_key("esc", duration=0.1, delay_after=1.0)
@@ -451,8 +485,4 @@ class NPCNavigateState(BaseState):
 
     def _do_enter(self, blackboard):
         self._wait += 1
-        if self._wait % 5 == 1: logger.info("Waiting confirm... (%d/40)", self._wait)
-        if self._wait > 40:
-            logger.warning("No confirm, forcing domain")
-            self._release_w()
-            blackboard["_fsm"].transition("domain_loading", blackboard)
+        if self._wait % 10 == 1: logger.debug("Waiting confirm... (%d)", self._wait)

@@ -76,26 +76,45 @@ class TownNavState(BaseState):
         if npc_name:
             result = find_template(frame, npc_name, threshold=npc_thr)
             if result:
-                logger.info("NPC icon detected, transitioning to npc_navigate (conf=%.2f)",
+                logger.info("识别到NPC图标，进入NPC寻路 (置信度=%.2f)",
                             result["confidence"])
                 self._alt_release_safe()
                 blackboard["_fsm"].transition("npc_navigate", blackboard)
                 return
         else:
-            logger.info("No npc_marker_template configured, going direct to domain")
+            logger.info("未配置NPC图标模板，直接进入副本")
             self._alt_release_safe()
             blackboard["_fsm"].transition("domain_loading", blackboard)
             return
 
         self._post_chain_attempts += 1
+
+        if self._post_chain_attempts >= 3:
+            char_index = blackboard.get("current_character_index", 0)
+            chars = preset.get("characters", [])
+            char_cfg = chars[char_index] if char_index < len(chars) else {}
+            skill_tpl = char_cfg.get("skill_bar_template") or preset.get("skill_bar_template")
+            if skill_tpl:
+                s_name, s_thr = parse_template_ref(skill_tpl)
+                if s_name:
+                    s_r = find_template(frame, s_name, threshold=s_thr)
+                    if s_r:
+                        logger.info("NPC搜索中识别到技能栏 (置信度=%.2f)，进入副本战斗",
+                                    s_r["confidence"])
+                        self._alt_release_safe()
+                        blackboard["_fsm"].transition("domain_combat", blackboard)
+                        return
+                    elif self._post_chain_attempts == 3:
+                        logger.debug("技能栏未匹配 (模板=%s 阈值=%.2f)", s_name, s_thr)
+
         if self._post_chain_attempts % 5 == 1:
-            logger.info("Post-chain looking for NPC icon... (attempt %d/20) tpl=%s",
+            logger.info("操作链完成，搜索NPC图标... (尝试 %d/20) 模板=%s",
                         self._post_chain_attempts, npc_name)
             wd = blackboard.get("_watchdog")
             if wd:
                 wd.reset()
         if self._post_chain_attempts > 20:
-            logger.warning("NPC icon not found after 20 attempts, forcing domain entry")
+            logger.warning("NPC图标 20 次未匹配，强制进入副本")
             self._alt_release_safe()
             blackboard["_fsm"].transition("domain_loading", blackboard)
 
@@ -130,25 +149,25 @@ class TownNavState(BaseState):
             if avatar_name:
                 result = find_template(frame, avatar_name, threshold=avatar_thr, auto_update=True)
                 if result:
-                    logger.info("Avatar detected, confirmed in town")
+                    logger.info("识别到城镇头像，确认在城镇中")
                     self._avatar_done = True
                     time.sleep(0.5)
                 else:
                     self._avatar_attempts += 1
                     if self._avatar_attempts > 60:
-                        logger.warning("Avatar not found after 60 attempts, proceeding anyway")
+                        logger.warning("城镇头像 60 次未匹配，强制继续")
                         self._avatar_done = True
                         time.sleep(0.5)
                     return
             else:
-                logger.warning("No avatar_template configured, skipping avatar check")
+                logger.warning("未配置城镇头像模板，跳过头像检测")
                 self._avatar_done = True
                 time.sleep(0.3)
             return
 
         chain = self._build_chain(blackboard)
         if not chain:
-            logger.warning("No town action steps configured, forcing transition")
+            logger.warning("未配置城镇操作链，强制跳转")
             self._alt_release_safe()
             blackboard["_fsm"].transition("domain_loading", blackboard)
             return
@@ -162,7 +181,7 @@ class TownNavState(BaseState):
             if self._chain_warmup == 1 and alt_needed:
                 self._alt_press_safe()
                 time.sleep(0.3)
-            logger.debug("Chain warmup %d/3 (waiting for UI)", self._chain_warmup)
+            logger.debug("操作链预热 %d/3 (等待UI)", self._chain_warmup)
             time.sleep(self.controller.jitter_delay(0.5))
             return
 
@@ -173,7 +192,7 @@ class TownNavState(BaseState):
             reaction = self.controller.jitter_delay(0.15)
             time.sleep(reaction)
             self.controller.click_at(cx, cy)
-            logger.debug("Town action %d/%d: %s (conf=%.2f)",
+            logger.debug("城镇操作 %d/%d: %s (置信度=%.2f)",
                         self._chain_index + 1, len(chain), tpl, result["confidence"])
             self._chain_index += 1
             self._chain_attempts = 0
@@ -182,13 +201,13 @@ class TownNavState(BaseState):
         else:
             self._chain_attempts += 1
             if self._chain_attempts % 10 == 1:
-                logger.debug("Looking for '%s'... (attempt %d/45)", tpl, self._chain_attempts)
+                logger.debug("搜索 '%s'... (尝试 %d/45)", tpl, self._chain_attempts)
             if self._chain_attempts % 5 == 0:
                 wd = blackboard.get("_watchdog")
                 if wd:
                     wd.reset()
             if self._chain_attempts > 45:
-                logger.warning("'%s' not found after 45 attempts, saving debug frame", tpl)
+                logger.warning("'%s' 45次未匹配，保存调试截图", tpl)
                 try:
                     import cv2
                     from utils.logger import DEBUG_DIR
@@ -198,7 +217,7 @@ class TownNavState(BaseState):
                     if success:
                         with open(snap_path, "wb") as fp:
                             fp.write(encoded)
-                        logger.info("Debug frame saved: %s", snap_path)
+                        logger.info("调试截图已保存: %s", snap_path)
                 except Exception:
                     pass
                 self._chain_index += 1

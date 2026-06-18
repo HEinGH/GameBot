@@ -13,7 +13,7 @@ from config.settings import Settings, PRESETS_DIR, ROOT_DIR, CHARACTERS_DIR, COM
 from config.settings import (resolve_characters, serialize_characters,
                               load_character_profile, save_character_profile,
                               list_character_profiles, CHARACTER_PROFILE_FIELDS,
-                              migrate_preset_fallback, load_combo, list_combos, save_combo, delete_combo)
+                              load_combo, list_combos, save_combo, delete_combo)
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +72,7 @@ def _import_template_file(src_path, templates_dir):
             counter += 1
     import shutil
     shutil.copy2(str(src), str(dst))
-    logger.info("Template imported: %s -> %s", src.name, dst.name)
+    logger.info("模板已导入: %s -> %s", src.name, dst.name)
     return dst.name
 
 
@@ -382,25 +382,6 @@ class GameBotGUI:
                 entry.insert(0, name)
         return pick
 
-    def _add_file_row(self, parent, label):
-        f = ttk.Frame(parent)
-        ttk.Label(f, text=label).pack(side="left")
-        e = ttk.Entry(f, width=14)
-        e.pack(side="left", padx=2)
-        btn = ttk.Button(f, text="浏览", width=4)
-        btn.configure(command=self._make_file_picker(e))
-        btn.pack(side="left")
-        parent.add(f)
-        return e
-
-    def _add_text_row(self, parent, label):
-        f = ttk.Frame(parent)
-        ttk.Label(f, text=label).pack(side="left")
-        e = ttk.Entry(f, width=14)
-        e.pack(side="left", padx=2)
-        parent.add(f)
-        return e
-
     def _load_default_preset(self):
         return {
             "description": "",
@@ -437,10 +418,9 @@ class GameBotGUI:
                     with open(path, encoding="utf-8") as f:
                         data = json.load(f)
                     data["characters"] = resolve_characters(data, last)
-                    migrate_preset_fallback(data, last)
                     self.preset_data = data
                     self.current_preset_path = path
-                    logger.info("Loaded last preset: %s", last)
+                    logger.info("加载上次预设: %s", last)
                 except Exception:
                     pass
 
@@ -673,7 +653,7 @@ class GameBotGUI:
         ttk.Label(row2, text=" 隐身模式:").pack(side="left")
         self.dash_stealth = tk.BooleanVar()
         ttk.Checkbutton(row2, variable=self.dash_stealth).pack(side="left")
-        ttk.Label(row2, text=" 后台（待测试）:").pack(side="left")
+        ttk.Label(row2, text=" 后台模式:").pack(side="left")
         self.dash_background = tk.BooleanVar()
         ttk.Checkbutton(row2, variable=self.dash_background).pack(side="left")
         self.dash_exit_after_done = tk.BooleanVar(value=True)
@@ -729,7 +709,6 @@ class GameBotGUI:
                 with open(path, encoding="utf-8") as f:
                     data = json.load(f)
                 data["characters"] = resolve_characters(data, name)
-                migrate_preset_fallback(data, name)
                 self.preset_data = data
                 self.current_preset_path = path
                 count = len(data.get("characters", []))
@@ -763,7 +742,6 @@ class GameBotGUI:
             with open(path, encoding="utf-8") as f:
                 data = json.load(f)
             data["characters"] = resolve_characters(data, name)
-            migrate_preset_fallback(data, name)
             self.preset_data = data
             self.current_preset_path = path
             self._switch_page("characters")
@@ -780,7 +758,7 @@ class GameBotGUI:
         path = self.presets_path / f"{name}.json"
         try:
             path.unlink()
-            logger.info("Deleted preset: %s", name)
+            logger.info("已删除预设: %s", name)
         except Exception as e:
             messagebox.showerror("错误", f"删除失败:\n{e}")
             return
@@ -1022,19 +1000,11 @@ class GameBotGUI:
         self.cfg_window_title.delete(0, "end")
         self.cfg_window_title.insert(0, data.get("window_title", ""))
         tn = data.get("town_nav", {})
-        chain = tn.get("domain_select_steps") or tn.get("domain_template") or []
+        chain = tn.get("domain_select_steps", [])
         if isinstance(chain, str):
             chain = [chain] if chain else []
-        chain = list(chain)
-        daily = tn.get("daily_button_template", "")
-        if daily and daily not in chain:
-            chain.insert(0, daily)
-        ch_tmpls = tn.get("challenge_templates", [])
-        for c in (ch_tmpls if isinstance(ch_tmpls, list) else [ch_tmpls]):
-            if c and c not in chain:
-                chain.append(c)
         self.domain_chain.set_items(chain)
-        self.cfg_town_alt.set(tn.get("alt_for_mouse", tn.get("ctrl_for_mouse", True)))
+        self.cfg_town_alt.set(tn.get("alt_for_mouse", True))
 
         self.confirm_enter_chain.set_items(tn.get("confirm_enter_template") or [])
 
@@ -1143,16 +1113,12 @@ class GameBotGUI:
             self._refresh_char_table()
             self._select_char(new_idx)
 
-    def _sync_char_table_to_data(self):
-        pass
-
     def _new_preset(self):
         self.preset_data = self._load_default_preset()
         self.current_preset_path = None
         self._refresh_char_table()
 
     def _save_preset(self):
-        self._sync_char_table_to_data()
         self._sync_global_config()
         write_data = dict(self.preset_data)
         write_data["characters"] = serialize_characters(self.preset_data.get("characters", []))
@@ -1166,7 +1132,6 @@ class GameBotGUI:
             self._save_preset_as()
 
     def _save_preset_as(self):
-        self._sync_char_table_to_data()
         self._sync_global_config()
         path = filedialog.asksaveasfilename(
             defaultextension=".json",
@@ -1209,8 +1174,6 @@ class GameBotGUI:
         p["town_nav"]["domain_select_steps"] = self.domain_chain.get_items()
         p["town_nav"]["confirm_enter_template"] = self.confirm_enter_chain.get_items()
         p["town_nav"]["npc_marker_template"] = self._pack_tpl(self.cfg_npc_marker.get(), self.cfg_npc_marker_thr.get(), p["town_nav"].get("npc_marker_template"))
-        p["town_nav"].pop("daily_button_template", None)
-        p["town_nav"].pop("challenge_templates", None)
         p["town_nav"]["alt_for_mouse"] = self.cfg_town_alt.get()
         p.setdefault("town_exit", {})
         p["town_exit"]["settings_template"] = self._pack_tpl(self.cfg_exit_settings.get(), self.cfg_exit_settings_thr.get(), p["town_exit"].get("settings_template"))
@@ -1458,7 +1421,7 @@ class GameBotGUI:
                                         label, tpl_name, r["confidence"],
                                         r["center"][0], r["center"][1], tpl_thr)
                         else:
-                            logger.info("  %s: %s 未匹配 (best<0.10)", label, tpl_name)
+                            logger.info("  %s: %s 未匹配 (最高<0.10)", label, tpl_name)
                 logger.info("角色模板匹配测试完成")
                 logger.info("=" * 50)
             except Exception as e:
@@ -1697,9 +1660,6 @@ class GameBotGUI:
         self._combo_dir.mkdir(parents=True, exist_ok=True)
         os.startfile(str(self._combo_dir))
 
-    def _delete_combo_file(self):
-        self._delete_combo()
-
     def _notify(self, title, message, timeout=3):
         try:
             from plyer import notification
@@ -1765,6 +1725,8 @@ class GameBotGUI:
         self.rec_btn.configure(text="▶ F5 开始录制")
         if result:
             self._recorded_actions = result["actions"]
+            if self._recorded_actions and self._recorded_actions[0].get("delay_before", 0.0) < 1.0:
+                self._recorded_actions[0]["delay_before"] = 1.0
             dur = result["duration_sec"]
             self.rec_status.configure(text=f"录制完成 ({dur}s)", foreground="green")
             self._notify("GameBot 录制完成", f"录制 {dur}s，共 {len(result['actions'])} 个动作")
@@ -1802,10 +1764,11 @@ class GameBotGUI:
             filetypes=[("JSON", "*.json")],
         )
         if not name:
-            self._recorded_actions = None
             return
         name = Path(name)
         dur = getattr(self, '_recorded_duration', 0.0)
+        if self._recorded_actions and self._recorded_actions[0].get("delay_before", 0.0) < 1.0:
+            self._recorded_actions[0]["delay_before"] = 1.0
         output = {
             "name": name.stem,
             "source": "\u5f55\u5236",
@@ -1893,7 +1856,7 @@ class GameBotGUI:
             img = np.array(raw)[:, :, :3]
             sct.close()
         except Exception as e:
-            logger.error("Screenshot capture failed: %s", e)
+            logger.error("截图失败: %s", e)
             self.root.deiconify()
             self.screenshot_status.configure(text=f"截图失败: {e}", foreground="red")
             return
@@ -1982,7 +1945,6 @@ class GameBotGUI:
         if not name:
             messagebox.showwarning("提示", "请先选择一个预设")
             return
-        self._sync_char_table_to_data()
         self._sync_global_config()
         chars = self.preset_data.get("characters", [])
         if not chars:
@@ -1992,6 +1954,24 @@ class GameBotGUI:
         char_start = self.dash_char_start.get()
         stealth = self.dash_stealth.get()
         bg = self.dash_background.get()
+        self._vdm = None
+        if bg:
+            from utils.virtual_display import VirtualDisplayManager
+            vdm = VirtualDisplayManager()
+            if not vdm.is_installed():
+                msg = ("后台模式需要安装虚拟显示器驱动(VDD)。\n\n"
+                       "点击\"是\"自动安装（约30秒）。\n"
+                       "安装期间窗口可能暂时无响应。")
+                if not messagebox.askyesno("安装虚拟显示器", msg):
+                    return
+                ok = vdm.install()
+                if not ok:
+                    messagebox.showerror("安装失败",
+                        "VDD安装失败，请手动执行以下命令：\n\n"
+                        "winget install --id=VirtualDrivers.Virtual-Display-Driver -e")
+                    return
+                messagebox.showinfo("安装成功", "虚拟显示器驱动已安装")
+            self._vdm = vdm
         exit_after_done = self.dash_exit_after_done.get()
         start_state_cn = self.dash_start_state.get()
         start_state = self._state_cn_to_key.get(start_state_cn, "character_select")
@@ -2018,9 +1998,9 @@ class GameBotGUI:
                     best = max(wins, key=lambda w: w.width * w.height)
                     best.activate()
                     time.sleep(0.5)
-                    logger.info("Pre-activated game window: %s", best.title)
+                    logger.info("预激活游戏窗口: %s", best.title)
             except Exception as e:
-                logger.warning("Pre-activate window failed: %s", e)
+                logger.warning("预激活窗口失败: %s", e)
 
         self.bot_thread = threading.Thread(
             target=self._run_bot,
@@ -2034,7 +2014,7 @@ class GameBotGUI:
         capture = None
         window_mgr = None
         try:
-            from config.settings import Settings, resolve_characters, migrate_preset_fallback
+            from config.settings import Settings, resolve_characters
             from core.blackboard import Blackboard
             from core.fsm import FSM
             from capture.screen import ScreenCapture
@@ -2055,7 +2035,6 @@ class GameBotGUI:
             cfg.load()
             preset = self.preset_data
             preset["characters"] = resolve_characters(preset, preset_name)
-            migrate_preset_fallback(preset, preset_name)
             blackboard = Blackboard()
             self._blackboard = blackboard
             blackboard["preset_name"] = preset_name
@@ -2072,7 +2051,8 @@ class GameBotGUI:
             controller = Controller(stealth=stealth,
                                     combo_randomness=cfg.combo_randomness,
                                     bezier_steps=cfg.mouse_bezier_steps,
-                                    click_jitter=cfg.click_jitter_px)
+                                    click_jitter=cfg.click_jitter_px,
+                                    background_mode=bg)
             self._controller = controller
 
             fsm = FSM()
@@ -2094,9 +2074,6 @@ class GameBotGUI:
             window_mgr = None
             from utils.window_manager import WindowManager
             import pywinctl as _pwc
-            import ctypes as _ct
-            _sw = _ct.windll.user32.GetSystemMetrics(0)
-            _sh = _ct.windll.user32.GetSystemMetrics(1)
             title = preset.get("window_title", "")
             blackboard["_window_rect"] = None
 
@@ -2106,13 +2083,13 @@ class GameBotGUI:
                 _b = wm._window.box
                 _rect = (_b.left, _b.top, _b.left + _b.width, _b.top + _b.height)
                 if _rect[0] < 0 or _rect[1] < 0:
-                    logger.info("Window minimized, activating...")
+                    logger.info("窗口已最小化，正在激活...")
                     wm.activate()
                     time.sleep(0.5)
                     _b = wm._window.box
                     _rect = (_b.left, _b.top, _b.left + _b.width, _b.top + _b.height)
                 blackboard["_window_rect"] = _rect
-                logger.info("Game window: hwnd=%s rect=(%d,%d,%d,%d)", wm.hwnd, *_rect)
+                logger.info("游戏窗口: hwnd=%s rect=(%d,%d,%d,%d)", wm.hwnd, *_rect)
 
             if blackboard["_window_rect"] is None:
                 best_rect = None
@@ -2136,12 +2113,41 @@ class GameBotGUI:
                             best_win = _w
                 if best_rect:
                     blackboard["_window_rect"] = best_rect[1:]
-                    logger.info("Game window (fallback): rect=(%d,%d,%d,%d)", *best_rect[1:])
+                    logger.info("游戏窗口(备用检测): rect=(%d,%d,%d,%d)", *best_rect[1:])
                     if best_win and wm:
                         wm._window = best_win
 
             if wm and wm._window:
-                if bg:
+                if bg and self._vdm:
+                    wm.save_position()
+                    logger.info("正在启用虚拟显示器...")
+                    if self._vdm.enable(timeout=10):
+                        vdd_idx = self._vdm.get_monitor_index()
+                        if vdd_idx >= 0:
+                            wm.move_to_monitor(vdd_idx)
+                            time.sleep(1.0)
+                            try:
+                                _b = wm._window.box
+                                _rect = (_b.left, _b.top, _b.left + _b.width, _b.top + _b.height)
+                                blackboard["_window_rect"] = _rect
+                                logger.info("游戏已移至虚拟显示器 %d: rect=(%d,%d,%d,%d)", vdd_idx, *_rect)
+                            except Exception as e:
+                                logger.warning("VDD移动后更新窗口坐标失败: %s", e)
+                            dxcam_info = self._vdm.get_dxcam_output_idx()
+                            capture.stop()
+                            time.sleep(0.3)
+                            if isinstance(dxcam_info, tuple) and dxcam_info[0] >= 0:
+                                capture.start(method=cfg.capture_method, fps_limit=cfg.fps_limit,
+                                              device_idx=dxcam_info[0], output_idx=dxcam_info[1])
+                            else:
+                                capture.start(method=cfg.capture_method, fps_limit=cfg.fps_limit,
+                                              monitor=vdd_idx)
+                            logger.info("截图已重定向到虚拟显示器")
+                        else:
+                            logger.warning("无法确定虚拟显示器索引，使用前台模式")
+                    else:
+                        logger.warning("虚拟显示器启用失败，使用前台模式")
+                elif bg:
                     wm.save_position()
                 window_mgr = wm
 
@@ -2154,12 +2160,12 @@ class GameBotGUI:
                     cy = (rect[1] + rect[3]) // 2
                     controller.click_at(cx, cy, bezier=False)
                     time.sleep(0.3)
-                    logger.info("Focus-activation click at window center (%d,%d)", cx, cy)
+                    logger.info("焦点激活: 点击窗口中心 (%d,%d)", cx, cy)
 
             if start_state != "character_select":
                 logger.info("开发者模式：从 %s 状态开始", start_state)
             fsm.transition(start_state, blackboard)
-            logger.info("Bot started via GUI. Preset=%s Characters=%d", preset_name, total_chars)
+            logger.info("Bot已启动 预设=%s 角色数=%d", preset_name, total_chars)
 
             while blackboard["running"] and not self.bot_stop_event.is_set():
                 if window_mgr:
@@ -2186,7 +2192,7 @@ class GameBotGUI:
                     controller.occasional_look_around()
                 time.sleep(1.0 / max(cfg.fps_limit, 1))
 
-            logger.info("Bot stopped")
+            logger.info("Bot已停止")
         except Exception as e:
             logger.exception("Bot thread crashed: %s", e)
         finally:
@@ -2196,6 +2202,9 @@ class GameBotGUI:
                 capture.stop()
             if window_mgr:
                 window_mgr.restore_position()
+            _vdm = getattr(self, '_vdm', None)
+            if _vdm and _vdm.is_enabled():
+                _vdm.disable()
             self.bot_running = False
             self.root.after(0, self._bot_stopped)
             self.log_queue.put("==== Bot stopped ====")
@@ -2678,7 +2687,7 @@ class ScreenshotCropDialog:
         if success:
             with open(str(name), 'wb') as f:
                 f.write(encoded.tobytes())
-        logger.info("Template saved: %s (%dx%d)", name.name,
+        logger.info("模板已保存: %s (%dx%d)", name.name,
                      crop_x2 - crop_x1, crop_y2 - crop_y1)
         if self.on_save:
             self.on_save()

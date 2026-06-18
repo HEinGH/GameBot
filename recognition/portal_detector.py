@@ -17,7 +17,7 @@ class PortalDetector:
         portal = self._match_template(frame)
         if portal:
             result["portal"] = portal
-            logger.info("Portal detected: center=(%d,%d) size=%d",
+            logger.info("识别到副本出口: 位置(%d,%d) 大小=%d",
                         portal["center"][0], portal["center"][1], portal["size"])
         return result
 

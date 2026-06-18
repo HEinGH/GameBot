@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 
 import cv2
 import numpy as np
@@ -49,7 +48,7 @@ def find_template(
     if not template_path.exists():
         if template_name not in _missing_cache:
             _missing_cache.add(template_name)
-            logger.warning("Template not found: %s", template_path)
+            logger.warning("模板文件未找到: %s", template_path)
         return None
     data = np.fromfile(str(template_path), dtype=np.uint8)
     template = cv2.imdecode(data, cv2.IMREAD_COLOR)
@@ -108,7 +107,7 @@ def find_template(
                 ncc_orig = cv2.matchTemplate(resized_roi, gray_template, cv2.TM_CCOEFF_NORMED)[0][0]
                 ncc_flip = cv2.matchTemplate(resized_roi, cv2.flip(gray_template, 0), cv2.TM_CCOEFF_NORMED)[0][0]
                 if ncc_flip > ncc_orig:
-                    logger.debug("Template '%s' reject flip: ncc_orig=%.3f ncc_flip=%.3f",
+                    logger.debug("模板 '%s' 翻转拒绝: 原始NCC=%.3f 翻转NCC=%.3f",
                                  template_name, ncc_orig, ncc_flip)
                     return None
         ct = color_threshold or _color_registry.get(template_name, 0.0)
@@ -125,7 +124,7 @@ def find_template(
                 roi_hgram = _compute_hgram(roi)
                 color_corr = _compare_hgram(_hgram_cache[template_name], roi_hgram)
                 if color_corr < ct:
-                    logger.debug("Template '%s' shape match conf=%.3f, color corr=%.3f < %.2f, rejected",
+                    logger.debug("模板 '%s' 形状匹配置信度=%.3f, 颜色相关度=%.3f < %.2f, 已拒绝",
                                  template_name, best_val, color_corr, ct)
                     return None
         cx = (best_rect[0] + best_rect[2]) // 2
@@ -140,7 +139,7 @@ def find_template(
                     _, buf = cv2.imencode(".png", updated)
                     with open(str(template_path), "wb") as f:
                         f.write(buf)
-                    logger.debug("Auto-updated template '%s'", template_name)
+                    logger.debug("模板自动更新: '%s'", template_name)
             except Exception:
                 pass
         logger.info("\u8bc6\u56fe\u6210\u529f: %s \u4f4d\u7f6e(%d,%d) \u7f6e\u4fe1\u5ea6=%.3f", template_name, cx, cy, best_val)
@@ -150,49 +149,5 @@ def find_template(
             "confidence": best_val,
         }
     if best_val > threshold * 0.5:
-        logger.debug("Template '%s' best_conf=%.3f (threshold=%.2f)", template_name, best_val, threshold)
+        logger.debug("模板 '%s' 最高置信度=%.3f (阈值=%.2f)", template_name, best_val, threshold)
     return None
-
-
-def find_all_templates(frame, template_name, threshold=0.8, scale_range=(0.5, 1.5), scale_steps=11, max_results=5):
-    if frame is None:
-        return []
-    if scale_steps < 1:
-        scale_steps = 1
-    template_path = TEMPLATES_DIR / template_name
-    if not template_path.exists():
-        if template_name not in _missing_cache:
-            _missing_cache.add(template_name)
-            logger.warning("Template not found: %s", template_path)
-        return []
-    data = np.fromfile(str(template_path), dtype=np.uint8)
-    template = cv2.imdecode(data, cv2.IMREAD_COLOR)
-    if template is None:
-        return []
-    t_h, t_w = template.shape[:2]
-    small = t_w * t_h < 3000
-    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    gray_template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
-    if small:
-        kernel = np.ones((3, 3), np.uint8)
-        gray_template = cv2.erode(gray_template, kernel, iterations=1)
-    results = []
-    f_h, f_w = gray_frame.shape
-    for scale in np.linspace(scale_range[0], scale_range[1], scale_steps):
-        scaled_w = int(t_w * scale)
-        scaled_h = int(t_h * scale)
-        if scaled_w > f_w or scaled_h > f_h:
-            continue
-        scaled = cv2.resize(gray_template, (scaled_w, scaled_h))
-        result = cv2.matchTemplate(gray_frame, scaled, cv2.TM_CCOEFF_NORMED)
-        locs = np.where(result >= threshold)
-        for pt in zip(*locs[::-1]):
-            cx = pt[0] + scaled_w // 2
-            cy = pt[1] + scaled_h // 2
-            results.append({
-                "center": (cx, cy),
-                "bbox": (pt[0], pt[1], pt[0] + scaled_w, pt[1] + scaled_h),
-                "confidence": float(result[pt[1], pt[0]]),
-            })
-    results.sort(key=lambda r: r["confidence"], reverse=True)
-    return results[:max_results]
