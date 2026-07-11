@@ -25,7 +25,7 @@ class PortalDetector:
         if not self._portal_file:
             return None
         r = find_template(frame, self._portal_file, threshold=self._template_threshold,
-                          scale_range=(0.7, 1.35), scale_steps=11)
+                          scale_range=(0.7, 1.35), scale_steps=7)
         if r:
             return {
                 "center": r["center"],

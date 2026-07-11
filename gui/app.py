@@ -163,9 +163,11 @@ class ChainStepList(tk.Frame):
         if isinstance(tmpl_val, dict):
             name = tmpl_val.get("template", "")
             thr = tmpl_val.get("threshold", 0.65)
+            ct = tmpl_val.get("color_threshold", 0.0)
         else:
             name = tmpl_val or ""
             thr = 0.65
+            ct = 0.0
         row = ttk.Frame(self.inner)
         row.pack(fill="x", pady=(1, 1))
 
@@ -186,11 +188,19 @@ class ChainStepList(tk.Frame):
         step_label.bind("<Button-1>", lambda e: _select_this_row())
         row.bind("<Button-1>", lambda e: _select_this_row())
 
+        ttk.Label(row, text="形", font=("", 7)).pack(side="left", padx=(4, 0))
         thr_var = tk.StringVar(value=str(thr))
         thr_spin = ttk.Spinbox(row, from_=0.30, to=0.99, increment=0.05, width=4, textvariable=thr_var)
         thr_spin.bind("<MouseWheel>", lambda e: "break")
         thr_spin.bind("<Button-1>", lambda e: _select_this_row(), "+")
         thr_spin.pack(side="left", padx=1)
+
+        ttk.Label(row, text="色", font=("", 7)).pack(side="left")
+        col_var = tk.StringVar(value=str(ct))
+        col_spin = ttk.Spinbox(row, from_=0.00, to=1.00, increment=0.05, width=4, textvariable=col_var)
+        col_spin.bind("<MouseWheel>", lambda e: "break")
+        col_spin.bind("<Button-1>", lambda e: _select_this_row(), "+")
+        col_spin.pack(side="left", padx=1)
 
         def pick_template(en, tv):
             def inner_pick():
@@ -209,7 +219,7 @@ class ChainStepList(tk.Frame):
         browse_btn.pack(side="left", padx=1)
         browse_btn.bind("<Button-1>", lambda e: _select_this_row(), "+")
 
-        return (entry, thr_var), row
+        return (entry, thr_var, col_var), row
 
     def _set_selected(self, row, entry):
         sel_style = "SelRow.TFrame"
@@ -242,21 +252,29 @@ class ChainStepList(tk.Frame):
     def _sync_entries(self):
         old_items = list(self._items)
         self._items = []
-        for i, (_, (entry, thr_var)) in enumerate(self._row_refs):
+        for i, (_, (entry, thr_var, col_var)) in enumerate(self._row_refs):
             val = entry.get().strip()
             if val:
                 try:
                     t = float(thr_var.get())
                 except (ValueError, TypeError):
                     t = 0.65
+                try:
+                    ct = float(col_var.get())
+                except (ValueError, TypeError):
+                    ct = 0.0
                 orig = old_items[i] if i < len(old_items) else None
                 extra = {}
                 if isinstance(orig, dict):
-                    extra = {k: v for k, v in orig.items() if k not in ("template", "threshold")}
-                if abs(t - 0.65) < 0.001 and not extra:
+                    extra = {k: v for k, v in orig.items() if k not in ("template", "threshold", "color_threshold")}
+                is_colored = ct > 0.001
+                is_custom_thr = abs(t - 0.65) >= 0.001
+                if not is_custom_thr and not is_colored and not extra:
                     self._items.append(val)
                 else:
                     result = {"template": val, "threshold": round(t, 2)}
+                    if is_colored:
+                        result["color_threshold"] = round(ct, 2)
                     result.update(extra)
                     self._items.append(result)
 
@@ -315,7 +333,7 @@ class ChainStepList(tk.Frame):
             self._items[sel_idx], self._items[new_idx] = self._items[new_idx], self._items[sel_idx]
         self._refresh()
         if new_idx < len(self._row_refs):
-            r, (entry, _) = self._row_refs[new_idx]
+            r, (entry, _, _) = self._row_refs[new_idx]
             self._set_selected(r, entry)
 
     def _clear(self):
@@ -361,7 +379,6 @@ class GameBotGUI:
         if cfg.last_log_debug:
             self.log_debug_var.set(True)
             self._log_handler.setLevel(logging.DEBUG)
-            logging.getLogger().setLevel(logging.DEBUG)
         self.root.after(200, self._poll_log)
         self.root.after(20, self._poll_hotkeys)
 
@@ -437,10 +454,8 @@ class GameBotGUI:
         debug = self.log_debug_var.get()
         if debug:
             self._log_handler.setLevel(logging.DEBUG)
-            logging.getLogger().setLevel(logging.DEBUG)
         else:
             self._log_handler.setLevel(logging.INFO)
-            logging.getLogger().setLevel(logging.INFO)
         Settings().last_log_debug = debug
         Settings().save()
 

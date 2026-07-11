@@ -31,6 +31,10 @@ class DungeonExitNavState(BaseState):
         self._reversal_count = 0
         self._last_search_dir = 0
         self._last_rotate_sign = 0
+        self._blind_scan_dir = 1
+        self._blind_step_cnt = 0
+        self._stale_candidate_pos = None
+        self._stale_candidate_count = 0
 
     def _set_phase(self, name):
         if name != self._phase:
@@ -98,6 +102,10 @@ class DungeonExitNavState(BaseState):
         self._reversal_count = 0
         self._last_search_dir = 0
         self._last_rotate_sign = 0
+        self._blind_scan_dir = 1
+        self._blind_step_cnt = 0
+        self._stale_candidate_pos = None
+        self._stale_candidate_count = 0
         rect = blackboard.get("_window_rect")
         if not rect or len(rect) != 4:
             title = preset.get("window_title", "")
@@ -163,10 +171,16 @@ class DungeonExitNavState(BaseState):
         self._rotate(angle)
         time.sleep(0.05)
 
-    def _find_portal(self, frame):
-        result = self.detector.detect(frame)
+    def _find_portal(self, frame, skip_continuity=False, threshold=None):
+        if threshold is not None:
+            old = self.detector._template_threshold
+            self.detector._template_threshold = threshold
+            result = self.detector.detect(frame)
+            self.detector._template_threshold = old
+        else:
+            result = self.detector.detect(frame)
         portal = result.get("portal") if result else None
-        if portal and self._last_pos:
+        if portal and self._last_pos and not skip_continuity:
             fw = self._gw_w if self._gw_w > 0 else (frame.shape[1] if frame is not None else 1920)
             dx = abs(portal["center"][0] - self._last_pos[0])
             if dx > fw * 0.30:
@@ -257,6 +271,31 @@ class DungeonExitNavState(BaseState):
             self._do_buttons(frame, blackboard)
             return
 
+        if self._phase in ("scan", "seek", "center", "move") and self._lost >= 5 and self._last_pos is not None:
+            raw = self._find_portal(frame, skip_continuity=True)
+            if raw:
+                pos = raw["center"]
+                fw = self._gw_w if self._gw_w > 0 else frame.shape[1]
+                if self._stale_candidate_pos:
+                    cp = self._stale_candidate_pos
+                    if abs(pos[0] - cp[0]) < fw * 0.03 and abs(pos[1] - cp[1]) < fw * 0.03:
+                        self._stale_candidate_count += 1
+                        if self._stale_candidate_count >= 3:
+                            logger.info("连续性锁自愈: 新候选(%d,%d)连续%d帧，重置_last_pos",
+                                        pos[0], pos[1], self._stale_candidate_count)
+                            self._last_pos = pos
+                            self._lost = 0
+                            self._stale_candidate_count = 0
+                            self._stale_candidate_pos = None
+                    else:
+                        self._stale_candidate_pos = pos
+                        self._stale_candidate_count = 1
+                else:
+                    self._stale_candidate_pos = pos
+                    self._stale_candidate_count = 1
+            else:
+                self._stale_candidate_count = 0
+
         gw_w, gw_h = self._gw_w, self._gw_h
         if gw_w <= 0:
             logger.warning("副本出口寻路: 窗口坐标不可用，使用帧中心")
@@ -277,12 +316,18 @@ class DungeonExitNavState(BaseState):
             self._do_move(frame, gw_w, win_cx, win_cy, blackboard)
 
     def _do_scan(self, frame, gh, gw, win_cx, win_cy, blackboard):
-        portal = self._find_portal(frame)
+        thr = self.detector._template_threshold
+        if self._lost >= 50:
+            thr = max(0.45, thr - 0.10)
+        elif self._lost >= 30:
+            thr = max(0.45, thr - 0.05)
+        portal = self._find_portal(frame, threshold=thr)
 
         if portal:
             size = portal["size"]
             self._last_pos = portal["center"]
             self._lost = 0
+            self._blind_step_cnt = 0
             x, y = self._last_pos
             rel_x = x - self._gw_l
             rel_y = y - self._gw_t
@@ -311,6 +356,14 @@ class DungeonExitNavState(BaseState):
             return
 
         self._lost += 1
+        if self._lost >= 10 and self._lost % 3 == 0:
+            angle = 12 * self._blind_scan_dir
+            self._rotate(angle)
+            self._blind_step_cnt += 1
+            if self._blind_step_cnt >= 8:
+                self._blind_scan_dir = -self._blind_scan_dir
+                self._blind_step_cnt = 0
+            time.sleep(0.04)
         if self._lost % 5 == 1: logger.debug("Scanning... (%d/80)", self._lost)
         if self._lost > 80:
             logger.warning("出口图标未找到，直接进入按钮阶段")
@@ -376,7 +429,7 @@ class DungeonExitNavState(BaseState):
                 self._search_dir = -self._search_dir; self._lost = 0
                 self._reversal_count += 1
             elif self._lost > 20:
-                self._set_phase("buttons"); self._click_stage = 0; self._click_wait = 0; self._button_attempts = 0; return
+                self._set_phase("scan"); self._lost = 0; return
 
         time.sleep(0.04)
 
@@ -465,9 +518,9 @@ class DungeonExitNavState(BaseState):
             if self._lost > 10:
                 self._near_exit = True
             if self._lost > 20:
-                logger.info("出口图标丢失，可能已接近出口")
+                logger.info("出口图标丢失，回到扫描阶段")
                 self._release_w()
-                self._set_phase("buttons"); self._click_stage = 0; self._click_wait = 0; self._button_attempts = 0; return
+                self._set_phase("scan"); self._lost = 0; return
 
     def _do_buttons(self, frame, blackboard):
         preset = blackboard["preset"]

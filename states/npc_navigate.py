@@ -34,6 +34,8 @@ class NPCNavigateState(BaseState):
         self._reversal_count = 0
         self._last_seek_dir = 0
         self._last_rotate_sign = 0
+        self._stale_candidate_pos = None
+        self._stale_candidate_count = 0
 
     def _set_phase(self, name):
         if name != self._phase:
@@ -55,6 +57,8 @@ class NPCNavigateState(BaseState):
         self._reversal_count = 0
         self._last_seek_dir = 0
         self._last_rotate_sign = 0
+        self._stale_candidate_pos = None
+        self._stale_candidate_count = 0
         self._enter_chain = []
         self._enter_chain_idx = 0
         self._enter_attempts = 0
@@ -123,7 +127,7 @@ class NPCNavigateState(BaseState):
             if wd: wd.reset()
         except Exception: pass
 
-    def _find_npc(self, frame):
+    def _find_npc(self, frame, skip_continuity=False):
         r = self._find(self._npc_tpl, frame, threshold=self._npc_thr,
                         scale_range=(0.7, 1.35), scale_steps=7)
         if not r and self._last_pos and self._npc_thr > 0.65:
@@ -137,7 +141,7 @@ class NPCNavigateState(BaseState):
                     logger.debug("NPC soft-fallback rejected: jump %dpx", dx)
                     return None
                 logger.debug("NPC soft-fallback accepted at conf=%.2f", r["confidence"])
-        if r and self._last_pos:
+        if r and self._last_pos and not skip_continuity:
             fw = frame.shape[1] if frame is not None else self._gw_w
             ref_w = self._gw_w if self._gw_w > 0 else fw
             dx = abs(r["center"][0] - self._last_pos[0])
@@ -153,7 +157,7 @@ class NPCNavigateState(BaseState):
                 return None
         return r
 
-    def _find(self, tpl, frame, threshold=0.65, scale_range=(0.5, 1.5), scale_steps=11):
+    def _find(self, tpl, frame, threshold=0.65, scale_range=(0.7, 1.35), scale_steps=7):
         if not tpl or frame is None: return None
         try:
             return find_template(frame, tpl, threshold=threshold,
@@ -295,6 +299,31 @@ class NPCNavigateState(BaseState):
                 return
             elif self._lost == 3:
                 logger.debug("技能栏未匹配 (模板=%s 阈值=%.2f)", self._skill_tpl, self._skill_thr)
+
+        if self._phase in ("scan", "seek", "center", "move") and self._lost >= 5 and self._last_pos is not None:
+            raw = self._find_npc(frame, skip_continuity=True)
+            if raw:
+                pos = raw["center"]
+                fw = self._gw_w if self._gw_w > 0 else frame.shape[1]
+                if self._stale_candidate_pos:
+                    cp = self._stale_candidate_pos
+                    if abs(pos[0] - cp[0]) < fw * 0.03 and abs(pos[1] - cp[1]) < fw * 0.03:
+                        self._stale_candidate_count += 1
+                        if self._stale_candidate_count >= 3:
+                            logger.info("NPC寻路连续性锁自愈: 新候选(%d,%d)连续%d帧，重置_last_pos",
+                                        pos[0], pos[1], self._stale_candidate_count)
+                            self._last_pos = pos
+                            self._lost = 0
+                            self._stale_candidate_count = 0
+                            self._stale_candidate_pos = None
+                    else:
+                        self._stale_candidate_pos = pos
+                        self._stale_candidate_count = 1
+                else:
+                    self._stale_candidate_pos = pos
+                    self._stale_candidate_count = 1
+            else:
+                self._stale_candidate_count = 0
 
         if self._phase == "scan":
             self._do_scan(frame, gw_h, gw_w, win_cx, win_cy, blackboard)
