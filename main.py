@@ -30,7 +30,7 @@ def list_presets(presets):
 
 
 def main():
-    setup_logger(level=logging.INFO)
+    setup_logger()
     setup_excepthook()
     cfg = Settings()
     cfg.load()
